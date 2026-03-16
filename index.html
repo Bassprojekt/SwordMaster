@@ -3743,56 +3743,130 @@ function claimQuest(q,tab){
   checkLevelUp();updateAll();renderQuests();saveToSupabase();
 }
 
-// Hook into existing combat/forge to track quests
-const _origMonsterKilled=monsterKilled;
-monsterKilled=function(m){
-  _origMonsterKilled(m);
-  trackQuestProgress('kill');
-  trackQuestProgress('gold',Math.round(m.gold*goldMult()*luckMult()));
+// ════════════════════════════════════════════
+// ── QUEST TRACKING HOOKS
+// ════════════════════════════════════════════
+const _origMK = monsterKilled;
+monsterKilled = function(m) {
+  _origMK(m);
+  try { trackQuestProgress('kill', 1); checkQuestBadge(); } catch(e) {}
 };
 
-const _origForge=forge;
-forge=function(){
-  _origForge();
-  trackQuestProgress('forge');
+const _origFG = forge;
+forge = function() {
+  _origFG();
+  try { trackQuestProgress('forge', 1); checkQuestBadge(); } catch(e) {}
+};
+
+const _origSW = spawnWave;
+spawnWave = function() {
+  _origSW();
+  try { if(G.wave > 1) trackQuestProgress('wave', 1); } catch(e) {}
+};
+
+const _origDV = dungeonVictory;
+dungeonVictory = function() {
+  _origDV();
+  try { trackQuestProgress('dung', 1); checkQuestBadge(); } catch(e) {}
 };
 
 // ════════════════════════════════════════════
-// ── HELPER FUNCTIONS
+// ── SHOP BOOST DISPLAY
 // ════════════════════════════════════════════
-function updateArenaPanel(){
-  const h=G.hero;
-  if(document.getElementById('arenaHeroHp'))document.getElementById('arenaHeroHp').textContent=Math.ceil(h.hp)+'/'+h.maxHp;
+let _boostIdx = 0;
+function renderShopBoosts() {
+  const boosts = [];
+  if ((G.shopBoosts && G.shopBoosts.xpBoost || 0) > Date.now()) {
+    const m = Math.ceil((G.shopBoosts.xpBoost - Date.now()) / 60000);
+    boosts.push('⭐ XP-Boost: ' + m + 'min');
+  }
+  if ((G.shopBoosts && G.shopBoosts.goldBoost || 0) > Date.now()) {
+    const m = Math.ceil((G.shopBoosts.goldBoost - Date.now()) / 60000);
+    boosts.push('\u{1F4B0} Gold-Boost: ' + m + 'min');
+  }
+  if (G.reviveReady) boosts.push('\u{1F4AB} Wiedergeburt: Bereit');
+  if (G.shopBoosts && G.shopBoosts.petFood) boosts.push('\u{1F356} Pets: +15%');
+  if (boosts.length > 0) {
+    const ss = document.getElementById('saveStatus');
+    if (ss && !ss.textContent.startsWith('\u{2705}') && !ss.textContent.startsWith('\u{1F4BE}')) {
+      _boostIdx = (_boostIdx + 1) % boosts.length;
+      ss.style.color = 'var(--green2)';
+      ss.textContent = boosts[_boostIdx];
+    }
+  }
 }
-// renderArena is defined in combat section above — no duplicate needed
 
-setInterval(()=>{
-  if(G.hero.mana<G.hero.maxMana) G.hero.mana=Math.min(G.hero.maxMana,G.hero.mana+0.2);
+// ════════════════════════════════════════════
+// ── AUTO-REFRESH GUILD CHAT
+// ════════════════════════════════════════════
+let guildChatInterval = null;
+function startGuildChatRefresh() {
+  if (guildChatInterval) return;
+  guildChatInterval = setInterval(() => {
+    try {
+      const page = document.getElementById('page-gilde');
+      if (page && page.classList.contains('active') && G.guildId) loadGuildChat();
+    } catch(e) {}
+  }, 10000);
+}
+
+// ════════════════════════════════════════════
+// ── RESEARCH TIMER
+// ════════════════════════════════════════════
+setInterval(() => {
+  try {
+    if (G.researchActive && G.researchEnd > 0) {
+      if (Date.now() >= G.researchEnd) {
+        const res = RESEARCH.find(r => r.id === G.researchActive);
+        G.research.add(G.researchActive);
+        log('\u{1F52C} Forschung fertig: ' + (res ? res.icon + ' ' + res.name : ''), 'l');
+        G.researchActive = null; G.researchEnd = 0;
+        clearInterval(resTimerInterval);
+        const page = document.getElementById('page-forschung');
+        if (page && page.classList.contains('active')) renderResearch();
+      } else {
+        const left = G.researchEnd - Date.now();
+        const m = Math.floor(left / 60000), s = Math.floor((left % 60000) / 1000);
+        const rt = document.getElementById('researchTimer');
+        if (rt) rt.textContent = '\u{23F3} ' + m + 'm ' + s + 's';
+      }
+    }
+  } catch(e) {}
+}, 2000);
+
+// ════════════════════════════════════════════
+// ── MAIN LOOP
+// ════════════════════════════════════════════
+function updateHeaderStats() {
+  const h = G.hero;
+  try {
+    if (document.getElementById('hHp')) document.getElementById('hHp').textContent = Math.ceil(h.hp);
+    if (document.getElementById('hMaxHp')) document.getElementById('hMaxHp').textContent = h.maxHp;
+    if (document.getElementById('hGold')) document.getElementById('hGold').textContent = h.gold;
+    if (document.getElementById('hLv')) document.getElementById('hLv').textContent = h.level;
+    if (document.getElementById('hKills')) document.getElementById('hKills').textContent = G.kills;
+  } catch(e) {}
+}
+
+setInterval(() => {
+  if (G.hero.mana < G.hero.maxMana) G.hero.mana = Math.min(G.hero.maxMana, G.hero.mana + 0.2);
   updateHeaderStats();
-},500);
+  try { renderShopBoosts(); } catch(e) {}
+}, 500);
 
-// Auto-Speichern alle 30 Sekunden in Supabase
 setInterval(saveToSupabase, 30000);
+setInterval(() => { try { checkDailyReset(); } catch(e) {} }, 60000);
 
 // ════════════════════════════════════════════
-// ── INIT ────────────────────────────────────
+// ── INIT
 // ════════════════════════════════════════════
-
 async function init() {
-  // Lade-Screen
   document.body.insertAdjacentHTML('beforeend', `
-    <div id="loadingScreen" style="
-      position:fixed;inset:0;z-index:9999;
-      background:var(--bg);
-      display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;">
-      <div style="font-family:'Cinzel',serif;font-size:2rem;color:var(--gold2);
-        text-shadow:0 0 30px rgba(240,204,85,.5);">⚔️ SWORDMASTER</div>
-      <div style="font-size:0.9rem;color:var(--text2);font-style:italic;" id="loadMsg">Starte Spiel...</div>
-      <div style="width:220px;height:5px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;">
-        <div id="loadBar" style="height:100%;width:0%;background:linear-gradient(to right,var(--gold),var(--gold2));
-          border-radius:3px;transition:width .4s ease;"></div>
-      </div>
-      <div style="font-size:0.72rem;color:var(--text3);font-style:italic;" id="loadSub"></div>
+    <div id="loadingScreen" style="position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;">
+      <div style="font-family:'Cinzel',serif;font-size:2rem;color:var(--gold2);text-shadow:0 0 30px rgba(240,204,85,.5);">\u2694\uFE0F SWORDMASTER</div>
+      <div style="font-size:.85rem;color:var(--text2);font-style:italic;" id="loadMsg">Starte...</div>
+      <div style="width:220px;height:5px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;"><div id="loadBar" style="height:100%;width:0%;background:linear-gradient(to right,var(--gold),var(--gold2));border-radius:3px;transition:width .4s ease;"></div></div>
+      <div style="font-size:.68rem;color:var(--text3);font-style:italic;" id="loadSub"></div>
     </div>
   `);
 
@@ -3801,66 +3875,57 @@ async function init() {
       const m=document.getElementById('loadMsg'); if(m) m.textContent=msg;
       const b=document.getElementById('loadBar'); if(b) b.style.width=pct+'%';
       const s=document.getElementById('loadSub'); if(s) s.textContent=sub;
-    } catch(e){}
+    } catch(e) {}
   };
 
   const removeLoader = () => {
     try {
       const ls=document.getElementById('loadingScreen');
-      if(ls){ ls.style.opacity='0'; ls.style.transition='opacity .5s';
-        setTimeout(()=>{ try{ls.remove();}catch(e){} },500); }
-    } catch(e){}
+      if(ls){ ls.style.opacity='0'; ls.style.transition='opacity .5s'; setTimeout(()=>{try{ls.remove();}catch(e){}},500); }
+    } catch(e) {}
   };
 
-  // Kurz warten damit DOM ready ist
   await new Promise(r=>setTimeout(r,100));
-  setLoad('Spiel wird initialisiert...', 40);
+  setLoad('Lade Spielstand...', 30);
 
-  // Supabase laden mit Timeout (max 4 Sekunden)
   let loaded = false;
   try {
-    const loadPromise = loadFromSupabase();
-    const timeout = new Promise(resolve => setTimeout(()=>resolve(false), 4000));
-    loaded = await Promise.race([loadPromise, timeout]);
-  } catch(e) {
-    console.warn('Load error:', e);
-    loaded = false;
-  }
+    const lp = loadFromSupabase();
+    const to = new Promise(r => setTimeout(()=>r(false), 5000));
+    loaded = await Promise.race([lp, to]);
+  } catch(e) { loaded = false; }
 
-  setLoad(loaded ? '✅ Spielstand geladen!' : '🆕 Neues Spiel...', 80);
-  await new Promise(r=>setTimeout(r,300));
+  setLoad(loaded ? '\u2705 Spielstand geladen!' : '\u{1F195} Neues Spiel...', 75, loaded ? 'Level ' + G.hero.level : '');
+  await new Promise(r=>setTimeout(r,350));
 
-  // UI komplett aufbauen
-  try { renderEquipSlots(); } catch(e){}
-  try { renderInventory(); } catch(e){}
-  try { renderUpgrades(); } catch(e){}
-  try { renderSkills(); } catch(e){}
-  try { renderPets(); } catch(e){}
-  try { renderEraTimeline(); } catch(e){}
-  try { renderForgedGrid(); } catch(e){}
-  try { setForgedView('recent'); } catch(e){}
-  try { updateAll(); } catch(e){}
-  try { updateHeroFigure(); } catch(e){}
-  try { updateNameUI(); } catch(e){}
-  try { renderDungeon(); } catch(e){}
-  try { checkDailyReset(); } catch(e){}
-  try { checkQuestBadge(); } catch(e){}
+  try { renderEquipSlots(); }    catch(e) {}
+  try { renderInventory(); }     catch(e) {}
+  try { renderUpgrades(); }      catch(e) {}
+  try { renderSkills(); }        catch(e) {}
+  try { renderPets(); }          catch(e) {}
+  try { renderEraTimeline(); }   catch(e) {}
+  try { renderForgedGrid(); }    catch(e) {}
+  try { setForgedView('recent'); } catch(e) {}
+  try { updateAll(); }           catch(e) {}
+  try { updateHeroFigure(); }    catch(e) {}
+  try { updateNameUI(); }        catch(e) {}
+  try { renderDungeon(); }       catch(e) {}
+  try { checkDailyReset(); }     catch(e) {}
+  try { checkQuestBadge(); }     catch(e) {}
+  try { startGuildChatRefresh(); } catch(e) {}
 
-  setLoad('Los geht\'s! ⚔️', 100);
+  setLoad('Los geht's! \u2694\uFE0F', 100);
   await new Promise(r=>setTimeout(r,300));
   removeLoader();
 
-  // Idle-Belohnungen prüfen
-  try { checkIdle(); } catch(e){}
-
-  // Kampf starten
-  try { spawnMonster(); startCombat(); } catch(e){}
+  try { checkIdle(); }           catch(e) {}
+  try { spawnMonster(); startCombat(); } catch(e) {}
 
   if (loaded) {
-    log(`✅ Willkommen zurück! Level ${G.hero.level} geladen.`, 'n');
+    log('\u2705 Willkommen zuruck! Level ' + G.hero.level + ' geladen.', 'n');
   } else {
-    setSaveStatus('⚠️ Offline-Modus', 'var(--orange2)');
-    log('⚔️ SwordMaster gestartet! Führe das SQL-Script in Supabase aus für Cloud-Speicherung.', 'n');
+    setSaveStatus('\u26A0\uFE0F Offline-Modus', 'var(--orange2)');
+    log('\u2694\uFE0F SwordMaster gestartet! SQL-Script in Supabase ausfuhren fur Cloud.', 'n');
     setTimeout(()=>{ try{saveToSupabase();}catch(e){} }, 3000);
   }
 }
