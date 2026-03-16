@@ -1,0 +1,2409 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>⚔️ SwordMaster</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap');
+
+:root {
+  --bg:       #07050a;
+  --bg2:      #0d0a12;
+  --panel:    #100e18;
+  --panel2:   #16131f;
+  --border:   #2a2040;
+  --border2:  #3d2f5a;
+  --gold:     #c9a227;
+  --gold2:    #f0cc55;
+  --red:      #b03030;
+  --red2:     #e05050;
+  --green:    #2e8b57;
+  --green2:   #40c070;
+  --blue:     #2060a0;
+  --blue2:    #50a0e0;
+  --purple:   #6030a0;
+  --purple2:  #9060e0;
+  --orange:   #c06020;
+  --orange2:  #f0903a;
+  --text:     #e0d4f0;
+  --text2:    #8070a0;
+  --text3:    #504060;
+  --shadow:   0 4px 24px rgba(0,0,0,0.6);
+  --glow-gold: 0 0 20px rgba(201,162,39,0.3);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Crimson Pro', serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ══ HEADER ══ */
+.game-header {
+  background: linear-gradient(to bottom, #0a0812, var(--bg));
+  border-bottom: 1px solid var(--border);
+  padding: 0 12px;
+  position: sticky; top:0; z-index:100;
+}
+
+.header-top {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 0 6px;
+  gap: 10px;
+}
+
+.game-title {
+  font-family: 'Cinzel', serif;
+  font-weight: 900;
+  font-size: clamp(1.1rem, 3vw, 1.6rem);
+  color: var(--gold2);
+  text-shadow: 0 0 20px rgba(240,204,85,0.4);
+  letter-spacing: 0.12em;
+  flex-shrink: 0;
+}
+
+.header-stats {
+  display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end;
+}
+
+.hstat {
+  background: rgba(0,0,0,0.4);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 3px 10px;
+  font-family: 'Cinzel', serif;
+  font-size: 0.72rem;
+  color: var(--text2);
+  display: flex; align-items: center; gap: 5px;
+  white-space: nowrap;
+}
+
+.hstat b { color: var(--text); font-weight: 600; }
+
+/* ERA BAR */
+.era-bar {
+  display: flex; align-items: center; gap: 8px;
+  padding: 5px 0 8px;
+  font-family: 'Cinzel', serif;
+  font-size: 0.72rem;
+}
+
+.era-label { color: var(--gold2); font-weight:700; flex-shrink:0; }
+.era-track { flex:1; height:5px; background:rgba(255,255,255,0.05); border-radius:3px; overflow:hidden; }
+.era-track-fill { height:100%; background:linear-gradient(to right,var(--gold),var(--gold2)); border-radius:3px; transition:width .6s ease; }
+.era-next { color:var(--text3); font-size:0.68rem; flex-shrink:0; }
+
+/* ══ NAV TABS ══ */
+.nav-tabs {
+  display: flex;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.nav-tabs::-webkit-scrollbar { display:none; }
+
+.nav-tab {
+  flex: 1; min-width: 70px;
+  padding: 10px 6px 9px;
+  text-align: center;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+  font-family: 'Cinzel', serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--text3);
+  user-select: none;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+}
+
+.nav-tab .tab-icon { font-size: 1.2rem; }
+.nav-tab:hover { color: var(--text2); background: rgba(255,255,255,0.02); }
+
+.nav-tab.active {
+  color: var(--gold2);
+  border-bottom-color: var(--gold);
+  background: rgba(201,162,39,0.06);
+}
+
+/* ══ PAGES ══ */
+.page { display:none; padding:10px; max-width:860px; margin:0 auto; }
+.page.active { display:block; }
+
+/* ══ SHARED COMPONENTS ══ */
+.card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+
+.card + .card { margin-top: 10px; }
+
+.card::before {
+  content:'';
+  position:absolute; top:0; left:0; right:0; height:1px;
+  background: linear-gradient(to right, transparent, var(--border2), transparent);
+}
+
+.sec-title {
+  font-family: 'Cinzel', serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--gold);
+  letter-spacing: 0.1em;
+  margin-bottom: 12px;
+  display: flex; align-items: center; gap: 8px;
+}
+
+.sec-title::after { content:''; flex:1; height:1px; background:linear-gradient(to right,var(--border),transparent); }
+
+.bar { height:10px; background:rgba(255,255,255,0.05); border-radius:5px; overflow:hidden; border:1px solid rgba(255,255,255,0.04); }
+.bar-fill { height:100%; border-radius:5px; transition:width .35s ease; position:relative; }
+.bar-fill::after { content:''; position:absolute; top:0;left:0;right:0;height:50%; background:rgba(255,255,255,0.12); border-radius:5px; }
+.bar-label { display:flex; justify-content:space-between; font-size:0.72rem; color:var(--text2); margin-bottom:3px; }
+
+.hp-fill   { background:linear-gradient(to right,#6b0000,var(--red2)); }
+.xp-fill   { background:linear-gradient(to right,#0b3d20,var(--green2)); }
+.mana-fill { background:linear-gradient(to right,#0a1a50,var(--blue2)); }
+
+/* ══ HERO PANEL ══ */
+.hero-panel { display:flex; gap:14px; align-items:flex-start; flex-wrap:wrap; }
+
+.hero-avatar {
+  width:72px; height:72px; flex-shrink:0;
+  background:rgba(201,162,39,0.06);
+  border:1px solid var(--border2);
+  border-radius:12px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:2.8rem;
+  position:relative;
+}
+
+.hero-avatar.attacking { animation:atkPulse .3s ease-out; }
+@keyframes atkPulse { 0%{transform:translateX(0)} 40%{transform:translateX(16px) scale(1.08)} 100%{transform:translateX(0)} }
+
+.hero-data { flex:1; min-width:160px; }
+.hero-name-row { display:flex; align-items:center; gap:8px; margin-bottom:6px; flex-wrap:wrap; }
+.hero-name { font-family:'Cinzel',serif; font-size:1.05rem; font-weight:700; color:var(--gold2); }
+.lvl-badge {
+  background:linear-gradient(135deg,var(--border),var(--red));
+  border:1px solid var(--gold);
+  border-radius:4px; padding:1px 7px;
+  font-size:0.72rem; font-family:'Cinzel',serif; color:var(--gold2);
+}
+
+.bars { display:flex; flex-direction:column; gap:5px; }
+.stat-pills { display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; }
+.pill {
+  background:rgba(0,0,0,0.35);
+  border:1px solid var(--border);
+  border-radius:5px; padding:3px 9px;
+  font-size:0.7rem; color:var(--text2);
+  display:flex; align-items:center; gap:4px;
+}
+.pill b { color:var(--text); font-weight:600; }
+.pill.boosted { border-color:var(--green2); color:var(--green2); }
+
+/* ══ EQUIPMENT SLOTS ══ */
+.equip-grid {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+}
+
+.equip-slot {
+  aspect-ratio:1;
+  background:rgba(0,0,0,0.3);
+  border:1px dashed var(--border2);
+  border-radius:10px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:3px; position:relative; overflow:hidden;
+  cursor:pointer; transition:all .2s;
+  padding:6px;
+}
+
+.equip-slot:hover { border-color:var(--gold); transform:translateY(-1px); }
+.equip-slot.has-item { border-style:solid; }
+.equip-slot .slot-label { font-family:'Cinzel',serif; font-size:0.52rem; color:var(--text3); letter-spacing:.05em; }
+.equip-slot .slot-icon { font-size:1.6rem; }
+.equip-slot .slot-stat { font-family:'Cinzel',serif; font-size:0.56rem; }
+
+.equip-slot.rarity-common  { border-color:#445; }
+.equip-slot.rarity-uncommon{ border-color:#2e8b57; box-shadow:0 0 8px rgba(46,139,87,.25); }
+.equip-slot.rarity-rare    { border-color:#2060a0; box-shadow:0 0 8px rgba(32,96,160,.3); }
+.equip-slot.rarity-epic    { border-color:#6030a0; box-shadow:0 0 10px rgba(96,48,160,.35); }
+.equip-slot.rarity-legendary{ border-color:var(--gold); box-shadow:0 0 12px rgba(201,162,39,.4); animation:legPulse 2.5s infinite; }
+.equip-slot.rarity-mythic  { border-color:var(--red2); box-shadow:0 0 14px rgba(224,80,80,.5); animation:mytPulse 2s infinite; }
+@keyframes legPulse{0%,100%{box-shadow:0 0 12px rgba(201,162,39,.4)}50%{box-shadow:0 0 22px rgba(201,162,39,.7)}}
+@keyframes mytPulse{0%,100%{box-shadow:0 0 14px rgba(224,80,80,.5)}50%{box-shadow:0 0 26px rgba(224,80,80,.8)}}
+
+/* ══ ARENA ══ */
+.arena-bg {
+  position:absolute; inset:0;
+  background:radial-gradient(ellipse at 50% 100%,rgba(100,20,20,.2) 0%,transparent 70%);
+  pointer-events:none;
+}
+
+.arena-header { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px; }
+
+.arena-zone { font-family:'Cinzel',serif; font-size:0.8rem; color:var(--text2); }
+.arena-zone span { color:var(--gold); }
+.wave-chip {
+  font-family:'Cinzel',serif; font-size:0.7rem;
+  background:rgba(176,48,48,.15); border:1px solid rgba(176,48,48,.4);
+  border-radius:4px; padding:2px 8px; color:var(--red2);
+}
+
+.combatants {
+  display:flex; align-items:center; justify-content:space-around;
+  gap:10px; flex-wrap:wrap;
+  background:rgba(0,0,0,.25);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:14px;
+  position:relative;
+}
+
+.fighter {
+  display:flex; flex-direction:column; align-items:center; gap:6px;
+  min-width:100px;
+}
+
+.fighter-sprite {
+  font-size:3rem;
+  filter:drop-shadow(0 4px 8px rgba(0,0,0,.6));
+  transition:transform .1s;
+}
+
+.fighter-sprite.mon-float { animation:monFloat 3s ease-in-out infinite; }
+.fighter-sprite.mon-hit   { animation:monHit .25s ease-out; }
+@keyframes monFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes monHit{0%{transform:translateX(0);filter:brightness(1)}30%{transform:translateX(-8px);filter:brightness(4) saturate(0)}100%{transform:translateX(0);filter:brightness(1)}}
+
+.fighter-name { font-family:'Cinzel',serif; font-size:0.72rem; font-weight:700; text-align:center; }
+.fighter-hp   { font-size:0.65rem; color:var(--text2); font-family:'Cinzel',serif; }
+
+.vs-divider { font-family:'Cinzel',serif; font-size:1.6rem; font-weight:900; color:var(--border2); flex-shrink:0; }
+
+.pets-row { display:flex; gap:6px; flex-wrap:wrap; margin-top:6px; }
+.pet-chip {
+  background:rgba(0,0,0,.3); border:1px solid var(--green); border-radius:6px;
+  padding:2px 8px; font-size:0.7rem; color:var(--green2);
+  display:flex; align-items:center; gap:4px;
+}
+
+/* ══ FLOATING DMG ══ */
+.dmg-float {
+  position:fixed; font-family:'Cinzel',serif; font-weight:700; font-size:1rem;
+  pointer-events:none; animation:floatUp 1s ease-out forwards; z-index:9999;
+  text-shadow:0 2px 4px #000;
+}
+@keyframes floatUp{0%{opacity:1;transform:translateY(0) scale(1)}50%{opacity:1;transform:translateY(-28px) scale(1.2)}100%{opacity:0;transform:translateY(-50px) scale(.9)}}
+
+/* ══ FORGE ══ */
+.forge-center { display:flex; flex-direction:column; align-items:center; gap:14px; }
+
+.big-forge-btn {
+  width:110px; height:110px;
+  border-radius:20px;
+  border:2px solid var(--gold);
+  background:linear-gradient(145deg,#1a0f05,#2e1a08,#1a0f05);
+  color:var(--gold2);
+  font-size:3rem;
+  cursor:pointer;
+  transition:all .12s;
+  box-shadow:0 0 24px rgba(201,162,39,.2),inset 0 1px 0 rgba(255,255,255,.08);
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;
+  position:relative; overflow:hidden; user-select:none;
+}
+
+.big-forge-btn::before {
+  content:''; position:absolute; inset:0;
+  background:radial-gradient(circle at 50% 0%,rgba(201,162,39,.18),transparent 55%);
+}
+
+.big-forge-btn:hover { transform:translateY(-3px); box-shadow:0 0 36px rgba(201,162,39,.4); border-color:var(--gold2); }
+.big-forge-btn:active { transform:scale(.9) translateY(3px); }
+.big-forge-btn.forging { animation:forgePop .15s ease-out; }
+@keyframes forgePop{0%{transform:scale(1)}50%{transform:scale(.86);box-shadow:0 0 50px rgba(255,160,0,.7)}100%{transform:scale(1)}}
+
+.big-forge-btn .fl { font-family:'Cinzel',serif; font-size:0.58rem; font-weight:700; letter-spacing:.08em; color:var(--text2); }
+
+.forge-controls { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; }
+
+.ctrl-btn {
+  padding:8px 16px; border-radius:8px;
+  border:1px solid var(--border2);
+  background:var(--panel2); color:var(--text2);
+  font-family:'Cinzel',serif; font-size:0.72rem;
+  cursor:pointer; transition:all .2s;
+  display:flex; align-items:center; gap:6px;
+}
+
+.ctrl-btn:hover { border-color:var(--gold); color:var(--gold); }
+.ctrl-btn.on { border-color:var(--green2); color:var(--green2); background:rgba(64,192,112,.08); }
+
+.dot { width:7px;height:7px;border-radius:50%;background:var(--text2);transition:background .2s; }
+.ctrl-btn.on .dot { background:var(--green2);box-shadow:0 0 5px var(--green2);animation:dotBlink 1s infinite; }
+@keyframes dotBlink{0%,100%{opacity:1}50%{opacity:.5}}
+
+/* ══ INVENTORY ══ */
+.inv-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(68px,1fr));
+  gap:6px;
+}
+
+.inv-slot {
+  aspect-ratio:1;
+  background:rgba(0,0,0,.3);
+  border:1px solid var(--border);
+  border-radius:8px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:2px; cursor:pointer; transition:all .18s;
+  position:relative; overflow:hidden; padding:4px;
+}
+
+.inv-slot:hover { transform:translateY(-2px); box-shadow:0 4px 14px rgba(0,0,0,.5); }
+.inv-slot .ii { font-size:1.55rem; }
+.inv-slot .in { font-size:0.5rem; text-align:center; line-height:1.2; font-family:'Cinzel',serif; font-weight:700; }
+.inv-slot .is { font-size:0.5rem; font-family:'Cinzel',serif; }
+
+.inv-slot.rarity-common  {border-color:#445;}
+.inv-slot.rarity-uncommon{border-color:#2e8b57;box-shadow:0 0 7px rgba(46,139,87,.2);}
+.inv-slot.rarity-rare    {border-color:#2060a0;box-shadow:0 0 7px rgba(32,96,160,.25);}
+.inv-slot.rarity-epic    {border-color:#6030a0;box-shadow:0 0 9px rgba(96,48,160,.3);}
+.inv-slot.rarity-legendary{border-color:var(--gold);animation:legPulse 2.5s infinite;}
+.inv-slot.rarity-mythic  {border-color:var(--red2);animation:mytPulse 2s infinite;}
+
+.inv-slot .in { color:#aaa; }
+.inv-slot.rarity-uncommon .in{color:#40c070;}
+.inv-slot.rarity-rare .in{color:#50a0e0;}
+.inv-slot.rarity-epic .in{color:#9060e0;}
+.inv-slot.rarity-legendary .in{color:var(--gold2);}
+.inv-slot.rarity-mythic .in{color:#f07070;}
+
+.inv-slot.equipped { border-color:var(--gold2); }
+.inv-slot .eq-badge {
+  position:absolute; top:2px; left:2px;
+  background:var(--gold); color:#000;
+  font-size:0.42rem; font-family:'Cinzel',serif;
+  border-radius:3px; padding:1px 3px;
+}
+
+.item-new-dot { position:absolute;top:3px;right:3px;width:6px;height:6px;background:#f39c12;border-radius:50%;animation:dotBlink 1s infinite; }
+
+/* ══ UPGRADES ══ */
+.upg-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(195px,1fr));
+  gap:8px;
+}
+
+.upg-card {
+  background:rgba(0,0,0,.3);
+  border:1px solid var(--border);
+  border-radius:10px; padding:12px;
+  cursor:pointer; transition:all .18s; position:relative; overflow:hidden;
+}
+
+.upg-card:hover { border-color:var(--gold); transform:translateY(-1px); }
+.upg-card.maxed { border-color:var(--purple); cursor:default; opacity:.75; }
+.upg-card.broke  { opacity:.45; cursor:default; }
+
+.upg-head { display:flex; align-items:center; gap:7px; margin-bottom:5px; }
+.upg-icon { font-size:1.3rem; }
+.upg-name { font-family:'Cinzel',serif; font-size:0.78rem; font-weight:700; color:var(--text); flex:1; }
+.upg-lv   { font-family:'Cinzel',serif; font-size:0.65rem; color:var(--text2); }
+.upg-desc { font-size:0.72rem; color:var(--text2); font-style:italic; margin-bottom:8px; line-height:1.4; }
+.upg-cost { font-family:'Cinzel',serif; font-size:0.7rem; color:var(--gold); display:flex; align-items:center; gap:4px; }
+.upg-bar  { height:3px; background:rgba(255,255,255,.05); border-radius:2px; margin-top:7px; overflow:hidden; }
+.upg-bar-fill { height:100%; background:linear-gradient(to right,var(--gold),var(--gold2)); border-radius:2px; transition:width .4s ease; }
+
+/* ══ SKILLS ══ */
+.skills-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(175px,1fr));
+  gap:8px;
+}
+
+.skill-card {
+  background:rgba(0,0,0,.3);
+  border:1px solid var(--border);
+  border-radius:10px; padding:12px;
+  cursor:pointer; transition:all .18s; position:relative;
+}
+
+.skill-card:hover:not(.locked) { border-color:var(--purple2); transform:translateY(-1px); }
+.skill-card.unlocked { border-color:var(--green); background:rgba(64,192,112,.05); }
+.skill-card.locked   { opacity:.4; cursor:not-allowed; }
+
+.sk-icon { font-size:1.8rem; text-align:center; margin-bottom:5px; }
+.sk-name { font-family:'Cinzel',serif; font-size:0.8rem; font-weight:700; color:var(--text); text-align:center; margin-bottom:4px; }
+.sk-desc { font-size:0.71rem; color:var(--text2); font-style:italic; text-align:center; line-height:1.4; margin-bottom:8px; }
+.sk-cost { font-family:'Cinzel',serif; font-size:0.7rem; text-align:center; }
+.sk-cost.can { color:var(--purple2); }
+.sk-cost.cannot { color:var(--text3); }
+.sk-cost.done { color:var(--green2); }
+.sk-req { font-size:0.65rem; color:var(--text3); text-align:center; margin-top:3px; font-style:italic; }
+
+/* ══ PETS ══ */
+.pets-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(155px,1fr));
+  gap:8px;
+}
+
+.pet-card {
+  background:rgba(0,0,0,.3);
+  border:1px solid var(--border);
+  border-radius:10px; padding:12px;
+  text-align:center; cursor:pointer; transition:all .2s;
+}
+
+.pet-card:hover  { border-color:var(--purple2); transform:translateY(-2px); }
+.pet-card.owned  { border-color:var(--green); }
+.pet-card.active { border-color:#f39c12; box-shadow:0 0 12px rgba(243,156,18,.25); }
+
+.pet-ico { font-size:2rem; margin-bottom:4px; animation:petBob 3s ease-in-out infinite; }
+@keyframes petBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.pet-nm  { font-family:'Cinzel',serif; font-size:0.78rem; font-weight:700; color:var(--text); }
+.pet-sk  { font-size:0.7rem; color:var(--text2); font-style:italic; margin:3px 0; }
+.pet-st  { font-family:'Cinzel',serif; font-size:0.68rem; margin-top:4px; }
+
+/* ══ ERA PAGE ══ */
+.era-timeline { display:flex; flex-direction:column; gap:8px; }
+
+.era-item {
+  display:flex; align-items:center; gap:12px;
+  background:rgba(0,0,0,.25); border:1px solid var(--border);
+  border-radius:10px; padding:12px;
+  transition:all .2s;
+}
+
+.era-item.current { border-color:var(--gold); background:rgba(201,162,39,.06); }
+.era-item.done    { border-color:var(--green); opacity:.7; }
+.era-item.future  { opacity:.4; }
+
+.era-dot { font-size:2rem; flex-shrink:0; width:48px; text-align:center; }
+.era-info { flex:1; }
+.era-nm { font-family:'Cinzel',serif; font-size:0.88rem; font-weight:700; color:var(--text); }
+.era-desc{ font-size:0.72rem; color:var(--text2); font-style:italic; margin-top:2px; }
+.era-lv  { font-family:'Cinzel',serif; font-size:0.68rem; color:var(--text3); margin-top:4px; }
+.era-status { font-family:'Cinzel',serif; font-size:0.7rem; }
+.era-status.cur { color:var(--gold2); }
+.era-status.done{ color:var(--green2); }
+.era-status.fut { color:var(--text3); }
+
+/* ══ LOG ══ */
+.log-box {
+  background:rgba(0,0,0,.3); border:1px solid var(--border);
+  border-radius:10px; padding:10px 12px;
+  height:100px; overflow-y:auto;
+  scrollbar-width:thin; scrollbar-color:var(--border) transparent;
+  margin-top:8px;
+}
+
+.log-e { font-size:0.72rem; color:var(--text2); padding:1px 0; line-height:1.55; border-bottom:1px solid rgba(255,255,255,.025); animation:logIn .3s ease; }
+.log-e.c { color:var(--red2); }
+.log-e.i { color:var(--gold); }
+.log-e.l { color:var(--green2); font-weight:700; }
+.log-e.n { color:#80b8f8; }
+.log-e.s { color:var(--purple2); }
+@keyframes logIn{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:translateX(0)}}
+
+/* ══ TOOLTIP ══ */
+.tt {
+  position:fixed; background:#120f1c; border:1px solid var(--border2);
+  border-radius:10px; padding:12px; font-size:0.78rem; max-width:215px;
+  z-index:2000; pointer-events:none; box-shadow:0 8px 28px rgba(0,0,0,.85); display:none;
+}
+.tt.show { display:block; }
+.tt-nm  { font-family:'Cinzel',serif; font-weight:700; font-size:0.86rem; }
+.tt-rar { font-size:0.68rem; font-style:italic; margin:2px 0 7px; }
+.tt-st  { color:var(--blue2); font-size:0.76rem; }
+.tt-dsc { color:var(--text2); font-style:italic; margin-top:6px; font-size:0.72rem; }
+.tt-eq  { color:var(--green2); font-size:0.7rem; margin-top:5px; font-family:'Cinzel',serif; }
+
+/* ══ IDLE POPUP ══ */
+.idle-overlay {
+  position:fixed; inset:0; z-index:500;
+  background:rgba(0,0,0,.82);
+  display:flex; align-items:center; justify-content:center;
+}
+.idle-overlay.hidden { display:none; }
+.idle-box {
+  background:var(--panel); border:2px solid var(--gold);
+  border-radius:16px; padding:28px 30px; text-align:center;
+  max-width:340px; width:90%;
+  box-shadow:0 0 50px rgba(201,162,39,.25);
+}
+.idle-box h2 { font-family:'Cinzel',serif; font-size:1.3rem; color:var(--gold2); margin-bottom:6px; }
+.idle-box p  { color:var(--text2); font-size:0.88rem; }
+.idle-rows { margin:14px 0; display:flex; flex-direction:column; gap:6px; }
+.idle-row {
+  display:flex; justify-content:space-between; align-items:center;
+  background:rgba(0,0,0,.3); border:1px solid var(--border);
+  border-radius:7px; padding:6px 12px; font-size:0.84rem;
+}
+.idle-row span:last-child { font-family:'Cinzel',serif; font-weight:700; color:var(--gold2); }
+.collect-btn {
+  margin-top:12px; padding:10px 26px;
+  background:linear-gradient(135deg,#2a1808,var(--gold));
+  border:1px solid var(--gold2); border-radius:9px;
+  font-family:'Cinzel',serif; font-size:0.88rem; font-weight:700;
+  color:#0a0808; cursor:pointer; transition:all .2s; letter-spacing:.05em;
+}
+.collect-btn:hover { transform:scale(1.04); box-shadow:0 0 20px rgba(201,162,39,.4); }
+
+/* ══ ERA TRANSITION ══ */
+.era-trans {
+  position:fixed; inset:0; z-index:600;
+  background:radial-gradient(ellipse at center,rgba(201,162,39,.85) 0%,rgba(7,5,10,.96) 65%);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  pointer-events:none; transition:opacity .5s;
+}
+.era-trans h2 { font-family:'Cinzel',serif; font-size:2.2rem; color:var(--gold2); text-shadow:0 0 40px rgba(240,204,85,.8); }
+.era-trans p  { color:var(--text); font-size:1rem; margin-top:8px; font-style:italic; }
+
+::-webkit-scrollbar{width:3px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+
+/* ══ HERO SVG FIGURE ══ */
+@keyframes heroBob {
+  0%,100% { transform: translateY(0px); }
+  50%      { transform: translateY(-5px); }
+}
+@keyframes swordSwing {
+  0%,100% { transform: rotate(-10deg); }
+  50%      { transform: rotate(12deg); }
+}
+@keyframes eyePulse {
+  0%,100% { opacity:0.9; }
+  50%      { opacity:0.3; }
+}
+#eyeGlowL, #eyeGlowR { animation: eyePulse 2.4s ease-in-out infinite; }
+
+/* ══ ACTION BUTTONS ══ */
+.action-btn {
+  width:100%; padding:10px 14px;
+  border-radius:10px; border:1px solid var(--border2);
+  background:var(--panel2); color:var(--text);
+  font-family:'Cinzel',serif; font-size:0.8rem; font-weight:700;
+  cursor:pointer; transition:all .2s; text-align:left;
+  letter-spacing:0.04em; line-height:1.3;
+}
+.action-btn:hover { transform:translateY(-1px); }
+.action-btn.green { border-color:var(--green2); color:var(--green2); }
+.action-btn.green:hover { background:rgba(64,192,112,.1); box-shadow:0 0 12px rgba(64,192,112,.2); }
+.action-btn.blue  { border-color:var(--blue2); color:var(--blue2); }
+.action-btn.blue:hover  { background:rgba(80,160,224,.1); box-shadow:0 0 12px rgba(80,160,224,.2); }
+.action-btn.gold  { border-color:var(--gold); color:var(--gold2); }
+.action-btn.gold:hover  { background:rgba(201,162,39,.1); box-shadow:0 0 12px rgba(201,162,39,.2); }
+
+/* ══ SELL RARITY BUTTONS ══ */
+.sell-rar-btn {
+  padding:7px 14px; border-radius:8px;
+  border:2px solid transparent;
+  background:rgba(0,0,0,.35);
+  font-family:'Cinzel',serif; font-size:0.72rem; font-weight:700;
+  cursor:pointer; transition:all .2s;
+  display:flex; flex-direction:column; align-items:center; gap:2px;
+  min-width:80px;
+}
+.sell-rar-btn .sr-count { font-size:0.65rem; opacity:.7; font-weight:400; }
+.sell-rar-btn.selected { box-shadow:0 0 12px currentColor; }
+
+/* ══ FORGED VIEW TOGGLE ══ */
+#btnShowRecent.active, #btnShowAll.active {
+  border-color:var(--gold2); color:var(--gold2); background:rgba(201,162,39,.1);
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="game-header">
+  <div class="header-top">
+    <div class="game-title">⚔️ SWORDMASTER</div>
+    <div class="header-stats">
+      <div class="hstat">❤️ <b id="hHp">100</b>/<b id="hMaxHp">100</b></div>
+      <div class="hstat">💰 <b id="hGold">0</b></div>
+      <div class="hstat">⭐ Lv<b id="hLv">1</b></div>
+      <div class="hstat">💀 <b id="hKills">0</b></div>
+      <div class="hstat" id="saveStatus" style="color:var(--text2);font-size:0.65rem;">💾 —</div>
+    </div>
+  </div>
+  <div class="era-bar">
+    <div class="era-label" id="eraLabel">🪨 Steinzeit</div>
+    <div class="era-track"><div class="era-track-fill" id="eraFill" style="width:0%"></div></div>
+    <div class="era-next" id="eraNext"></div>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="nav-tabs">
+  <div class="nav-tab active" onclick="switchTab('arena')" id="tab-arena">
+    <div class="tab-icon">⚔️</div>Arena & Held
+  </div>
+  <div class="nav-tab" onclick="switchTab('forge')" id="tab-forge">
+    <div class="tab-icon">🔨</div>Schmiede
+  </div>
+  <div class="nav-tab" onclick="switchTab('skills')" id="tab-skills">
+    <div class="tab-icon">✨</div>Fähigkeiten
+  </div>
+  <div class="nav-tab" onclick="switchTab('pets')" id="tab-pets">
+    <div class="tab-icon">🐾</div>Haustiere
+  </div>
+  <div class="nav-tab" onclick="switchTab('ages')" id="tab-ages">
+    <div class="tab-icon">🌅</div>Zeitalter
+  </div>
+</div>
+
+<!-- ═══ ARENA + HELD PAGE (combined, side by side) ═══ -->
+<div class="page active" id="page-arena">
+  <div style="display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap;">
+
+    <!-- LEFT: Held / Charakter -->
+    <div style="display:flex;flex-direction:column;gap:10px;flex:1;min-width:260px;">
+
+      <!-- Charakter Card -->
+      <div class="card">
+        <div class="sec-title">🧙 Held</div>
+        <div class="hero-panel">
+          <div class="hero-avatar" id="heroAvatarBig" style="background:none;border:none;width:80px;height:90px;overflow:visible;">
+            <svg id="heroFigureSVG" viewBox="0 0 60 90" width="80" height="90" xmlns="http://www.w3.org/2000/svg" style="filter:drop-shadow(0 4px 12px rgba(0,0,0,0.7));">
+              <g id="heroBodyGroup" style="animation:heroBob 1.8s ease-in-out infinite;">
+                <ellipse cx="30" cy="84" rx="13" ry="3.5" fill="rgba(0,0,0,0.35)"/>
+                <path id="heroCape" d="M22,30 Q16,50 18,70 Q22,72 26,70 Q24,50 26,30Z" fill="#555" opacity="0.85"/>
+                <rect id="heroLegL" x="22" y="60" width="7" height="18" rx="3" fill="#444"/>
+                <rect id="heroLegR" x="31" y="60" width="7" height="18" rx="3" fill="#444"/>
+                <rect id="heroBootL" x="21" y="72" width="9" height="8" rx="2" fill="#333"/>
+                <rect id="heroBootR" x="30" y="72" width="9" height="8" rx="2" fill="#333"/>
+                <rect id="heroChest" x="20" y="28" width="20" height="24" rx="4" fill="#666"/>
+                <line x1="30" y1="30" x2="30" y2="50" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+                <line x1="21" y1="38" x2="39" y2="38" stroke="rgba(255,255,255,0.1)" stroke-width="0.8"/>
+                <ellipse id="heroShoulderL" cx="18" cy="30" rx="5" ry="4" fill="#777"/>
+                <ellipse id="heroShoulderR" cx="42" cy="30" rx="5" ry="4" fill="#777"/>
+                <rect id="heroArmL" x="13" y="30" width="6" height="16" rx="3" fill="#555"/>
+                <path id="heroShield" d="M8,32 Q5,38 8,46 Q10,50 13,48 Q16,46 13,38 Q12,34 8,32Z" fill="#777" stroke="rgba(255,255,255,0.2)" stroke-width="0.8"/>
+                <line x1="10.5" y1="33" x2="10.5" y2="47" stroke="rgba(255,255,255,0.25)" stroke-width="1"/>
+                <line x1="8" y1="40" x2="13" y2="40" stroke="rgba(255,255,255,0.2)" stroke-width="0.8"/>
+                <g id="heroSwordArm" style="transform-origin:41px 30px;animation:swordSwing 1.8s ease-in-out infinite;">
+                  <rect id="heroArmR" x="38" y="29" width="6" height="16" rx="3" fill="#555"/>
+                  <rect x="40" y="14" width="3" height="6" rx="1" fill="#8B6914"/>
+                  <rect x="36" y="19" width="11" height="2.5" rx="1" fill="#bbb"/>
+                  <path id="heroSwordBlade" d="M40.5,8 L42,20 L41,20 Z" fill="#e0e8ff" stroke="rgba(255,255,255,0.5)" stroke-width="0.4"/>
+                  <path d="M41,9 L41.5,18" stroke="rgba(255,255,255,0.7)" stroke-width="0.5"/>
+                </g>
+                <rect x="20" y="50" width="20" height="3" rx="1" fill="#444"/>
+                <rect x="28" y="49" width="4" height="4" rx="1" fill="#888"/>
+                <rect x="27" y="22" width="6" height="7" rx="2" fill="#c8a882"/>
+                <ellipse id="heroHead" cx="30" cy="17" rx="9" ry="10" fill="#c8a882"/>
+                <path id="heroHelmet" d="M21,16 Q21,6 30,5 Q39,6 39,16 Q36,14 30,13 Q24,14 21,16Z" fill="#666"/>
+                <path d="M22,16 Q26,18 30,18 Q34,18 38,16" stroke="rgba(0,0,0,0.3)" stroke-width="0.8" fill="none"/>
+                <rect id="heroHelmetL" x="21" y="14" width="3" height="5" rx="1" fill="#666"/>
+                <rect id="heroHelmetR" x="36" y="14" width="3" height="5" rx="1" fill="#666"/>
+                <ellipse cx="26" cy="17" rx="2.2" ry="2" fill="#1a1a2e"/>
+                <ellipse cx="34" cy="17" rx="2.2" ry="2" fill="#1a1a2e"/>
+                <ellipse id="eyeGlowL" cx="26" cy="17" rx="1.1" ry="1" fill="#4af" opacity="0.9"/>
+                <ellipse id="eyeGlowR" cx="34" cy="17" rx="1.1" ry="1" fill="#4af" opacity="0.9"/>
+              </g>
+            </svg>
+          </div>
+          <div class="hero-data">
+            <div class="hero-name-row">
+              <div class="hero-name">Klar</div>
+              <div class="lvl-badge" id="lvlBadge">LVL 1</div>
+            </div>
+            <div class="bars">
+              <div>
+                <div class="bar-label"><span>❤️ HP</span><span id="hpTxt">100/100</span></div>
+                <div class="bar"><div class="bar-fill hp-fill" id="hpBar" style="width:100%"></div></div>
+              </div>
+              <div>
+                <div class="bar-label"><span>⭐ XP</span><span id="xpTxt">0/50</span></div>
+                <div class="bar"><div class="bar-fill xp-fill" id="xpBar" style="width:0%"></div></div>
+              </div>
+              <div>
+                <div class="bar-label"><span>💧 Mana</span><span id="manaTxt">50/50</span></div>
+                <div class="bar"><div class="bar-fill mana-fill" id="manaBar" style="width:100%"></div></div>
+              </div>
+            </div>
+            <div class="stat-pills" id="statPills">
+              <div class="pill">⚔️ ATK <b id="pAtk">5</b></div>
+              <div class="pill">🛡️ DEF <b id="pDef">2</b></div>
+              <div class="pill">⚡ SPD <b id="pSpd">1.0</b>s</div>
+              <div class="pill">🔥 CRIT <b id="pCrit">5</b>%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Equipment Card -->
+      <div class="card">
+        <div class="sec-title">🗡️ Ausrüstung</div>
+        <div style="font-size:0.7rem;color:var(--text2);font-style:italic;margin-bottom:8px;">Klicke Item im Inventar zum Ausrüsten.</div>
+        <div class="equip-grid" id="equipGrid"></div>
+        <div style="margin-top:8px;" id="equipBonus"></div>
+      </div>
+
+      <!-- Inventory Card -->
+      <div class="card">
+        <div class="sec-title">🎒 Inventar</div>
+        <div class="inv-grid" id="invGrid">
+          <div style="color:var(--text2);font-size:0.78rem;font-style:italic;grid-column:1/-1;padding:10px;text-align:center;">Noch leer — geh schmieden!</div>
+        </div>
+      </div>
+
+      <!-- Upgrades Card -->
+      <div class="card">
+        <div class="sec-title">⬆️ Amboss-Upgrades</div>
+        <div class="upg-grid" id="upgGrid"></div>
+      </div>
+
+    </div><!-- end LEFT -->
+
+    <!-- RIGHT: Arena -->
+    <div style="display:flex;flex-direction:column;gap:10px;flex:1;min-width:260px;">
+      <div class="card" style="position:relative;">
+        <div class="arena-bg"></div>
+        <div class="arena-header">
+          <div class="arena-zone">🗺️ Zone: <span id="zoneName">Dunkler Wald</span></div>
+          <div class="wave-chip" id="waveChip">Welle 1</div>
+        </div>
+        <div class="combatants">
+          <div class="fighter" id="heroFighter">
+            <div class="fighter-sprite" id="heroSprite">🧙</div>
+            <div class="fighter-name" id="arenaHeroName">Klar</div>
+            <div class="fighter-hp" id="arenaHeroHp">100/100</div>
+          </div>
+          <div class="vs-divider">VS</div>
+          <div class="fighter" id="monFighter">
+            <div class="fighter-sprite mon-float" id="monSprite">❓</div>
+            <div class="fighter-name" id="monName">...</div>
+            <div class="fighter-hp" id="monHpTxt">?/?</div>
+          </div>
+        </div>
+        <div style="margin-top:8px;">
+          <div class="bar-label"><span id="monHpLbl">Monster HP</span></div>
+          <div class="bar" style="height:12px;"><div class="bar-fill hp-fill" id="monHpBar" style="width:100%"></div></div>
+        </div>
+        <div class="pets-row" id="arenaActivePets"></div>
+        <div class="log-box" id="gameLog">
+          <div class="log-e n">⚔️ Willkommen bei SwordMaster! Viel Erfolg, Krieger!</div>
+        </div>
+      </div>
+    </div><!-- end RIGHT -->
+
+  </div>
+</div>
+
+<!-- ═══ HERO PAGE (redirect to arena) ═══ -->
+<div class="page" id="page-hero" style="display:none!important;"></div>
+
+<!-- ═══ FORGE PAGE ═══ -->
+<div class="page" id="page-forge">
+  <!-- Top row: Forge left, action buttons right -->
+  <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-start;">
+
+    <!-- Forge Card -->
+    <div class="card" style="flex:1;min-width:220px;">
+      <div class="sec-title">🔨 Schmiede</div>
+      <div class="forge-center">
+        <button class="big-forge-btn" id="forgeBtn" onclick="forge()">
+          🔨<div class="fl">SCHMIEDEN</div>
+        </button>
+        <div class="forge-controls">
+          <button class="ctrl-btn" id="autoBtn" onclick="toggleAuto()">
+            <div class="dot" id="autoDot"></div>Auto-Schmied
+          </button>
+          <button class="ctrl-btn" onclick="forgeX5()">⚡ ×5</button>
+        </div>
+        <div style="text-align:center;">
+          <div style="font-family:'Cinzel',serif;font-size:1rem;color:var(--gold2);">💰 <span id="fGold">0</span> Gold</div>
+          <div style="font-size:0.72rem;color:var(--text2);margin-top:4px;" id="fItems">Items: 0</div>
+          <div style="font-size:0.7rem;color:var(--text2);font-style:italic;margin-top:2px;" id="fAutoSpeed"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Buttons Card (right side) -->
+    <div class="card" style="flex:1;min-width:200px;">
+      <div class="sec-title">⚡ Aktionen</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <button class="action-btn green" onclick="autoEquipBest()">
+          🗡️ Auto-Ausrüsten
+          <span style="font-size:0.65rem;display:block;font-weight:400;opacity:0.8;margin-top:2px;">Bestes Item je Slot anlegen</span>
+        </button>
+        <button class="action-btn blue" onclick="openSellManager()">
+          💰 Verkaufs-Manager
+          <span style="font-size:0.65rem;display:block;font-weight:400;opacity:0.8;margin-top:2px;">Items nach Seltenheit verkaufen</span>
+        </button>
+        <button class="action-btn gold" onclick="showAllForged()">
+          📦 Alle geschmiedeten Items
+          <span style="font-size:0.65rem;display:block;font-weight:400;opacity:0.8;margin-top:2px;">Gesamtes Inventar anzeigen</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- All Forged Items -->
+  <div class="card" id="forgedPanel">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+      <div class="sec-title" style="margin-bottom:0;">🎁 <span id="forgedPanelTitle">Alle geschmiedeten Items</span></div>
+      <div style="font-size:0.7rem;color:var(--text2);font-style:italic;" id="forgedCount">0 Items</div>
+    </div>
+    <div class="inv-grid" id="forgedGrid">
+      <div style="color:var(--text2);font-size:0.8rem;font-style:italic;grid-column:1/-1;padding:10px;text-align:center;">Noch nichts geschmiedet.</div>
+    </div>
+  </div>
+
+  <!-- Upgrades compact -->
+  <div class="card">
+    <div class="sec-title">⬆️ Upgrades</div>
+    <div class="upg-grid" id="upgGrid2"></div>
+  </div>
+</div>
+
+<!-- ═══ SELL MANAGER OVERLAY ═══ -->
+<div class="idle-overlay hidden" id="sellOverlay">
+  <div class="idle-box" style="max-width:500px;width:95%;">
+    <h2 style="margin-bottom:6px;">💰 Verkaufs-Manager</h2>
+    <p style="color:var(--text2);font-size:0.82rem;margin-bottom:14px;">Wähle Seltenheiten aus — alle nicht ausgerüsteten Items dieser Seltenheit werden verkauft.</p>
+
+    <!-- Rarity filter buttons -->
+    <div id="sellRarityBtns" style="display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin-bottom:14px;"></div>
+
+    <!-- Summary -->
+    <div id="sellSummary" style="background:rgba(0,0,0,.3);border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-bottom:14px;">
+      <div style="font-family:'Cinzel',serif;font-size:0.78rem;color:var(--text2);margin-bottom:6px;">Ausgewählte Items:</div>
+      <div id="sellSummaryRows" style="display:flex;flex-direction:column;gap:4px;"></div>
+      <div style="border-top:1px solid var(--border);margin-top:8px;padding-top:8px;display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-family:'Cinzel',serif;font-size:0.8rem;color:var(--text2);">Gesamt</span>
+        <span style="font-family:'Cinzel',serif;font-size:1rem;color:var(--gold2);">💰 <span id="sellTotalGold">0</span> Gold</span>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+      <button class="collect-btn" style="background:linear-gradient(135deg,#0a1a08,#27ae60);border-color:#40c070;color:#fff;" onclick="executeSell()">✅ Jetzt verkaufen</button>
+      <button class="collect-btn" style="background:rgba(0,0,0,.4);border-color:var(--border2);color:var(--text2);" onclick="closeSellManager()">❌ Abbrechen</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SKILLS PAGE ═══ -->
+<div class="page" id="page-skills">
+  <div class="card">
+    <div class="sec-title">✨ Fähigkeiten — Forschungsbaum</div>
+    <div style="font-size:0.72rem;color:var(--text2);font-style:italic;margin-bottom:12px;">
+      Erforsche mächtige Fähigkeiten mit Gold. Manche Fähigkeiten erfordern Vorgänger.
+    </div>
+    <div class="skills-grid" id="skillsGrid"></div>
+  </div>
+</div>
+
+<!-- ═══ PETS PAGE ═══ -->
+<div class="page" id="page-pets">
+  <div class="card">
+    <div class="sec-title">🐾 Haustiere</div>
+    <div style="font-size:0.72rem;color:var(--text2);font-style:italic;margin-bottom:12px;">
+      Haustiere kämpfen automatisch mit dir. Klicke ein gekauftes Tier zum Aktivieren/Deaktivieren.
+    </div>
+    <div class="pets-grid" id="petsGrid"></div>
+  </div>
+</div>
+
+<!-- ═══ AGES PAGE ═══ -->
+<div class="page" id="page-ages">
+  <div class="card">
+    <div class="sec-title">🌅 Zeitalter der Geschichte</div>
+    <div style="font-size:0.72rem;color:var(--text2);font-style:italic;margin-bottom:12px;">
+      Erreiche neue Level um in ein neues Zeitalter aufzusteigen. Jedes Zeitalter schaltet neue Monster und Items frei.
+    </div>
+    <div class="era-timeline" id="eraTimeline"></div>
+  </div>
+</div>
+
+<!-- IDLE POPUP -->
+<div class="idle-overlay hidden" id="idleOverlay">
+  <div class="idle-box">
+    <h2>⏳ Willkommen zurück!</h2>
+    <p id="idleTimeTxt">Du warst weg.</p>
+    <div class="idle-rows" id="idleRewards"></div>
+    <button class="collect-btn" onclick="collectIdle()">✨ Einsammeln</button>
+  </div>
+</div>
+
+<!-- TOOLTIP -->
+<div class="tt" id="tt">
+  <div class="tt-nm" id="ttN"></div>
+  <div class="tt-rar" id="ttR"></div>
+  <div class="tt-st" id="ttS"></div>
+  <div class="tt-dsc" id="ttD"></div>
+  <div class="tt-eq" id="ttE"></div>
+</div>
+
+<script>
+// ════════════════════════════════════════════
+// ── DATA ────────────────────────────────────
+// ════════════════════════════════════════════
+
+const ERAS = [
+  { name:'Steinzeit',        emoji:'🪨', minLv:1,   desc:'Die Welt ist roh und ungeformt. Erste Waffen aus Stein.',   color:'#a0896a' },
+  { name:'Bronzezeit',       emoji:'🥉', minLv:10,  desc:'Metall wird entdeckt. Krieger schmieden Bronze-Klingen.',   color:'#cd7f32' },
+  { name:'Mittelalter',      emoji:'🏰', minLv:20,  desc:'Burgen und Drachen. Das goldene Zeitalter des Stahls.',     color:'#8b7355' },
+  { name:'Renaissance',      emoji:'🎭', minLv:35,  desc:'Alchemie und Magie florieren. Runen-Waffen entstehen.',     color:'#d4af37' },
+  { name:'Industriezeit',    emoji:'⚙️', minLv:50,  desc:'Dampf und Stahl. Mechanische Verstärkungen für Kämpfer.',  color:'#708090' },
+  { name:'Neuzeit',          emoji:'🌍', minLv:65,  desc:'Technologie trifft Magie. Energie-Klingen leuchten.',      color:'#4a90d9' },
+  { name:'Raumfahrt',        emoji:'🚀', minLv:80,  desc:'Die Sterne rufen. Plasma-Schwerter und Nano-Rüstungen.',   color:'#1a1a3e' },
+  { name:'Quantenzeitalter', emoji:'⚛️', minLv:100, desc:'Realität selbst als Waffe. Jenseits aller Verständnis.',  color:'#00d4ff' },
+];
+
+const ZONES = [
+  { name:'Dunkler Wald',   emoji:'🌲', minLv:1  },
+  { name:'Nebelsümpfe',    emoji:'🌫️', minLv:10 },
+  { name:'Steinruinen',    emoji:'🏚️', minLv:20 },
+  { name:'Vulkankrater',   emoji:'🌋', minLv:35 },
+  { name:'Schattenburg',   emoji:'🏰', minLv:50 },
+  { name:'Himmelsturm',    emoji:'⛰️', minLv:65 },
+  { name:'Sternennebel',   emoji:'🌌', minLv:80 },
+  { name:'Quantenrift',    emoji:'⚛️', minLv:100},
+];
+
+const MONSTERS = [
+  { name:'Waldwolf',      emoji:'🐺', hpM:1,   atkM:1,   xp:8,   gold:3  },
+  { name:'Steingolem',    emoji:'🗿', hpM:2.2, atkM:0.7, xp:15,  gold:6  },
+  { name:'Feuerdämon',    emoji:'👹', hpM:1.4, atkM:1.6, xp:22,  gold:11 },
+  { name:'Eistroll',      emoji:'🧌', hpM:2.8, atkM:0.9, xp:20,  gold:9  },
+  { name:'Todesritter',   emoji:'💀', hpM:2,   atkM:2,   xp:32,  gold:16 },
+  { name:'Schattenwyrm',  emoji:'🐉', hpM:3.2, atkM:2.2, xp:55,  gold:28 },
+  { name:'Höllenfürst',   emoji:'😈', hpM:4,   atkM:2.8, xp:85,  gold:45 },
+  { name:'Uralter Lich',  emoji:'🧟', hpM:5,   atkM:3.2, xp:130, gold:65 },
+  { name:'Quantengeist',  emoji:'👾', hpM:6.5, atkM:3.8, xp:200, gold:100},
+];
+
+const RARITIES = [
+  { id:'common',    label:'Gewöhnlich',   col:'#888',   weight:400 },
+  { id:'uncommon',  label:'Ungewöhnlich', col:'#40c070',weight:240 },
+  { id:'rare',      label:'Selten',       col:'#50a0e0',weight:140 },
+  { id:'epic',      label:'Episch',       col:'#9060e0',weight:75  },
+  { id:'legendary', label:'Legendär',     col:'#c9a227',weight:30  },
+  { id:'mythic',    label:'Mystisch',     col:'#f07070',weight:8   },
+];
+
+// ITEM SLOTS: weapon, helmet, chest, gloves, boots, ring
+const ITEM_DEFS = [
+  { name:'Holzknüppel',     emoji:'🪵', slot:'weapon', sk:'atk', sv:2,   desc:'Primitiv, aber schmerzhaft.' },
+  { name:'Lederkappe',      emoji:'🎓', slot:'helmet', sk:'def', sv:1,   desc:'Minimal Schutz.' },
+  { name:'Lederhemd',       emoji:'🧥', slot:'chest',  sk:'def', sv:2,   desc:'Schützt den Torso.' },
+  { name:'Faustlinge',      emoji:'🧤', slot:'gloves', sk:'atk', sv:1,   desc:'Erhöht Griffstärke.' },
+  { name:'Lederstiefel',    emoji:'👢', slot:'boots',  sk:'spd', sv:0.05,desc:'Leichtere Schritte.' },
+  { name:'Eisenring',       emoji:'💍', slot:'ring',   sk:'crit',sv:2,   desc:'Ein alter Ring.' },
+  { name:'Eisenschwert',    emoji:'⚔️', slot:'weapon', sk:'atk', sv:5,   desc:'Solide Klinge.' },
+  { name:'Kettenhemd',      emoji:'🛡️', slot:'chest',  sk:'def', sv:5,   desc:'Guter Schutz.' },
+  { name:'Eisenhelm',       emoji:'⛑️', slot:'helmet', sk:'def', sv:3,   desc:'Schützt den Kopf.' },
+  { name:'Feuerhandschuh',  emoji:'🔥', slot:'gloves', sk:'atk', sv:4,   desc:'Brennende Kraft.' },
+  { name:'Windstiefel',     emoji:'💨', slot:'boots',  sk:'spd', sv:0.1, desc:'Schnell wie Wind.' },
+  { name:'Runenring',       emoji:'🔮', slot:'ring',   sk:'crit',sv:5,   desc:'Magische Präzision.' },
+  { name:'Runenschwert',    emoji:'🗡️', slot:'weapon', sk:'atk', sv:12,  desc:'Mit Runen graviert.' },
+  { name:'Drachenpanzer',   emoji:'🦎', slot:'chest',  sk:'def', sv:10,  desc:'Unzerstörbar.' },
+  { name:'Drachenhelm',     emoji:'🐲', slot:'helmet', sk:'def', sv:8,   desc:'Kaum zu zerbrechen.' },
+  { name:'Titanfaust',      emoji:'🤜', slot:'gloves', sk:'atk', sv:9,   desc:'Titanverstärkt.' },
+  { name:'Geisterstiefel',  emoji:'👻', slot:'boots',  sk:'spd', sv:0.18,desc:'Unsichtbar bewegen.' },
+  { name:'Seelenstein',     emoji:'💎', slot:'ring',   sk:'crit',sv:10,  desc:'Trifft immer.' },
+  { name:'Götterschwerter', emoji:'⚡', slot:'weapon', sk:'atk', sv:25,  desc:'Geformt von Göttern.' },
+  { name:'Gottesrüstung',   emoji:'✨', slot:'chest',  sk:'def', sv:20,  desc:'Göttlicher Schutz.' },
+  { name:'Engelhelm',       emoji:'🪽', slot:'helmet', sk:'def', sv:15,  desc:'Aus Engelknochen.' },
+  { name:'Seelenzerstörer', emoji:'💫', slot:'weapon', sk:'atk', sv:40,  desc:'Vernichtet Seelen.' },
+  { name:'Ewigkeitsring',   emoji:'♾️', slot:'ring',   sk:'crit',sv:15,  desc:'Existiert ewig.' },
+];
+
+const UPGRADES = [
+  { id:'forge_spd',  icon:'⚡', name:'Schmiedespeed',    desc:'+50% Auto-Schmied-Speed',    maxLv:5,  baseCost:50,  cm:2.5, eff:'forgeSpd' },
+  { id:'item_qual',  icon:'💎', name:'Qualitätshammer',  desc:'+15% Seltenheits-Chance',    maxLv:5,  baseCost:80,  cm:2.8, eff:'itemQual' },
+  { id:'gold_mult',  icon:'💰', name:'Goldgier',         desc:'+25% Gold je Kill',          maxLv:5,  baseCost:60,  cm:2.2, eff:'goldMult' },
+  { id:'atk_up',     icon:'⚔️', name:'Waffenschmied',    desc:'+6 Angriff permanent',       maxLv:10, baseCost:90,  cm:1.9, eff:'atkUp'   },
+  { id:'def_up',     icon:'🛡️', name:'Rüstungsmeister',  desc:'+4 Verteidigung permanent',  maxLv:10, baseCost:75,  cm:1.8, eff:'defUp'   },
+  { id:'hp_up',      icon:'❤️', name:'Lebensessenz',     desc:'+35 Max-HP permanent',       maxLv:10, baseCost:70,  cm:1.7, eff:'hpUp'    },
+  { id:'drop_rate',  icon:'🎁', name:'Glückshand',       desc:'+8% Item-Dropchance',        maxLv:5,  baseCost:120, cm:3,   eff:'dropRate'},
+  { id:'idle_mul',   icon:'⏳', name:'Fleißige Werkstatt',desc:'+60% Offline-Belohnungen', maxLv:3,  baseCost:200, cm:4,   eff:'idleMul' },
+];
+
+const SKILLS = [
+  { id:'double_strike', icon:'⚔️', name:'Doppelschlag',      desc:'5% Chance: greife zweimal an.',           cost:150,  req:null,           eff:'doubleStrike' },
+  { id:'blood_rage',    icon:'🩸', name:'Blutraserei',        desc:'+20% ATK wenn HP < 40%.',                cost:250,  req:'double_strike', eff:'bloodRage'    },
+  { id:'iron_skin',     icon:'🪨', name:'Eisenhaut',          desc:'Nimm 15% weniger Schaden.',               cost:200,  req:null,           eff:'ironSkin'     },
+  { id:'fortress',      icon:'🏰', name:'Festung',            desc:'+30% DEF permanent.',                    cost:400,  req:'iron_skin',     eff:'fortress'     },
+  { id:'gold_sense',    icon:'👁️', name:'Goldgespür',         desc:'+35% Gold von Monstern.',                cost:180,  req:null,           eff:'goldSense'    },
+  { id:'treasure_hunt', icon:'🗺️', name:'Schatzsuche',        desc:'Items droppen 20% öfter.',               cost:300,  req:'gold_sense',    eff:'treasureHunt' },
+  { id:'forge_mastery', icon:'🔨', name:'Schmiedemeisterschaft',desc:'Jedes 10. Item ist mindestens Selten.',cost:350,  req:null,           eff:'forgeMastery' },
+  { id:'arcane_power',  icon:'🔮', name:'Arkane Macht',       desc:'+10% Crit-Chance permanent.',            cost:500,  req:'double_strike', eff:'arcanePower'  },
+  { id:'vampirism',     icon:'🧛', name:'Vampirismus',        desc:'Heile 8% deines Schadens als HP.',       cost:600,  req:'blood_rage',    eff:'vampirism'    },
+  { id:'war_cry',       icon:'📯', name:'Kriegsruf',          desc:'Pets machen +40% Schaden.',              cost:450,  req:null,           eff:'warCry'       },
+  { id:'time_warp',     icon:'⌛', name:'Zeitverzerrung',     desc:'Angriffsgeschwindigkeit +20%.',          cost:700,  req:'arcane_power',  eff:'timeWarp'     },
+  { id:'god_mode',      icon:'⚡', name:'Gottesmodus',        desc:'Alle Stats +15% permanent.',             cost:2000, req:'time_warp',     eff:'godMode'      },
+];
+
+const PETS = [
+  { id:'wolf',    name:'Eisteufel',   emoji:'🐺', skill:'30% ATK als Petschaden', atkPct:0.30,defBonus:0, special:'',     cost:100 },
+  { id:'eagle',   name:'Sturmadler',  emoji:'🦅', skill:'+15% Angriffsgeschwind.',atkPct:0,   defBonus:0, special:'spd',  cost:200 },
+  { id:'cat',     name:'Schutzkatze', emoji:'🐱', skill:'+20% mehr DEF',          atkPct:0,   defBonus:0, special:'def',  cost:150 },
+  { id:'dragon',  name:'Feuerdrache', emoji:'🐲', skill:'60% ATK als Petschaden', atkPct:0.60,defBonus:0, special:'',     cost:500 },
+  { id:'phoenix', name:'Phönix',      emoji:'🦜', skill:'Heilt 5% HP nach Kill',  atkPct:0,   defBonus:0, special:'heal', cost:350 },
+  { id:'fairy',   name:'Glücksfee',   emoji:'🧚', skill:'+20% Gold & XP',         atkPct:0,   defBonus:0, special:'luck', cost:600 },
+  { id:'golem',   name:'Minigolem',   emoji:'🗿', skill:'100% ATK als Petschaden',atkPct:1.0, defBonus:0, special:'',     cost:1000},
+  { id:'void',    name:'Leeregeist',  emoji:'👻', skill:'150% ATK als Petschaden',atkPct:1.5, defBonus:0, special:'',     cost:2500},
+];
+
+// ════════════════════════════════════════════
+// ── STATE ───────────────────────────────────
+// ════════════════════════════════════════════
+
+const G = {
+  hero: { level:1, xp:0, hp:100, maxHp:100, mana:50, maxMana:50, baseAtk:5, baseDef:2, spd:1.0, baseCrit:5, gold:0 },
+  wave:1, monstersInWave:0, monstersPerWave:3,
+  monster:null,
+  autoForge:false, autoInterval:null,
+  inventory:[],
+  recentForged:[],
+  equipped:{weapon:null,helmet:null,chest:null,gloves:null,boots:null,ring:null},
+  upgrades:{},
+  skills:new Set(),
+  pets:{},
+  activePets:new Set(),
+  kills:0,
+  eraIdx:0,
+  forgeCount:0,
+  combatInterval:null,
+};
+
+// Computed stats (base + equipment + upgrades + skills)
+function getStats() {
+  const h = G.hero;
+  let atk = h.baseAtk, def = h.baseDef, spd = h.spd, crit = h.baseCrit;
+
+  // Equipment bonuses
+  for (const item of Object.values(G.equipped)) {
+    if (!item) continue;
+    if (item.sk === 'atk')  atk  += item.sv;
+    if (item.sk === 'def')  def  += item.sv;
+    if (item.sk === 'spd')  spd  -= item.sv;
+    if (item.sk === 'crit') crit += item.sv;
+  }
+
+  // Skill bonuses
+  if (G.skills.has('fortress'))    def  = Math.floor(def*1.3);
+  if (G.skills.has('arcane_power'))crit += 10;
+  if (G.skills.has('god_mode'))    { atk=Math.floor(atk*1.15); def=Math.floor(def*1.15); }
+  if (G.skills.has('time_warp'))   spd  = Math.max(0.25, spd*0.8);
+
+  // Pet spd bonus
+  G.activePets.forEach(pid => {
+    const p = PETS.find(x=>x.id===pid);
+    if (p && p.special==='spd') spd = Math.max(0.25, spd*0.85);
+  });
+
+  spd = Math.max(0.25, parseFloat(spd.toFixed(2)));
+  return { atk, def, spd, crit: Math.min(75, crit) };
+}
+
+function goldMult()   { return 1 + (G.upgrades.gold_mult||0)*0.25 + (G.skills.has('goldSense')?0.35:0); }
+function dropBonus()  { return (G.upgrades.drop_rate||0)*0.08 + (G.skills.has('treasureHunt')?0.2:0); }
+function idleMult()   { return 1 + (G.upgrades.idle_mul||0)*0.6; }
+function rarBonus()   { return (G.upgrades.item_qual||0)*0.15; }
+function forgeMs()    { return Math.max(400, 2000 - (G.upgrades.forge_spd||0)*320); }
+function upgCost(u)   { const lv=G.upgrades[u.id]||0; return Math.floor(u.baseCost*Math.pow(u.cm,lv)); }
+
+// ════════════════════════════════════════════
+// ── HELPERS ─────────────────────────────────
+// ════════════════════════════════════════════
+
+function rng(a,b) { return Math.floor(Math.random()*(b-a+1))+a; }
+
+function xpNeed() { return Math.floor(50*Math.pow(1.4,G.hero.level-1)); }
+
+function currentEra()  { for(let i=ERAS.length-1;i>=0;i--){if(G.hero.level>=ERAS[i].minLv)return{e:ERAS[i],i};} return{e:ERAS[0],i:0}; }
+function currentZone() { for(let i=ZONES.length-1;i>=0;i--){if(G.hero.level>=ZONES[i].minLv)return ZONES[i];} return ZONES[0]; }
+
+function pickRarity() {
+  const b=rarBonus();
+  const w=RARITIES.map((r,i)=>i===0?Math.max(10,r.weight*(1-b)):r.weight*(1+b*0.3));
+  const tot=w.reduce((s,x)=>s+x,0); let r=Math.random()*tot;
+  for(let i=0;i<RARITIES.length;i++){r-=w[i];if(r<=0)return RARITIES[i];}
+  return RARITIES[0];
+}
+
+function log(msg,cls='') {
+  const el=document.createElement('div');
+  el.className='log-e '+cls;
+  el.textContent=msg;
+  const lg=document.getElementById('gameLog');
+  lg.prepend(el);
+  while(lg.children.length>80)lg.removeChild(lg.lastChild);
+}
+
+function floatDmg(el,dmg,col='#e05050') {
+  const r=el.getBoundingClientRect();
+  const f=document.createElement('div');
+  f.className='dmg-float'; f.textContent='-'+dmg; f.style.color=col;
+  f.style.left=(r.left+r.width/2-12)+'px';
+  f.style.top=(r.top+window.scrollY-8)+'px';
+  document.body.appendChild(f);
+  setTimeout(()=>f.remove(),1000);
+}
+
+// ════════════════════════════════════════════
+// ── UI UPDATE ───────────────────────────────
+// ════════════════════════════════════════════
+
+function updateAll() {
+  updateHeaderStats();
+  updateHeroPage();
+  updateEraUI();
+}
+
+function updateHeaderStats() {
+  const h=G.hero;
+  document.getElementById('hHp').textContent=Math.ceil(h.hp);
+  document.getElementById('hMaxHp').textContent=h.maxHp;
+  document.getElementById('hGold').textContent=h.gold;
+  document.getElementById('hLv').textContent=h.level;
+  document.getElementById('hKills').textContent=G.kills;
+}
+
+// ─── Hero Figure Color Update ───
+const RARITY_ARMOR_COLORS = {
+  none:      { armor:'#555', shield:'#666', helmet:'#555', shoulder:'#666', leg:'#3a3a3a', boot:'#2a2a2a', eye:'#4af',  sword:'#e0e8ff', cape:'#444' },
+  common:    { armor:'#888', shield:'#999', helmet:'#888', shoulder:'#999', leg:'#555',    boot:'#444',    eye:'#aaa',  sword:'#ddd',    cape:'#666' },
+  uncommon:  { armor:'#2d7a4a', shield:'#3a9e5f', helmet:'#2d7a4a', shoulder:'#3a9e5f', leg:'#1e5233', boot:'#173d26', eye:'#40c070', sword:'#80ffaa', cape:'#1e5233' },
+  rare:      { armor:'#1a5580', shield:'#2070aa', helmet:'#1a5580', shoulder:'#2070aa', leg:'#10355a', boot:'#0a2540', eye:'#50a0f0', sword:'#80d0ff', cape:'#10355a' },
+  epic:      { armor:'#5020a0', shield:'#7030d0', helmet:'#5020a0', shoulder:'#7030d0', leg:'#2e1060', boot:'#1e0840', eye:'#c080ff', sword:'#d0a0ff', cape:'#2e1060' },
+  legendary: { armor:'#9a7010', shield:'#c9a227', helmet:'#9a7010', shoulder:'#c9a227', leg:'#6a4c0a', boot:'#4a3408', eye:'#f0cc55', sword:'#ffe87a', cape:'#6a4c0a' },
+  mythic:    { armor:'#8b1010', shield:'#c02020', helmet:'#8b1010', shoulder:'#c02020', leg:'#5a0808', boot:'#3a0505', eye:'#ff5050', sword:'#ff9090', cape:'#5a0808' },
+};
+
+function getBestEquippedRarity() {
+  const order = ['mythic','legendary','epic','rare','uncommon','common'];
+  for (const r of order) {
+    for (const item of Object.values(G.equipped)) {
+      if (item && item.rarity === r) return r;
+    }
+  }
+  return 'none';
+}
+
+function updateHeroFigure() {
+  const rar = getBestEquippedRarity();
+  const c = RARITY_ARMOR_COLORS[rar] || RARITY_ARMOR_COLORS.none;
+
+  const set = (id, attr, val) => { const el=document.getElementById(id); if(el) el.setAttribute(attr,val); };
+  const setAll = (ids, attr, val) => ids.forEach(id=>set(id,attr,val));
+
+  set('heroChest','fill',c.armor);
+  set('heroShoulderL','fill',c.shoulder);
+  set('heroShoulderR','fill',c.shoulder);
+  set('heroShield','fill',c.shield);
+  set('heroArmL','fill',c.armor);
+  set('heroArmR','fill',c.armor);
+  set('heroHelmet','fill',c.helmet);
+  set('heroHelmetL','fill',c.helmet);
+  set('heroHelmetR','fill',c.helmet);
+  set('heroLegL','fill',c.leg);
+  set('heroLegR','fill',c.leg);
+  set('heroBootL','fill',c.boot);
+  set('heroBootR','fill',c.boot);
+  set('heroCape','fill',c.cape);
+  set('heroSwordBlade','fill',c.sword);
+  set('eyeGlowL','fill',c.eye);
+  set('eyeGlowR','fill',c.eye);
+
+  // Glow effect on whole figure for legendary/mythic
+  const svg = document.getElementById('heroFigureSVG');
+  if (svg) {
+    if (rar === 'mythic')    svg.style.filter = 'drop-shadow(0 0 8px #e04040) drop-shadow(0 4px 12px rgba(0,0,0,0.7))';
+    else if (rar === 'legendary') svg.style.filter = 'drop-shadow(0 0 6px #c9a227) drop-shadow(0 4px 12px rgba(0,0,0,0.7))';
+    else if (rar === 'epic') svg.style.filter = 'drop-shadow(0 0 5px #7030d0) drop-shadow(0 4px 12px rgba(0,0,0,0.7))';
+    else                     svg.style.filter = 'drop-shadow(0 4px 12px rgba(0,0,0,0.7))';
+  }
+}
+
+function updateHeroPage() {
+  const h=G.hero; const s=getStats();
+  document.getElementById('lvlBadge').textContent='LVL '+h.level;
+  updateHeroFigure();
+  document.getElementById('hpTxt').textContent=Math.ceil(h.hp)+'/'+h.maxHp;
+  document.getElementById('hpBar').style.width=Math.max(0,h.hp/h.maxHp*100)+'%';
+  document.getElementById('xpTxt').textContent=h.xp+'/'+xpNeed();
+  document.getElementById('xpBar').style.width=Math.min(100,h.xp/xpNeed()*100)+'%';
+  document.getElementById('manaTxt').textContent=Math.ceil(h.mana)+'/'+h.maxMana;
+  document.getElementById('manaBar').style.width=Math.max(0,h.mana/h.maxMana*100)+'%';
+  document.getElementById('pAtk').textContent=s.atk;
+  document.getElementById('pDef').textContent=s.def;
+  document.getElementById('pSpd').textContent=s.spd.toFixed(2);
+  document.getElementById('pCrit').textContent=s.crit;
+  document.getElementById('fGold').textContent=h.gold;
+  document.getElementById('fItems').textContent='Items im Inventar: '+G.inventory.length;
+  const autoMs=forgeMs();
+  document.getElementById('fAutoSpeed').textContent=G.autoForge?('Auto-Schmied: alle '+autoMs+'ms'):'';
+  renderEquipSlots();
+  renderEquipBonus();
+}
+
+function updateEraUI() {
+  const {e,i}=currentEra();
+  const next=ERAS[i+1];
+  document.getElementById('eraLabel').textContent=e.emoji+' '+e.name;
+  const eStart=e.minLv; const eEnd=next?next.minLv:120;
+  const pct=Math.min(100,Math.round((G.hero.level-eStart)/(eEnd-eStart)*100));
+  document.getElementById('eraFill').style.width=pct+'%';
+  document.getElementById('eraNext').textContent=next?('→ '+next.emoji+next.name):'✨ MAX';
+
+  if(i>G.eraIdx){
+    G.eraIdx=i;
+    showEraTrans(e);
+  }
+  renderEraTimeline();
+}
+
+function showEraTrans(e) {
+  const d=document.createElement('div');
+  d.className='era-trans';
+  d.innerHTML=`<h2>${e.emoji} ${e.name}</h2><p>Ein neues Zeitalter beginnt!</p>`;
+  document.body.appendChild(d);
+  setTimeout(()=>d.style.opacity='0',2000);
+  setTimeout(()=>d.remove(),2600);
+  log(`🌅 Zeitalter: ${e.emoji} ${e.name} erreicht!`,'i');
+}
+
+function updateArena() {
+  const h=G.hero; const m=G.monster;
+  document.getElementById('arenaHeroHp').textContent=Math.ceil(h.hp)+'/'+h.maxHp;
+  document.getElementById('heroSprite').textContent=currentEra().e.emoji;
+  if (!m) {
+    document.getElementById('monName').textContent='Warte auf Monster...';
+    document.getElementById('monHpTxt').textContent='';
+    document.getElementById('monHpBar').style.width='0%';
+    document.getElementById('waveChip').textContent='Welle '+G.wave;
+    document.getElementById('zoneName').textContent=currentZone().name;
+    return;
+  }
+  document.getElementById('monSprite').textContent=m.emoji;
+  document.getElementById('monName').textContent=m.name;
+  document.getElementById('monHpTxt').textContent=Math.ceil(m.hp)+'/'+m.maxHp;
+  document.getElementById('monHpBar').style.width=Math.max(0,m.hp/m.maxHp*100)+'%';
+  document.getElementById('waveChip').textContent='Welle '+G.wave;
+  document.getElementById('zoneName').textContent=currentZone().name;
+}
+
+// ════════════════════════════════════════════
+// ── EQUIP ───────────────────────────────────
+// ════════════════════════════════════════════
+
+const SLOT_INFO = {
+  weapon:{label:'Waffe',    icon:'⚔️'},
+  helmet:{label:'Helm',     icon:'⛑️'},
+  chest: {label:'Brust',    icon:'🛡️'},
+  gloves:{label:'Handsch.', icon:'🧤'},
+  boots: {label:'Stiefel',  icon:'👢'},
+  ring:  {label:'Ring',     icon:'💍'},
+};
+
+function renderEquipSlots() {
+  const grid=document.getElementById('equipGrid');
+  grid.innerHTML='';
+  for(const [slot, info] of Object.entries(SLOT_INFO)){
+    const item=G.equipped[slot];
+    const div=document.createElement('div');
+    div.className='equip-slot'+(item?' has-item rarity-'+item.rarity:'');
+    if(item){
+      const RCOL={'common':'#888','uncommon':'#40c070','rare':'#50a0e0','epic':'#9060e0','legendary':'#c9a227','mythic':'#f07070'};
+      div.innerHTML=`
+        <div class="slot-icon">${item.emoji}</div>
+        <div class="slot-stat" style="color:${RCOL[item.rarity]}">+${item.sv} ${item.sk.toUpperCase()}</div>
+        <div class="slot-label">${item.name.length>8?item.name.slice(0,7)+'…':item.name}</div>
+      `;
+      div.title='Klicke zum Ablegen';
+      div.addEventListener('mouseenter',e=>showTT(e,item,'Klicken zum Ablegen'));
+      div.addEventListener('mouseleave',hideTT);
+      div.onclick=()=>{ unequipItem(slot); };
+    } else {
+      div.innerHTML=`<div class="slot-icon" style="opacity:.3">${info.icon}</div><div class="slot-label" style="color:var(--text3)">${info.label}</div>`;
+    }
+    grid.appendChild(div);
+  }
+}
+
+function renderEquipBonus() {
+  const s=getStats();
+  const h=G.hero;
+  const bonusAtk=s.atk-h.baseAtk, bonusDef=s.def-h.baseDef;
+  const el=document.getElementById('equipBonus');
+  if(bonusAtk===0&&bonusDef===0&&s.crit===h.baseCrit){el.innerHTML='';return;}
+  el.innerHTML=`<div style="font-size:0.72rem;color:var(--text2);font-style:italic;">
+    📊 Ausrüstungsbonus:
+    ${bonusAtk>0?`<span style="color:#50e090">+${bonusAtk} ATK</span> `:''}
+    ${bonusDef>0?`<span style="color:#50a0e0">+${bonusDef} DEF</span> `:''}
+    ${s.crit>h.baseCrit?`<span style="color:#f0cc55">+${s.crit-h.baseCrit}% CRIT</span>`:''}
+  </div>`;
+}
+
+function equipItem(item) {
+  const prev=G.equipped[item.slot];
+  if(prev){ prev.equipped=false; }
+  G.equipped[item.slot]=item;
+  item.equipped=true;
+  log(`🗡️ Ausgerüstet: ${item.emoji} ${item.name} (+${item.sv} ${item.sk.toUpperCase()})`,'i');
+  updateAll();
+  renderInventory();
+}
+
+function unequipItem(slot) {
+  const item=G.equipped[slot];
+  if(!item)return;
+  item.equipped=false;
+  G.equipped[slot]=null;
+  log(`📦 Abgelegt: ${item.emoji} ${item.name}`,'n');
+  updateAll();
+  renderInventory();
+}
+
+// ════════════════════════════════════════════
+// ── INVENTORY ───────────────────────────────
+// ════════════════════════════════════════════
+
+function renderInventory() {
+  renderInvGrid('invGrid', G.inventory, true);
+  renderForgedGrid();
+}
+
+function renderInvGrid(id, items, showEquip) {
+  const grid=document.getElementById(id);
+  if(!items.length){
+    grid.innerHTML=`<div style="color:var(--text2);font-size:0.78rem;font-style:italic;grid-column:1/-1;padding:10px;text-align:center;">Leer.</div>`;
+    return;
+  }
+  grid.innerHTML='';
+  items.forEach(item=>{
+    const slot=document.createElement('div');
+    slot.className=`inv-slot rarity-${item.rarity}`;
+    const RCOL={'common':'#888','uncommon':'#40c070','rare':'#50a0e0','epic':'#9060e0','legendary':'#c9a227','mythic':'#f07070'};
+    slot.innerHTML=`
+      ${item.equipped?'<div class="eq-badge">EQ</div>':''}
+      ${item.isNew&&!item.equipped?'<div class="item-new-dot"></div>':''}
+      <div class="ii">${item.emoji}</div>
+      <div class="in">${item.name.length>7?item.name.slice(0,6)+'…':item.name}</div>
+      <div class="is" style="color:${RCOL[item.rarity]}">+${item.sv} ${item.sk.toUpperCase()}</div>
+    `;
+    slot.addEventListener('mouseenter',e=>showTT(e,item,showEquip&&!item.equipped?'Klicken zum Ausrüsten':item.equipped?'Klicken zum Ablegen':''));
+    slot.addEventListener('mouseleave',hideTT);
+    slot.onclick=()=>{
+      item.isNew=false;
+      if(showEquip){
+        if(item.equipped) unequipItem(item.slot);
+        else equipItem(item);
+      }
+      renderInventory();
+    };
+    grid.appendChild(slot);
+  });
+}
+
+// ════════════════════════════════════════════
+// ── UPGRADES ────────────────────────────────
+// ════════════════════════════════════════════
+
+function renderUpgrades() {
+  ['upgGrid','upgGrid2'].forEach(id=>{
+    const grid=document.getElementById(id);
+    if(!grid)return;
+    grid.innerHTML='';
+    UPGRADES.forEach(upg=>{
+      const lv=G.upgrades[upg.id]||0;
+      const maxed=lv>=upg.maxLv;
+      const cost=upgCost(upg);
+      const can=G.hero.gold>=cost;
+      const card=document.createElement('div');
+      card.className='upg-card'+(maxed?' maxed':!can?' broke':'');
+      card.innerHTML=`
+        <div class="upg-head"><div class="upg-icon">${upg.icon}</div><div class="upg-name">${upg.name}</div><div class="upg-lv">${lv}/${upg.maxLv}</div></div>
+        <div class="upg-desc">${upg.desc}</div>
+        <div class="upg-cost">${maxed?'✅ MAX':'💰 '+cost}</div>
+        <div class="upg-bar"><div class="upg-bar-fill" style="width:${lv/upg.maxLv*100}%"></div></div>
+      `;
+      if(!maxed&&can) card.onclick=()=>buyUpgrade(upg.id);
+      grid.appendChild(card);
+    });
+  });
+}
+
+function buyUpgrade(id) {
+  const upg=UPGRADES.find(u=>u.id===id);
+  if(!upg) return;
+  const lv=G.upgrades[id]||0;
+  if(lv>=upg.maxLv) return;
+  const cost=upgCost(upg);
+  if(G.hero.gold<cost){log('❌ Zu wenig Gold!','c');return;}
+  G.hero.gold-=cost;
+  G.upgrades[id]=(lv+1);
+  if(upg.eff==='atkUp'){G.hero.baseAtk+=6;}
+  if(upg.eff==='defUp'){G.hero.baseDef+=4;}
+  if(upg.eff==='hpUp'){G.hero.maxHp+=35;G.hero.hp+=35;}
+  if(upg.eff==='forgeSpd'&&G.autoForge){restartAuto();}
+  log(`⬆️ ${upg.icon} ${upg.name} → Lv${lv+1}`,'i');
+  updateAll();
+  renderUpgrades();
+}
+
+// ════════════════════════════════════════════
+// ── SKILLS ──────────────────────────────────
+// ════════════════════════════════════════════
+
+function renderSkills() {
+  const grid=document.getElementById('skillsGrid');
+  grid.innerHTML='';
+  SKILLS.forEach(sk=>{
+    const unlocked=G.skills.has(sk.id);
+    const reqOk=!sk.req||G.skills.has(sk.req);
+    const canAfford=G.hero.gold>=sk.cost;
+    const locked=!reqOk;
+    const card=document.createElement('div');
+    card.className='skill-card'+(unlocked?' unlocked':locked?' locked':'');
+    const reqName=sk.req?SKILLS.find(s=>s.id===sk.req)?.name:'';
+    card.innerHTML=`
+      <div class="sk-icon">${sk.icon}</div>
+      <div class="sk-name">${sk.name}</div>
+      <div class="sk-desc">${sk.desc}</div>
+      ${unlocked
+        ?`<div class="sk-cost done">✅ Erforscht</div>`
+        :locked
+          ?`<div class="sk-cost cannot">🔒 Braucht: ${reqName}</div>`
+          :`<div class="sk-cost ${canAfford?'can':'cannot'}">💰 ${sk.cost} Gold</div>`
+      }
+      ${sk.req&&!locked&&!unlocked?`<div class="sk-req">Vorgänger: ${reqName}</div>`:''}
+    `;
+    if(!unlocked&&!locked&&canAfford) card.onclick=()=>buySkill(sk.id);
+    grid.appendChild(card);
+  });
+}
+
+function buySkill(id) {
+  const sk=SKILLS.find(s=>s.id===id);
+  if(!sk||G.skills.has(sk.id))return;
+  if(sk.req&&!G.skills.has(sk.req)){log('❌ Vorgänger-Fähigkeit fehlt!','c');return;}
+  if(G.hero.gold<sk.cost){log('❌ Zu wenig Gold!','c');return;}
+  G.hero.gold-=sk.cost;
+  G.skills.add(sk.id);
+  log(`✨ Fähigkeit erforscht: ${sk.icon} ${sk.name}!`,'s');
+  updateAll();
+  renderSkills();
+  renderUpgrades();
+}
+
+// ════════════════════════════════════════════
+// ── PETS ────────────────────────────────────
+// ════════════════════════════════════════════
+
+function renderPets() {
+  const grid=document.getElementById('petsGrid');
+  grid.innerHTML='';
+  PETS.forEach(pet=>{
+    const owned=G.pets[pet.id];
+    const active=G.activePets.has(pet.id);
+    const card=document.createElement('div');
+    card.className='pet-card'+(owned?' owned':'')+(active?' active':'');
+    card.innerHTML=`
+      <div class="pet-ico">${pet.emoji}</div>
+      <div class="pet-nm">${pet.name}</div>
+      <div class="pet-sk">${pet.skill}</div>
+      ${owned
+        ?`<div class="pet-st" style="color:${active?'#f39c12':'#40c070'}">${active?'⚡ Aktiv':'💤 Inaktiv — klicken'}</div>`
+        :`<div class="pet-st" style="color:var(--gold)">💰 ${pet.cost} Gold</div>`
+      }
+    `;
+    card.onclick=()=>owned?togglePet(pet.id):buyPet(pet.id);
+    grid.appendChild(card);
+  });
+
+  const row=document.getElementById('arenaActivePets');
+  row.innerHTML='';
+  G.activePets.forEach(pid=>{
+    const p=PETS.find(x=>x.id===pid);
+    if(!p)return;
+    const c=document.createElement('div');
+    c.className='pet-chip';
+    c.textContent=p.emoji+' '+p.name;
+    row.appendChild(c);
+  });
+}
+
+function buyPet(id) {
+  const pet=PETS.find(p=>p.id===id);
+  if(!pet||G.pets[id])return;
+  if(G.hero.gold<pet.cost){log('❌ Zu wenig Gold für '+pet.name,'c');return;}
+  G.hero.gold-=pet.cost;
+  G.pets[id]=true;
+  G.activePets.add(id);
+  log(`🐾 Haustier: ${pet.emoji} ${pet.name} gekauft!`,'i');
+  updateAll();
+  renderPets();
+}
+
+function togglePet(id) {
+  G.activePets.has(id)?G.activePets.delete(id):G.activePets.add(id);
+  renderPets();
+}
+
+// Pet combat helpers
+function petATKBonus() {
+  let b=0; const s=getStats();
+  G.activePets.forEach(pid=>{
+    const p=PETS.find(x=>x.id===pid);
+    if(p&&p.atkPct>0){
+      let dmg=s.atk*p.atkPct;
+      if(G.skills.has('war_cry'))dmg*=1.4;
+      b+=dmg;
+    }
+  });
+  return Math.floor(b);
+}
+
+function petHealOnKill() {
+  G.activePets.forEach(pid=>{
+    const p=PETS.find(x=>x.id===pid);
+    if(p&&p.special==='heal'){
+      const heal=Math.floor(G.hero.maxHp*0.05);
+      G.hero.hp=Math.min(G.hero.maxHp,G.hero.hp+heal);
+    }
+  });
+}
+
+function luckMult() {
+  let m=1;
+  G.activePets.forEach(pid=>{
+    const p=PETS.find(x=>x.id===pid);
+    if(p&&p.special==='luck')m+=0.2;
+  });
+  return m;
+}
+
+// ════════════════════════════════════════════
+// ── ERA TIMELINE ────────────────────────────
+// ════════════════════════════════════════════
+
+function renderEraTimeline() {
+  const tl=document.getElementById('eraTimeline');
+  tl.innerHTML='';
+  const curIdx=currentEra().i;
+  ERAS.forEach((e,i)=>{
+    const done=i<curIdx, cur=i===curIdx, fut=i>curIdx;
+    const item=document.createElement('div');
+    item.className='era-item'+(cur?' current':done?' done':' future');
+    item.innerHTML=`
+      <div class="era-dot">${e.emoji}</div>
+      <div class="era-info">
+        <div class="era-nm">${e.name}</div>
+        <div class="era-desc">${e.desc}</div>
+        <div class="era-lv">Ab Level ${e.minLv}</div>
+      </div>
+      <div class="era-status ${cur?'cur':done?'done':'fut'}">${cur?'⚡ Aktuell':done?'✅ Abgeschlossen':'🔒 Gesperrt'}</div>
+    `;
+    tl.appendChild(item);
+  });
+}
+
+// ════════════════════════════════════════════
+// ── COMBAT ──────────────────────────────────
+// ════════════════════════════════════════════
+
+function spawnMonster() {
+  const lv=G.hero.level;
+  const era=currentEra().e;
+  const bIdx=Math.min(Math.floor(lv/10),MONSTERS.length-1);
+  const aIdx=rng(0,Math.min(Math.floor(lv/7),MONSTERS.length-1));
+  const proto=Math.random()<0.4?MONSTERS[aIdx]:MONSTERS[bIdx];
+  const eraEmoji=era.emoji;
+  const emoji=Math.random()<0.25?eraEmoji:proto.emoji;
+
+  const hp=Math.round((15+lv*9)*proto.hpM);
+  const atk=Math.round((2+lv*1.3)*proto.atkM);
+  G.monster={...proto,emoji,hp,maxHp:hp,atk};
+  G.monstersInWave++;
+  updateArena();
+}
+
+function startCombat() {
+  if(G.combatInterval) return;
+  G.combatInterval=setInterval(tick,250);
+}
+
+let hCD=0, mCD=0, pCD=0;
+
+function tick() {
+  if(!G.monster){
+    if(G.monstersInWave>=G.monstersPerWave){
+      G.wave++; G.monstersInWave=0;
+      G.monstersPerWave=3+Math.floor(G.wave/3);
+      log('🌊 Welle '+G.wave,'n');
+      setTimeout(spawnMonster,1500);
+    } else {
+      setTimeout(spawnMonster,700);
+    }
+    return;
+  }
+
+  const h=G.hero; const m=G.monster; const s=getStats();
+  hCD-=0.25; mCD-=0.25; pCD-=0.25;
+
+  // Hero attack
+  if(hCD<=0){
+    hCD=s.spd;
+    let dmg=Math.max(1,s.atk+rng(-1,3)-Math.floor(m.atk*0.08));
+    const isCrit=Math.random()*100<s.crit;
+    if(isCrit) dmg=Math.floor(dmg*1.8);
+    if(G.skills.has('doubleStrike')&&Math.random()<0.05){
+      const d2=Math.floor(dmg*0.7);
+      m.hp-=d2;
+      floatDmg(document.getElementById('monSprite'),d2,'#f0cc55');
+    }
+    if(G.skills.has('bloodRage')&&h.hp<h.maxHp*0.4) dmg=Math.floor(dmg*1.2);
+    m.hp-=dmg;
+    if(G.skills.has('vampirism')){ const heal=Math.floor(dmg*0.08); h.hp=Math.min(h.maxHp,h.hp+heal); }
+    document.getElementById('heroSprite').classList.add('attacking');
+    setTimeout(()=>document.getElementById('heroSprite').classList.remove('attacking'),280);
+    document.getElementById('monSprite').classList.add('mon-hit');
+    setTimeout(()=>{ document.getElementById('monSprite').classList.remove('mon-hit'); document.getElementById('monSprite').classList.add('mon-float'); },240);
+    floatDmg(document.getElementById('monSprite'),dmg,isCrit?'#f0cc55':'#e05050');
+    updateArena();
+    if(m.hp<=0){monDied();return;}
+  }
+
+  // Pet attack
+  if(pCD<=0&&G.activePets.size>0){
+    pCD=1.4;
+    const pd=petATKBonus();
+    if(pd>0&&G.monster){
+      m.hp-=pd;
+      floatDmg(document.getElementById('monSprite'),pd,'#f39c12');
+      updateArena();
+      if(m.hp<=0){monDied();return;}
+    }
+  }
+
+  // Monster attack
+  if(mCD<=0){
+    mCD=1.1+Math.random()*0.7;
+    let s2=getStats();
+    let mDmg=Math.max(1,m.atk-Math.floor(s2.def*0.6));
+    if(G.skills.has('ironSkin'))mDmg=Math.floor(mDmg*0.85);
+    h.hp-=mDmg;
+    floatDmg(document.getElementById('heroSprite'),mDmg,'#ff9040');
+    if(h.hp<=0){h.hp=0;updateAll();updateArena();heroDied();return;}
+  }
+
+  if(h.mana<h.maxMana)h.mana=Math.min(h.maxMana,h.mana+0.4);
+  updateHeaderStats();
+}
+
+function monDied() {
+  const m=G.monster; const lk=luckMult(); const gm=goldMult();
+  const xp=Math.round((m.xp+G.wave*2)*lk);
+  const gold=Math.round((m.gold+rng(0,G.wave))*gm*lk);
+  G.hero.xp+=xp; G.hero.gold+=gold; G.kills++;
+  log(`💀 ${m.name} +${xp}XP +${gold}G`,'c');
+  petHealOnKill();
+  const dropCh=0.22+G.hero.level*0.008+dropBonus();
+  if(Math.random()<dropCh) dropItem();
+  G.monster=null;
+  updateArena();
+  checkLevelUp();
+  updateAll();
+  renderUpgrades();
+  renderSkills();
+}
+
+function heroDied() {
+  log('💔 Besiegt! Regeneriere...','c');
+  clearInterval(G.combatInterval); G.combatInterval=null; G.monster=null;
+  updateArena();
+  setTimeout(()=>{
+    G.hero.hp=Math.floor(G.hero.maxHp*0.4);
+    updateAll();
+    log('🌟 Wieder aufgestanden!','n');
+    spawnMonster(); startCombat();
+  },3000);
+}
+
+function checkLevelUp() {
+  let leveled=false;
+  while(G.hero.xp>=xpNeed()){
+    G.hero.xp-=xpNeed(); G.hero.level++;
+    G.hero.baseAtk+=rng(2,4); G.hero.baseDef+=rng(1,2);
+    G.hero.maxHp+=rng(18,28); G.hero.hp=G.hero.maxHp;
+    G.hero.maxMana+=rng(5,10); G.hero.mana=G.hero.maxMana;
+    G.hero.baseCrit=Math.min(50,G.hero.baseCrit+0.2);
+    if(G.hero.level%5===0) G.hero.spd=Math.max(0.25,G.hero.spd-0.1);
+    log(`🎉 LEVEL UP → ${G.hero.level}!`,'l');
+    leveled=true;
+  }
+  if(leveled){updateEraUI();}
+}
+
+// ════════════════════════════════════════════
+// ── FORGE ───────────────────────════════════
+// ════════════════════════════════════════════
+
+let forgeCounter=0;
+
+function dropItem(fromForge=false) {
+  forgeCounter++;
+  let rar=pickRarity();
+  if(G.skills.has('forgeMastery')&&forgeCounter%10===0){
+    const rIdx=RARITIES.findIndex(r=>r.id===rar.id);
+    if(rIdx<2) rar=RARITIES[2];
+  }
+  const rarIdx=RARITIES.findIndex(r=>r.id===rar.id);
+  const minI=Math.max(0,Math.floor(rarIdx*ITEM_DEFS.length/6)-2);
+  const pool=ITEM_DEFS.slice(minI);
+  const proto=pool[rng(0,pool.length-1)];
+  const mult=1+rarIdx*0.55+Math.random()*0.45;
+  const item={
+    ...proto,
+    sv: proto.sk==='spd' ? parseFloat((proto.sv*mult).toFixed(3)) : Math.round(proto.sv*mult),
+    rarity:rar.id, rarityLabel:rar.label, rarityColor:rar.col,
+    isNew:true, equipped:false, id:Date.now()+Math.random()
+  };
+  G.inventory.unshift(item);
+  G.recentForged.unshift(item);
+  if(G.inventory.length>200) G.inventory.pop();
+  log(`🎁 [${rar.label}] ${item.emoji} ${item.name} +${item.sv} ${item.sk.toUpperCase()}`,'i');
+  renderForgedGrid();
+  renderInventory();
+  return item;
+}
+
+function forge() {
+  const btn=document.getElementById('forgeBtn');
+  btn.classList.add('forging');
+  setTimeout(()=>btn.classList.remove('forging'),180);
+  dropItem(true);
+  G.forgeCount++;
+  updateHeaderStats();
+  document.getElementById('fItems').textContent='Items im Inventar: '+G.inventory.length;
+}
+
+function forgeX5() { for(let i=0;i<5;i++) forge(); }
+
+function toggleAuto() {
+  G.autoForge=!G.autoForge;
+  document.getElementById('autoBtn').classList.toggle('on',G.autoForge);
+  if(G.autoForge){restartAuto();log('⚙️ Auto-Schmied an','n');}
+  else{clearInterval(G.autoInterval);log('⏸️ Auto-Schmied aus','n');}
+  updateHeroPage();
+}
+
+function restartAuto() {
+  clearInterval(G.autoInterval);
+  G.autoInterval=setInterval(()=>{ if(G.autoForge) forge(); },forgeMs());
+}
+
+// ─── Forged items grid (always shows ALL) ───
+function renderForgedGrid() {
+  const list = G.recentForged;
+  const grid=document.getElementById('forgedGrid');
+  const countEl=document.getElementById('forgedCount');
+  if(!grid) return;
+  if(countEl) countEl.textContent=list.length+' Items insgesamt';
+  if(!list.length){
+    grid.innerHTML=`<div style="color:var(--text2);font-size:0.8rem;font-style:italic;grid-column:1/-1;padding:10px;text-align:center;">Noch nichts geschmiedet.</div>`;
+    return;
+  }
+  grid.innerHTML='';
+  list.forEach(item=>{
+    const slot=document.createElement('div');
+    slot.className=`inv-slot rarity-${item.rarity}`;
+    const RCOL={'common':'#888','uncommon':'#40c070','rare':'#50a0e0','epic':'#9060e0','legendary':'#c9a227','mythic':'#f07070'};
+    slot.innerHTML=`
+      ${item.equipped?'<div class="eq-badge">EQ</div>':''}
+      ${item.isNew&&!item.equipped?'<div class="item-new-dot"></div>':''}
+      <div class="ii">${item.emoji}</div>
+      <div class="in">${item.name.length>7?item.name.slice(0,6)+'…':item.name}</div>
+      <div class="is" style="color:${RCOL[item.rarity]}">+${item.sv} ${item.sk.toUpperCase()}</div>
+    `;
+    slot.addEventListener('mouseenter',e=>showTT(e,item,item.equipped?'Klicken zum Ablegen':'Klicken zum Ausrüsten'));
+    slot.addEventListener('mouseleave',hideTT);
+    slot.onclick=()=>{
+      item.isNew=false;
+      if(item.equipped) unequipItem(item.slot);
+      else equipItem(item);
+      renderForgedGrid();
+    };
+    grid.appendChild(slot);
+  });
+}
+
+function showAllForged() {
+  switchTab('forge');
+}
+
+// ─── Auto-Equip Best ───
+function autoEquipBest() {
+  const slots=['weapon','helmet','chest','gloves','boots','ring'];
+  let equipped=0;
+  slots.forEach(slot=>{
+    // Find best unequipped item for this slot (by stat value)
+    const candidates=G.inventory.filter(it=>it.slot===slot&&!it.equipped);
+    if(!candidates.length) return;
+    // Score: for spd items higher sv = more speed reduction = better; others higher sv = better
+    candidates.sort((a,b)=>b.sv-a.sv);
+    const best=candidates[0];
+    // Compare with currently equipped
+    const cur=G.equipped[slot];
+    if(!cur||best.sv>cur.sv){
+      if(cur){cur.equipped=false;}
+      G.equipped[slot]=best;
+      best.equipped=true;
+      equipped++;
+    }
+  });
+  if(equipped>0){
+    log(`🗡️ Auto-Ausrüsten: ${equipped} Items ausgerüstet!`,'i');
+  } else {
+    log('✅ Bereits beste Items ausgerüstet!','n');
+  }
+  updateAll();
+  renderInventory();
+  renderForgedGrid();
+}
+
+// ─── Sell Manager ───
+const SELL_VALUES={'common':2,'uncommon':8,'rare':25,'epic':80,'legendary':250,'mythic':800};
+let sellSelected=new Set();
+
+function openSellManager() {
+  sellSelected=new Set();
+  renderSellManager();
+  document.getElementById('sellOverlay').classList.remove('hidden');
+}
+
+function closeSellManager() {
+  document.getElementById('sellOverlay').classList.add('hidden');
+}
+
+function renderSellManager() {
+  const btnContainer=document.getElementById('sellRarityBtns');
+  btnContainer.innerHTML='';
+  RARITIES.forEach(rar=>{
+    const count=G.inventory.filter(it=>it.rarity===rar.id&&!it.equipped).length;
+    const val=SELL_VALUES[rar.id]||1;
+    const selected=sellSelected.has(rar.id);
+    const btn=document.createElement('button');
+    btn.className='sell-rar-btn'+(selected?' selected':'');
+    btn.style.color=rar.col;
+    btn.style.borderColor=selected?rar.col:'rgba(255,255,255,.1)';
+    btn.innerHTML=`
+      <span>${rar.label}</span>
+      <span class="sr-count">${count} Items · ${val}G/Stk</span>
+    `;
+    btn.onclick=()=>{
+      if(sellSelected.has(rar.id)) sellSelected.delete(rar.id);
+      else sellSelected.add(rar.id);
+      renderSellManager();
+    };
+    btnContainer.appendChild(btn);
+  });
+  // Summary
+  const rows=document.getElementById('sellSummaryRows');
+  rows.innerHTML='';
+  let totalGold=0, totalItems=0;
+  RARITIES.forEach(rar=>{
+    if(!sellSelected.has(rar.id)) return;
+    const items=G.inventory.filter(it=>it.rarity===rar.id&&!it.equipped);
+    if(!items.length) return;
+    const val=SELL_VALUES[rar.id]||1;
+    const gold=items.length*val;
+    totalGold+=gold; totalItems+=items.length;
+    const row=document.createElement('div');
+    row.style.cssText='display:flex;justify-content:space-between;font-size:0.78rem;';
+    row.innerHTML=`<span style="color:${rar.col}">${rar.label} (${items.length}×)</span><span style="color:var(--gold2)">+${gold}G</span>`;
+    rows.appendChild(row);
+  });
+  if(totalItems===0){
+    rows.innerHTML='<div style="color:var(--text3);font-size:0.75rem;font-style:italic;text-align:center;">Keine Seltenheit ausgewählt.</div>';
+  }
+  document.getElementById('sellTotalGold').textContent=totalGold;
+}
+
+function executeSell() {
+  if(sellSelected.size===0){log('❌ Keine Seltenheit ausgewählt!','c');return;}
+  let totalGold=0, totalCount=0;
+  RARITIES.forEach(rar=>{
+    if(!sellSelected.has(rar.id)) return;
+    const val=SELL_VALUES[rar.id]||1;
+    const toSell=G.inventory.filter(it=>it.rarity===rar.id&&!it.equipped);
+    toSell.forEach(it=>{
+      // also remove from recentForged list
+      const ri=G.recentForged.indexOf(it);
+      if(ri>-1) G.recentForged.splice(ri,1);
+      totalGold+=val; totalCount++;
+    });
+    G.inventory=G.inventory.filter(it=>!(it.rarity===rar.id&&!it.equipped));
+  });
+  G.hero.gold+=totalGold;
+  log(`💰 Verkauft: ${totalCount} Items für ${totalGold} Gold!`,'i');
+  closeSellManager();
+  updateAll();
+  renderInventory();
+  renderForgedGrid();
+  renderUpgrades();
+}
+
+// ════════════════════════════════════════════
+// ── SUPABASE CONFIG ─────────────────────────
+// ════════════════════════════════════════════
+
+const SUPA_URL  = 'https://wzavkrblpraprxqvainj.supabase.co';
+const SUPA_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind6YXZrcmJscHJhcHJ4cXZhaW5qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2NTkwOTAsImV4cCI6MjA4OTIzNTA5MH0.Rm53ZDcE0YlymAmWoXtYBo7zlkOgZVTUuvz9pLTIOQM';
+const SUPA_HDR  = { 'Content-Type':'application/json', 'apikey': SUPA_KEY, 'Authorization': 'Bearer '+SUPA_KEY };
+
+// Spieler-ID aus localStorage — bleibt dauerhaft auf diesem Gerät
+function getPlayerId() {
+  let id = localStorage.getItem('sm_player_id');
+  if (!id) {
+    id = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+      const r = Math.random()*16|0;
+      return (c==='x'?r:(r&0x3|0x8)).toString(16);
+    });
+    localStorage.setItem('sm_player_id', id);
+  }
+  return id;
+}
+
+function setSaveStatus(msg, color='var(--text2)') {
+  const el = document.getElementById('saveStatus');
+  if (el) { el.textContent = msg; el.style.color = color; }
+}
+
+// ─── SUPABASE API HELPERS ───────────────────
+async function sbGet(table, filter='') {
+  try {
+    const r = await fetch(`${SUPA_URL}/rest/v1/${table}?${filter}`, { headers: SUPA_HDR });
+    if (!r.ok) return null;
+    return await r.json();
+  } catch(e) { return null; }
+}
+
+async function sbUpsert(table, data) {
+  try {
+    const r = await fetch(`${SUPA_URL}/rest/v1/${table}`, {
+      method: 'POST',
+      headers: { ...SUPA_HDR, 'Prefer': 'resolution=merge-duplicates' },
+      body: JSON.stringify(data)
+    });
+    return r.ok;
+  } catch(e) { return false; }
+}
+
+async function sbDelete(table, filter) {
+  try {
+    const r = await fetch(`${SUPA_URL}/rest/v1/${table}?${filter}`, {
+      method: 'DELETE', headers: SUPA_HDR
+    });
+    return r.ok;
+  } catch(e) { return false; }
+}
+
+// ════════════════════════════════════════════
+// ── SPEICHERN ───────────────────────────────
+// ════════════════════════════════════════════
+
+async function saveToSupabase() {
+  setSaveStatus('💾 Speichert...', 'var(--gold)');
+  const pid = getPlayerId();
+  const h = G.hero;
+
+  // 1. Spieler-Hauptdaten
+  const playerOk = await sbUpsert('sm_players', {
+    id: pid,
+    player_name:   'Klar',
+    last_seen:     new Date().toISOString(),
+    hero_level:    h.level,
+    hero_xp:       h.xp,
+    hero_hp:       Math.ceil(h.hp),
+    hero_max_hp:   h.maxHp,
+    hero_mana:     Math.ceil(h.mana),
+    hero_max_mana: h.maxMana,
+    hero_base_atk: h.baseAtk,
+    hero_base_def: h.baseDef,
+    hero_spd:      h.spd,
+    hero_base_crit:h.baseCrit,
+    hero_gold:     h.gold,
+    wave:          G.wave,
+    total_kills:   G.kills,
+    forge_count:   G.forgeCount,
+    era_index:     G.eraIdx
+  });
+
+  // 2. Upgrades speichern
+  const upgRows = Object.entries(G.upgrades).map(([upgrade_id, level]) => ({
+    player_id: pid, upgrade_id, level
+  }));
+  if (upgRows.length) await sbUpsert('sm_upgrades', upgRows);
+
+  // 3. Skills speichern
+  const skillRows = [...G.skills].map(skill_id => ({
+    player_id: pid, skill_id
+  }));
+  if (skillRows.length) await sbUpsert('sm_skills', skillRows);
+
+  // 4. Pets speichern
+  const petRows = Object.entries(G.pets).map(([pet_id, owned]) => ({
+    player_id: pid, pet_id, is_active: G.activePets.has(pet_id)
+  }));
+  if (petRows.length) await sbUpsert('sm_pets', petRows);
+
+  // 5. Inventory speichern (alle nicht ausgerüsteten + ausgerüstete)
+  const invRows = G.inventory.map(it => ({
+    id:         it.id.toString().length === 36 ? it.id : undefined,
+    player_id:  pid,
+    item_name:  it.name,
+    item_emoji: it.emoji,
+    item_slot:  it.slot,
+    item_stat:  it.sk,
+    stat_value: it.sv,
+    rarity:     it.rarity,
+    is_equipped:it.equipped || false,
+    is_new:     it.isNew || false
+  }));
+  // Inventar komplett neu schreiben (löschen + neu einfügen)
+  await sbDelete('sm_inventory', `player_id=eq.${pid}`);
+  if (invRows.length) {
+    // In Batches zu je 50
+    for (let i=0; i<invRows.length; i+=50) {
+      await sbUpsert('sm_inventory', invRows.slice(i,i+50));
+    }
+  }
+
+  // 6. Equipped Slots speichern
+  await sbDelete('sm_equipped', `player_id=eq.${pid}`);
+  const eqRows = Object.entries(G.equipped)
+    .filter(([,item]) => item)
+    .map(([slot, item]) => ({ player_id: pid, slot, item_name: item.name, item_rarity: item.rarity }));
+  if (eqRows.length) {
+    await fetch(`${SUPA_URL}/rest/v1/sm_equipped`, {
+      method: 'POST',
+      headers: { ...SUPA_HDR, 'Prefer': 'resolution=merge-duplicates' },
+      body: JSON.stringify(eqRows)
+    });
+  }
+
+  // 7. Leaderboard
+  await sbUpsert('sm_leaderboard', {
+    player_id:   pid,
+    player_name: 'Klar',
+    hero_level:  h.level,
+    total_kills: G.kills,
+    hero_gold:   h.gold,
+    wave:        G.wave,
+    updated_at:  new Date().toISOString()
+  });
+
+  // Timestamp lokal merken
+  localStorage.setItem('sm3_save', Date.now().toString());
+
+  if (playerOk) {
+    setSaveStatus('✅ Gespeichert ' + new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}), 'var(--green2)');
+  } else {
+    setSaveStatus('⚠️ Offline — lokal gespeichert', 'var(--orange2)');
+  }
+}
+
+// ════════════════════════════════════════════
+// ── LADEN ───────────────────────────────────
+// ════════════════════════════════════════════
+
+async function loadFromSupabase() {
+  try {
+    setSaveStatus('📂 Lade...', 'var(--blue2)');
+    const pid = getPlayerId();
+
+    const players = await sbGet('sm_players', `id=eq.${pid}`);
+    if (!players || !players.length) {
+      setSaveStatus('🆕 Neues Spiel', 'var(--text2)');
+      return false;
+    }
+
+    const p = players[0];
+    G.hero = {
+      level:     p.hero_level,
+      xp:        p.hero_xp,
+      hp:        p.hero_hp,
+      maxHp:     p.hero_max_hp,
+      mana:      p.hero_mana,
+      maxMana:   p.hero_max_mana,
+      baseAtk:   p.hero_base_atk,
+      baseDef:   p.hero_base_def,
+      spd:       parseFloat(p.hero_spd),
+      baseCrit:  parseFloat(p.hero_base_crit),
+      gold:      p.hero_gold,
+    };
+    G.wave      = p.wave;
+    G.kills     = p.total_kills;
+    G.forgeCount= p.forge_count;
+    G.eraIdx    = p.era_index;
+
+    const upgrades = await sbGet('sm_upgrades', `player_id=eq.${pid}`);
+    G.upgrades = {};
+    if (upgrades) upgrades.forEach(u => { G.upgrades[u.upgrade_id] = u.level; });
+
+    const skills = await sbGet('sm_skills', `player_id=eq.${pid}`);
+    G.skills = new Set();
+    if (skills) skills.forEach(s => G.skills.add(s.skill_id));
+
+    const pets = await sbGet('sm_pets', `player_id=eq.${pid}`);
+    G.pets = {}; G.activePets = new Set();
+    if (pets) pets.forEach(pt => {
+      G.pets[pt.pet_id] = true;
+      if (pt.is_active) G.activePets.add(pt.pet_id);
+    });
+
+    const inv = await sbGet('sm_inventory', `player_id=eq.${pid}&order=created_at.desc`);
+    G.inventory = []; G.recentForged = [];
+    G.equipped = {weapon:null,helmet:null,chest:null,gloves:null,boots:null,ring:null};
+
+    if (inv) {
+      inv.forEach(it => {
+        const rar = RARITIES.find(r=>r.id===it.rarity) || RARITIES[0];
+        const item = {
+          id:          it.id,
+          name:        it.item_name,
+          emoji:       it.item_emoji,
+          slot:        it.item_slot,
+          sk:          it.item_stat,
+          sv:          parseFloat(it.stat_value),
+          rarity:      it.rarity,
+          rarityLabel: rar.label,
+          rarityColor: rar.col,
+          desc:        '',
+          isNew:       it.is_new,
+          equipped:    it.is_equipped,
+        };
+        G.inventory.push(item);
+        G.recentForged.push(item);
+        if (it.is_equipped && G.equipped[it.item_slot] === null) {
+          G.equipped[it.item_slot] = item;
+        }
+      });
+    }
+
+    const savedTs = new Date(p.last_seen).getTime();
+    localStorage.setItem('sm3_save', savedTs.toString());
+
+    setSaveStatus('✅ Geladen ' + new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}), 'var(--green2)');
+    return true;
+
+  } catch(e) {
+    console.error('loadFromSupabase error:', e);
+    setSaveStatus('⚠️ Ladefehler', 'var(--orange2)');
+    return false;
+  }
+}
+
+// ════════════════════════════════════════════
+// ── IDLE REWARDS ────────────────════════════
+// ════════════════════════════════════════════
+
+function checkIdle() {
+  const saved = localStorage.getItem('sm3_save');
+  if (!saved) { return; }
+  const diff = Math.floor((Date.now() - parseInt(saved)) / 1000);
+  if (diff < 90) return;
+  const mins = Math.min(Math.floor(diff / 60), 480);
+  const mult = idleMult();
+  const gold  = Math.floor(mins * (2 + G.hero.level * 0.6) * mult);
+  const xp    = Math.floor(mins * (1 + G.hero.level * 0.35) * mult);
+  const items = Math.min(8, Math.floor(mins / 6));
+  const pop = document.getElementById('idleOverlay');
+  const hh = Math.floor(mins/60), mm = mins%60;
+  document.getElementById('idleTimeTxt').innerHTML = `Du warst <b>${hh>0?hh+'h ':''} ${mm}min</b> weg.`;
+  document.getElementById('idleRewards').innerHTML = `
+    <div class="idle-row"><span>💰 Gold</span><span>+${gold}</span></div>
+    <div class="idle-row"><span>⭐ XP</span><span>+${xp}</span></div>
+    <div class="idle-row"><span>🎁 Items</span><span>+${items}</span></div>
+    ${mult>1?`<div class="idle-row"><span>⬆️ Idle-Bonus</span><span>×${mult.toFixed(1)}</span></div>`:''}
+  `;
+  pop._r = {gold, xp, items};
+  pop.classList.remove('hidden');
+}
+
+function collectIdle() {
+  const pop = document.getElementById('idleOverlay');
+  const r = pop._r; if (!r) return;
+  G.hero.gold += r.gold;
+  G.hero.xp   += r.xp;
+  for (let i=0; i<r.items; i++) dropItem();
+  checkLevelUp();
+  updateAll();
+  renderUpgrades();
+  renderSkills();
+  log(`⏳ Offline: +${r.gold}G +${r.xp}XP +${r.items} Items`, 'i');
+  pop.classList.add('hidden');
+  saveToSupabase();
+}
+
+// ════════════════════════════════════════════
+// ── TOOLTIP ─────────────────────────────────
+// ════════════════════════════════════════════
+
+function showTT(e,item,hint='') {
+  const tt=document.getElementById('tt');
+  document.getElementById('ttN').textContent=item.emoji+' '+item.name;
+  document.getElementById('ttN').style.color=item.rarityColor;
+  document.getElementById('ttR').textContent=item.rarityLabel;
+  document.getElementById('ttR').style.color=item.rarityColor;
+  const SNAMES={atk:'Angriff',def:'Verteidigung',spd:'Geschwindigkeit (-s)',crit:'Kritische Chance (%)'};
+  document.getElementById('ttS').textContent='+'+item.sv+' '+( SNAMES[item.sk]||item.sk );
+  document.getElementById('ttD').textContent=item.desc;
+  document.getElementById('ttE').textContent=hint;
+  tt.classList.add('show'); moveTT(e);
+}
+
+function hideTT() { document.getElementById('tt').classList.remove('show'); }
+function moveTT(e) {
+  const tt=document.getElementById('tt');
+  tt.style.left=Math.min(e.clientX+12,window.innerWidth-225)+'px';
+  tt.style.top=Math.min(e.clientY-10,window.innerHeight-170)+'px';
+}
+document.addEventListener('mousemove',e=>{ if(document.getElementById('tt').classList.contains('show'))moveTT(e); });
+
+// ════════════════════════════════════════════
+// ── TAB NAVIGATION ──────────────────────────
+// ════════════════════════════════════════════
+
+function switchTab(name) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  const tabEl=document.getElementById('tab-'+name);
+  if(tabEl) tabEl.classList.add('active');
+  if(name==='arena'){renderInventory();renderUpgrades();updateHeroFigure();}
+  if(name==='forge'){renderForgedGrid();renderUpgrades();}
+  if(name==='skills'){renderSkills();}
+  if(name==='pets'){renderPets();}
+  if(name==='ages'){renderEraTimeline();}
+}
+
+// ════════════════════════════════════════════
+// ── MAIN LOOP ───────────────────────────────
+// ════════════════════════════════════════════
+
+setInterval(()=>{
+  if(G.hero.mana<G.hero.maxMana) G.hero.mana=Math.min(G.hero.maxMana,G.hero.mana+0.2);
+  updateHeaderStats();
+},500);
+
+// Auto-Speichern alle 30 Sekunden in Supabase
+setInterval(saveToSupabase, 30000);
+
+// ════════════════════════════════════════════
+// ── INIT ────────────────────────────────────
+// ════════════════════════════════════════════
+
+async function init() {
+  // Lade-Screen
+  document.body.insertAdjacentHTML('beforeend', `
+    <div id="loadingScreen" style="
+      position:fixed;inset:0;z-index:9999;
+      background:var(--bg);
+      display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;">
+      <div style="font-family:'Cinzel',serif;font-size:2rem;color:var(--gold2);
+        text-shadow:0 0 30px rgba(240,204,85,.5);">⚔️ SWORDMASTER</div>
+      <div style="font-size:0.9rem;color:var(--text2);font-style:italic;" id="loadMsg">Starte Spiel...</div>
+      <div style="width:220px;height:5px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;">
+        <div id="loadBar" style="height:100%;width:0%;background:linear-gradient(to right,var(--gold),var(--gold2));
+          border-radius:3px;transition:width .4s ease;"></div>
+      </div>
+      <div style="font-size:0.72rem;color:var(--text3);font-style:italic;" id="loadSub"></div>
+    </div>
+  `);
+
+  const setLoad = (msg, pct, sub='') => {
+    try {
+      const m=document.getElementById('loadMsg'); if(m) m.textContent=msg;
+      const b=document.getElementById('loadBar'); if(b) b.style.width=pct+'%';
+      const s=document.getElementById('loadSub'); if(s) s.textContent=sub;
+    } catch(e){}
+  };
+
+  const removeLoader = () => {
+    try {
+      const ls=document.getElementById('loadingScreen');
+      if(ls){ ls.style.opacity='0'; ls.style.transition='opacity .5s';
+        setTimeout(()=>{ try{ls.remove();}catch(e){} },500); }
+    } catch(e){}
+  };
+
+  // Kurz warten damit DOM ready ist
+  await new Promise(r=>setTimeout(r,100));
+  setLoad('Spiel wird initialisiert...', 40);
+
+  // Supabase laden mit Timeout (max 4 Sekunden)
+  let loaded = false;
+  try {
+    const loadPromise = loadFromSupabase();
+    const timeout = new Promise(resolve => setTimeout(()=>resolve(false), 4000));
+    loaded = await Promise.race([loadPromise, timeout]);
+  } catch(e) {
+    console.warn('Load error:', e);
+    loaded = false;
+  }
+
+  setLoad(loaded ? '✅ Spielstand geladen!' : '🆕 Neues Spiel...', 80);
+  await new Promise(r=>setTimeout(r,300));
+
+  // UI komplett aufbauen
+  try { renderEquipSlots(); } catch(e){}
+  try { renderInventory(); } catch(e){}
+  try { renderUpgrades(); } catch(e){}
+  try { renderSkills(); } catch(e){}
+  try { renderPets(); } catch(e){}
+  try { renderEraTimeline(); } catch(e){}
+  try { renderForgedGrid(); } catch(e){}
+  try { setForgedView('recent'); } catch(e){}
+  try { updateAll(); } catch(e){}
+  try { updateHeroFigure(); } catch(e){}
+
+  setLoad('Los geht\'s! ⚔️', 100);
+  await new Promise(r=>setTimeout(r,300));
+  removeLoader();
+
+  // Idle-Belohnungen prüfen
+  try { checkIdle(); } catch(e){}
+
+  // Kampf starten
+  try { spawnMonster(); startCombat(); } catch(e){}
+
+  if (loaded) {
+    log(`✅ Willkommen zurück! Level ${G.hero.level} geladen.`, 'n');
+  } else {
+    setSaveStatus('⚠️ Offline-Modus', 'var(--orange2)');
+    log('⚔️ SwordMaster gestartet! Führe das SQL-Script in Supabase aus für Cloud-Speicherung.', 'n');
+    setTimeout(()=>{ try{saveToSupabase();}catch(e){} }, 3000);
+  }
+}
+
+init();
+</script>
+</body>
+</html>
