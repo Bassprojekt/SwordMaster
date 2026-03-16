@@ -1599,7 +1599,7 @@ function getStats() {
   return { atk, def, spd, crit: Math.min(75, crit) };
 }
 
-function goldMult()   { return 1 + (G.upgrades.gold_mult||0)*0.25 + (G.skills.has('goldSense')?0.35:0); }
+function goldMult()   { return 1 + (G.upgrades.gold_mult||0)*0.12 + (G.skills.has('goldSense')?0.15:0) + ((G.shopBoosts&&G.shopBoosts.goldBoost||0)>Date.now()?0.5:0); }
 function dropBonus()  { return (G.upgrades.drop_rate||0)*0.08 + (G.skills.has('treasureHunt')?0.2:0); }
 function idleMult()   { return 1 + (G.upgrades.idle_mul||0)*0.6; }
 function rarBonus()   { return (G.upgrades.item_qual||0)*0.15; }
@@ -1612,7 +1612,7 @@ function upgCost(u)   { const lv=G.upgrades[u.id]||0; return Math.floor(u.baseCo
 
 function rng(a,b) { return Math.floor(Math.random()*(b-a+1))+a; }
 
-function xpNeed() { return Math.floor(50*Math.pow(1.4,G.hero.level-1)); }
+function xpNeed() { return Math.floor(80*Math.pow(1.55,G.hero.level-1)); }
 
 function currentEra()  { for(let i=ERAS.length-1;i>=0;i--){if(G.hero.level>=ERAS[i].minLv)return{e:ERAS[i],i};} return{e:ERAS[0],i:0}; }
 function currentZone() { for(let i=ZONES.length-1;i>=0;i--){if(G.hero.level>=ZONES[i].minLv)return ZONES[i];} return ZONES[0]; }
@@ -2219,8 +2219,8 @@ function tick() {
 
 function monsterKilled(m) {
   const lk = luckMult(); const gm = goldMult();
-  const xp   = Math.round((m.xp + G.wave * 2) * lk);
-  const gold  = Math.round((m.gold + rng(0, G.wave)) * gm * lk);
+  const xp   = Math.round((m.xp + Math.floor(G.wave * 0.3)) * lk);
+  const gold  = Math.round((m.gold + rng(0, 3)) * gm * lk);
   G.hero.xp += xp; G.hero.gold += gold; G.kills++;
   log('💀 ' + m.name + ' besiegt! +' + xp + ' XP  +' + gold + ' Gold', 'c');
   petHealOnKill();
@@ -2263,8 +2263,8 @@ function checkLevelUp() {
   let leveled = false;
   while (G.hero.xp >= xpNeed()) {
     G.hero.xp -= xpNeed(); G.hero.level++;
-    G.hero.baseAtk += rng(2, 4); G.hero.baseDef += rng(1, 2);
-    G.hero.maxHp += rng(18, 28); G.hero.hp = G.hero.maxHp;
+    G.hero.baseAtk += rng(1, 3); G.hero.baseDef += rng(0, 2);
+    G.hero.maxHp += rng(12, 20); G.hero.hp = G.hero.maxHp;
     G.hero.maxMana += rng(5, 10); G.hero.mana = G.hero.maxMana;
     G.hero.baseCrit = Math.min(50, G.hero.baseCrit + 0.2);
     if (G.hero.level % 5 === 0) G.hero.spd = Math.max(0.25, G.hero.spd - 0.1);
@@ -2477,7 +2477,7 @@ function autoEquipBest() {
 }
 
 // ─── Sell Manager ───
-const SELL_VALUES={'common':2,'uncommon':8,'rare':25,'epic':80,'legendary':250,'mythic':800};
+const SELL_VALUES={'common':1,'uncommon':4,'rare':12,'epic':40,'legendary':120,'mythic':500};
 let sellSelected=new Set();
 
 function openSellManager() {
@@ -3184,8 +3184,8 @@ function dungeonAttack(){
 
 function dungeonVictory(){
   const m=G.dungeonMonster;const isBoss=m?.isBoss;
-  const goldR=Math.round((m.gold*3+G.dungeonFloor*10)*(isBoss?5:1));
-  const xpR=Math.round((m.xp*2+G.dungeonFloor*5)*(isBoss?3:1));
+  const goldR=Math.round((m.gold*1.5+G.dungeonFloor*3)*(isBoss?3:1));
+  const xpR=Math.round((m.xp*1.2+G.dungeonFloor*2)*(isBoss?2:1));
   G.hero.gold+=goldR;G.hero.xp+=xpR;G.kills++;
   if(G.dungeonFloor>G.dungeonBestFloor)G.dungeonBestFloor=G.dungeonFloor;
   G.dungeonFloor++;G.dungeonMonster=null;
@@ -3531,8 +3531,8 @@ function buyShopItem(item){
   if(item.eff==='revive'){G.reviveReady=true;log('💫 Wiedergeburt bereit!','i');}
   if(item.eff==='dungKey'){G.dungeonKeys=(G.dungeonKeys||0)+1;log('🗝️ +1 Dungeon-Schlüssel!','i');renderDungeon();}
   if(item.eff==='dungKey3'){G.dungeonKeys=(G.dungeonKeys||0)+3;log('🗝️ +3 Dungeon-Schlüssel!','i');renderDungeon();}
-  if(item.eff==='g500'){G.hero.gold+=500;log('💰 +500 Gold!','i');}
-  if(item.eff==='g5000'){G.hero.gold+=5000;log('💰 +5000 Gold!','i');}
+  if(item.eff==='g500'){G.hero.gold+=200;log('💰 +500 Gold!','i');}
+  if(item.eff==='g5000'){G.hero.gold+=1500;log('💰 +5000 Gold!','i');}
   if(item.eff==='xpBoost'){G.shopBoosts.xpBoost=Date.now()+30*60000;log('⭐ XP-Boost aktiv (30 Min)!','i');}
   if(item.eff==='goldBoost'){G.shopBoosts.goldBoost=Date.now()+30*60000;log('💰 Gold-Boost aktiv (30 Min)!','i');}
   if(item.eff==='petFood'){G.shopBoosts.petFood=true;log('🍖 Pets stärker!','i');}
