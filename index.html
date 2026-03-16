@@ -735,174 +735,108 @@ body {
   <div class="nav-tab" onclick="switchTab('quests')" id="tab-quests"><div class="tab-icon">📜</div>Quests<span id="questBadge" style="display:none;background:var(--red2);color:#fff;font-size:.48rem;border-radius:8px;padding:0 4px;margin-left:2px;">!</span></div>
 </div>
 
-<!-- ═══ ARENA + HELD PAGE (combined, side by side) ═══ -->
+<!-- ═══ ARENA PAGE ═══ -->
 <div class="page active" id="page-arena">
-  <div style="display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap;">
-
-    <!-- LEFT: Held / Charakter -->
-    <div style="display:flex;flex-direction:column;gap:10px;flex:1;min-width:260px;">
-
-      <!-- Charakter Card -->
-      <div class="card">
-        <div class="sec-title">🧙 Held</div>
-        <div class="hero-panel">
-          <div class="hero-avatar" id="heroAvatarBig" style="background:none;border:none;width:80px;height:90px;overflow:visible;">
-            <svg id="heroFigureSVG" viewBox="0 0 60 90" width="80" height="90" xmlns="http://www.w3.org/2000/svg" style="filter:drop-shadow(0 4px 12px rgba(0,0,0,0.7));">
-              <g id="heroBodyGroup" style="animation:heroBob 1.8s ease-in-out infinite;">
-                <ellipse cx="30" cy="84" rx="13" ry="3.5" fill="rgba(0,0,0,0.35)"/>
-                <path id="heroCape" d="M22,30 Q16,50 18,70 Q22,72 26,70 Q24,50 26,30Z" fill="#555" opacity="0.85"/>
-                <rect id="heroLegL" x="22" y="60" width="7" height="18" rx="3" fill="#444"/>
-                <rect id="heroLegR" x="31" y="60" width="7" height="18" rx="3" fill="#444"/>
-                <rect id="heroBootL" x="21" y="72" width="9" height="8" rx="2" fill="#333"/>
-                <rect id="heroBootR" x="30" y="72" width="9" height="8" rx="2" fill="#333"/>
-                <rect id="heroChest" x="20" y="28" width="20" height="24" rx="4" fill="#666"/>
-                <line x1="30" y1="30" x2="30" y2="50" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
-                <line x1="21" y1="38" x2="39" y2="38" stroke="rgba(255,255,255,0.1)" stroke-width="0.8"/>
-                <ellipse id="heroShoulderL" cx="18" cy="30" rx="5" ry="4" fill="#777"/>
-                <ellipse id="heroShoulderR" cx="42" cy="30" rx="5" ry="4" fill="#777"/>
-                <rect id="heroArmL" x="13" y="30" width="6" height="16" rx="3" fill="#555"/>
-                <path id="heroShield" d="M8,32 Q5,38 8,46 Q10,50 13,48 Q16,46 13,38 Q12,34 8,32Z" fill="#777" stroke="rgba(255,255,255,0.2)" stroke-width="0.8"/>
-                <line x1="10.5" y1="33" x2="10.5" y2="47" stroke="rgba(255,255,255,0.25)" stroke-width="1"/>
-                <line x1="8" y1="40" x2="13" y2="40" stroke="rgba(255,255,255,0.2)" stroke-width="0.8"/>
-                <g id="heroSwordArm" style="transform-origin:41px 30px;animation:swordSwing 1.8s ease-in-out infinite;">
-                  <rect id="heroArmR" x="38" y="29" width="6" height="16" rx="3" fill="#555"/>
-                  <rect x="40" y="14" width="3" height="6" rx="1" fill="#8B6914"/>
-                  <rect x="36" y="19" width="11" height="2.5" rx="1" fill="#bbb"/>
-                  <path id="heroSwordBlade" d="M40.5,8 L42,20 L41,20 Z" fill="#e0e8ff" stroke="rgba(255,255,255,0.5)" stroke-width="0.4"/>
-                  <path d="M41,9 L41.5,18" stroke="rgba(255,255,255,0.7)" stroke-width="0.5"/>
-                </g>
-                <rect x="20" y="50" width="20" height="3" rx="1" fill="#444"/>
-                <rect x="28" y="49" width="4" height="4" rx="1" fill="#888"/>
-                <rect x="27" y="22" width="6" height="7" rx="2" fill="#c8a882"/>
-                <ellipse id="heroHead" cx="30" cy="17" rx="9" ry="10" fill="#c8a882"/>
-                <path id="heroHelmet" d="M21,16 Q21,6 30,5 Q39,6 39,16 Q36,14 30,13 Q24,14 21,16Z" fill="#666"/>
-                <path d="M22,16 Q26,18 30,18 Q34,18 38,16" stroke="rgba(0,0,0,0.3)" stroke-width="0.8" fill="none"/>
-                <rect id="heroHelmetL" x="21" y="14" width="3" height="5" rx="1" fill="#666"/>
-                <rect id="heroHelmetR" x="36" y="14" width="3" height="5" rx="1" fill="#666"/>
-                <ellipse cx="26" cy="17" rx="2.2" ry="2" fill="#1a1a2e"/>
-                <ellipse cx="34" cy="17" rx="2.2" ry="2" fill="#1a1a2e"/>
-                <ellipse id="eyeGlowL" cx="26" cy="17" rx="1.1" ry="1" fill="#4af" opacity="0.9"/>
-                <ellipse id="eyeGlowR" cx="34" cy="17" rx="1.1" ry="1" fill="#4af" opacity="0.9"/>
-              </g>
-            </svg>
+  <!-- Kompakte Held-Leiste -->
+  <div class="card" style="padding:10px 14px;margin-bottom:8px;">
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+      <div id="arenaHeroFigureSmall" style="width:48px;height:54px;flex-shrink:0;overflow:visible;">
+        <svg id="heroFigureSVG" viewBox="0 0 60 90" width="48" height="54" xmlns="http://www.w3.org/2000/svg" style="filter:drop-shadow(0 2px 6px rgba(0,0,0,0.8));">
+          <g id="heroBodyGroup" style="animation:heroBob 1.8s ease-in-out infinite;">
+            <ellipse cx="30" cy="84" rx="13" ry="3.5" fill="rgba(0,0,0,0.35)"/>
+            <path id="heroCape" d="M22,30 Q16,50 18,70 Q22,72 26,70 Q24,50 26,30Z" fill="#555" opacity="0.85"/>
+            <rect id="heroLegL" x="22" y="60" width="7" height="18" rx="3" fill="#444"/>
+            <rect id="heroLegR" x="31" y="60" width="7" height="18" rx="3" fill="#444"/>
+            <rect id="heroBootL" x="21" y="72" width="9" height="8" rx="2" fill="#333"/>
+            <rect id="heroBootR" x="30" y="72" width="9" height="8" rx="2" fill="#333"/>
+            <rect id="heroChest" x="20" y="28" width="20" height="24" rx="4" fill="#666"/>
+            <line x1="30" y1="30" x2="30" y2="50" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+            <ellipse id="heroShoulderL" cx="18" cy="30" rx="5" ry="4" fill="#777"/>
+            <ellipse id="heroShoulderR" cx="42" cy="30" rx="5" ry="4" fill="#777"/>
+            <rect id="heroArmL" x="13" y="30" width="6" height="16" rx="3" fill="#555"/>
+            <path id="heroShield" d="M8,32 Q5,38 8,46 Q10,50 13,48 Q16,46 13,38 Q12,34 8,32Z" fill="#777" stroke="rgba(255,255,255,0.2)" stroke-width="0.8"/>
+            <g id="heroSwordArm" style="transform-origin:41px 30px;animation:swordSwing 1.8s ease-in-out infinite;">
+              <rect id="heroArmR" x="38" y="29" width="6" height="16" rx="3" fill="#555"/>
+              <rect x="40" y="14" width="3" height="6" rx="1" fill="#8B6914"/>
+              <rect x="36" y="19" width="11" height="2.5" rx="1" fill="#bbb"/>
+              <path id="heroSwordBlade" d="M40.5,8 L42,20 L41,20 Z" fill="#e0e8ff" stroke="rgba(255,255,255,0.5)" stroke-width="0.4"/>
+            </g>
+            <rect x="27" y="22" width="6" height="7" rx="2" fill="#c8a882"/>
+            <ellipse id="heroHead" cx="30" cy="17" rx="9" ry="10" fill="#c8a882"/>
+            <path id="heroHelmet" d="M21,16 Q21,6 30,5 Q39,6 39,16 Q36,14 30,13 Q24,14 21,16Z" fill="#666"/>
+            <rect id="heroHelmetL" x="21" y="14" width="3" height="5" rx="1" fill="#666"/>
+            <rect id="heroHelmetR" x="36" y="14" width="3" height="5" rx="1" fill="#666"/>
+            <ellipse cx="26" cy="17" rx="2.2" ry="2" fill="#1a1a2e"/>
+            <ellipse cx="34" cy="17" rx="2.2" ry="2" fill="#1a1a2e"/>
+            <ellipse id="eyeGlowL" cx="26" cy="17" rx="1.1" ry="1" fill="#4af" opacity="0.9"/>
+            <ellipse id="eyeGlowR" cx="34" cy="17" rx="1.1" ry="1" fill="#4af" opacity="0.9"/>
+          </g>
+        </svg>
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px;">
+          <span id="heroNameDisplay" style="font-family:'Cinzel',serif;font-size:.9rem;font-weight:700;color:var(--gold2);"></span>
+          <button id="editNameBtn" onclick="openNameEdit()" style="background:none;border:none;cursor:pointer;color:var(--text2);font-size:.8rem;padding:1px 3px;">✏️</button>
+          <div id="nameCooldownBadge" style="display:none;font-size:.58rem;font-family:'Cinzel',serif;color:var(--text3);background:rgba(0,0,0,.3);border:1px solid var(--border);border-radius:3px;padding:1px 5px;">⏳ <span id="nameCooldownTxt">48h</span></div>
+          <div class="lvl-badge" id="lvlBadge">LVL 1</div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <div style="flex:1;min-width:100px;">
+            <div class="bar-label"><span>❤️</span><span id="hpTxt">100/100</span></div>
+            <div class="bar" style="height:7px;"><div class="bar-fill hp-fill" id="hpBar" style="width:100%"></div></div>
           </div>
-          <div class="hero-data">
-            <div class="hero-name-row">
-              <div style="display:flex;align-items:center;gap:6px;">
-                <div class="hero-name" id="heroNameDisplay">Klar</div>
-                <button id="editNameBtn" onclick="openNameEdit()" title="Name ändern" style="
-                  background:none;border:none;cursor:pointer;padding:2px 5px;
-                  color:var(--text2);font-size:0.9rem;border-radius:4px;
-                  transition:all .2s;line-height:1;">✏️</button>
-                <div id="nameCooldownBadge" style="
-                  display:none;font-size:0.62rem;font-family:'Cinzel',serif;
-                  color:var(--text3);background:rgba(0,0,0,.3);
-                  border:1px solid var(--border);border-radius:4px;padding:1px 6px;">
-                  ⏳ <span id="nameCooldownTxt">48h</span>
-                </div>
-              </div>
-              <div class="lvl-badge" id="lvlBadge">LVL 1</div>
-            </div>
-            <div class="bars">
-              <div>
-                <div class="bar-label"><span>❤️ HP</span><span id="hpTxt">100/100</span></div>
-                <div class="bar"><div class="bar-fill hp-fill" id="hpBar" style="width:100%"></div></div>
-              </div>
-              <div>
-                <div class="bar-label"><span>⭐ XP</span><span id="xpTxt">0/50</span></div>
-                <div class="bar"><div class="bar-fill xp-fill" id="xpBar" style="width:0%"></div></div>
-              </div>
-              <div>
-                <div class="bar-label"><span>💧 Mana</span><span id="manaTxt">50/50</span></div>
-                <div class="bar"><div class="bar-fill mana-fill" id="manaBar" style="width:100%"></div></div>
-              </div>
-            </div>
-            <div class="stat-pills" id="statPills">
-              <div class="pill">⚔️ ATK <b id="pAtk">5</b></div>
-              <div class="pill">🛡️ DEF <b id="pDef">2</b></div>
-              <div class="pill">⚡ SPD <b id="pSpd">1.0</b>s</div>
-              <div class="pill">🔥 CRIT <b id="pCrit">5</b>%</div>
-            </div>
+          <div style="flex:1;min-width:100px;">
+            <div class="bar-label"><span>⭐ XP</span><span id="xpTxt">0/50</span></div>
+            <div class="bar" style="height:7px;"><div class="bar-fill xp-fill" id="xpBar" style="width:0%"></div></div>
           </div>
         </div>
-      </div>
-
-      <!-- Equipment Card -->
-      <div class="card">
-        <div class="sec-title">🗡️ Ausrüstung</div>
-        <div style="font-size:0.7rem;color:var(--text2);font-style:italic;margin-bottom:8px;">Klicke Item im Inventar zum Ausrüsten.</div>
-        <div class="equip-grid" id="equipGrid"></div>
-        <div style="margin-top:8px;" id="equipBonus"></div>
-      </div>
-
-      <!-- Inventory Card -->
-      <div class="card">
-        <div class="sec-title">🎒 Inventar</div>
-        <div class="inv-grid" id="invGrid">
-          <div style="color:var(--text2);font-size:0.78rem;font-style:italic;grid-column:1/-1;padding:10px;text-align:center;">Noch leer — geh schmieden!</div>
+        <div class="stat-pills" style="margin-top:5px;" id="statPills">
+          <div class="pill">⚔️<b id="pAtk">5</b></div>
+          <div class="pill">🛡️<b id="pDef">2</b></div>
+          <div class="pill">⚡<b id="pSpd">1.0</b>s</div>
+          <div class="pill">🔥<b id="pCrit">5</b>%</div>
+          <div class="pill">💧<b id="manaTxt" style="font-size:.62rem;">50/50</b></div>
         </div>
       </div>
+    </div>
+  </div>
 
-      <!-- Upgrades Card -->
-      <div class="card">
-        <div class="sec-title">⬆️ Amboss-Upgrades</div>
-        <div class="upg-grid" id="upgGrid"></div>
+  <!-- Vollbild Arena -->
+  <div class="card" style="position:relative;">
+    <div class="arena-bg"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:6px;">
+      <div style="font-family:'Cinzel',serif;font-size:.76rem;color:var(--text2);">🗺️ <span id="zoneName">Dunkler Wald</span></div>
+      <div style="display:flex;gap:6px;align-items:center;">
+        <div id="arenaActivePets" style="display:flex;gap:4px;flex-wrap:wrap;"></div>
+        <div class="wave-chip" id="waveChip">Welle 1</div>
       </div>
+    </div>
 
-    </div><!-- end LEFT -->
+    <!-- Monster Arena (bigger now) -->
+    <div id="monsterArena" style="min-height:220px;background:linear-gradient(to bottom,rgba(0,0,0,.15),rgba(20,0,30,.5));border:1px solid var(--border);border-radius:10px;overflow:hidden;display:flex;align-items:flex-end;justify-content:center;padding:8px 4px 0;position:relative;margin-bottom:10px;">
+      <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 50% 100%,rgba(100,20,20,.3),transparent 70%);pointer-events:none;"></div>
+      <div style="position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(to right,transparent,var(--border2),transparent);"></div>
+      <div id="monstersRow" style="display:flex;align-items:flex-end;justify-content:center;gap:10px;padding-bottom:4px;position:relative;z-index:1;flex-wrap:wrap;"></div>
+    </div>
 
-    <!-- RIGHT: Arena -->
-    <div style="display:flex;flex-direction:column;gap:10px;flex:1;min-width:260px;">
-      <div class="card" style="position:relative;min-height:320px;">
-        <div class="arena-bg"></div>
-        <div class="arena-header">
-          <div class="arena-zone">🗺️ Zone: <span id="zoneName">Dunkler Wald</span></div>
-          <div class="wave-chip" id="waveChip">Welle 1</div>
-        </div>
-
-        <!-- Multi-Monster Arena -->
-        <div id="monsterArena" style="
-          position:relative;min-height:180px;
-          background:linear-gradient(to bottom,rgba(0,0,0,0.2),rgba(20,0,30,0.4));
-          border:1px solid var(--border);border-radius:10px;
-          margin:8px 0;overflow:hidden;
-          display:flex;align-items:flex-end;justify-content:center;gap:4px;
-          padding:8px 4px 0;">
-          <!-- Background atmosphere -->
-          <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 50% 100%,rgba(100,20,20,0.3),transparent 70%);pointer-events:none;"></div>
-          <!-- Ground line -->
-          <div style="position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(to right,transparent,var(--border2),transparent);"></div>
-          <!-- Monsters render here -->
-          <div id="monstersRow" style="display:flex;align-items:flex-end;justify-content:center;gap:8px;padding-bottom:4px;position:relative;z-index:1;flex-wrap:wrap;"></div>
-        </div>
-
-        <!-- Hero attack indicator -->
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap;">
-          <div id="arenaHeroName" style="font-family:'Cinzel',serif;font-size:0.78rem;color:var(--gold2);">Klar</div>
-          <div style="font-size:0.7rem;color:var(--text2);">❤️ <span id="arenaHeroHp">100/100</span></div>
-          <div class="pets-row" id="arenaActivePets" style="margin:0;"></div>
-        </div>
-
-        <!-- Main target HP bar -->
-        <div id="targetHpSection">
-          <div class="bar-label">
-            <span id="targetMonName" style="color:var(--red2);font-family:'Cinzel',serif;font-size:0.75rem;">—</span>
-            <span id="targetMonHp" style="font-size:0.72rem;color:var(--text2);">—</span>
-          </div>
-          <div class="bar" style="height:10px;"><div class="bar-fill hp-fill" id="monHpBar" style="width:100%"></div></div>
-        </div>
-
-        <div class="log-box" id="gameLog" style="margin-top:8px;">
-          <div class="log-e n">⚔️ Willkommen! Kämpfe beginnen automatisch.</div>
-        </div>
+    <!-- Target HP -->
+    <div style="margin-bottom:8px;">
+      <div class="bar-label">
+        <span id="targetMonName" style="color:var(--red2);font-family:'Cinzel',serif;font-size:.74rem;">—</span>
+        <span id="targetMonHp" style="font-size:.7rem;color:var(--text2);">—</span>
       </div>
-    </div><!-- end RIGHT -->
+      <div class="bar" style="height:10px;"><div class="bar-fill hp-fill" id="monHpBar" style="width:100%"></div></div>
+    </div>
 
+    <!-- Hero HP bar in arena -->
+    <div style="margin-bottom:8px;">
+      <div class="bar-label"><span style="font-family:'Cinzel',serif;font-size:.7rem;" id="arenaHeroName">Held</span><span id="arenaHeroHp" style="font-size:.7rem;color:var(--text2);">100/100</span></div>
+      <div class="bar" style="height:7px;"><div class="bar-fill" style="background:linear-gradient(to right,#145a32,#40c070);" id="arenaHpBar" ></div></div>
+    </div>
+
+    <div class="log-box" id="gameLog"><div class="log-e n">⚔️ Willkommen! Kämpfe beginnen automatisch.</div></div>
   </div>
 </div>
-
-<!-- ═══ HERO PAGE (redirect to arena) ═══ -->
-<div class="page" id="page-hero" style="display:none!important;"></div>
 
 <!-- ═══ FORGE PAGE ═══ -->
 <div class="page" id="page-forge">
@@ -942,9 +876,9 @@ body {
           💰 Verkaufs-Manager
           <span style="font-size:0.65rem;display:block;font-weight:400;opacity:0.8;margin-top:2px;">Items nach Seltenheit verkaufen</span>
         </button>
-        <button class="action-btn gold" onclick="showAllForged()">
-          📦 Alle geschmiedeten Items
-          <span style="font-size:0.65rem;display:block;font-weight:400;opacity:0.8;margin-top:2px;">Gesamtes Inventar anzeigen</span>
+        <button class="action-btn gold" onclick="setForgedView('all')">
+          📦 Alle Items anzeigen
+          <span style="font-size:0.65rem;display:block;font-weight:400;opacity:0.8;margin-top:2px;"><span id="fItemsCount">0</span> Items gesamt</span>
         </button>
       </div>
     </div>
@@ -961,11 +895,6 @@ body {
     </div>
   </div>
 
-  <!-- Upgrades compact -->
-  <div class="card">
-    <div class="sec-title">⬆️ Upgrades</div>
-    <div class="upg-grid" id="upgGrid2"></div>
-  </div>
 </div>
 
 <!-- ═══ SELL MANAGER OVERLAY ═══ -->
@@ -996,39 +925,32 @@ body {
 
 <!-- ═══ HELD PAGE ═══ -->
 <div class="page" id="page-held">
+  <!-- Ausrüstung -->
   <div class="card">
-    <div class="sec-title">🧙 Charakter</div>
-    <div style="display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap;">
-      <div id="heroAvatarHeld" style="background:none;border:none;width:78px;height:88px;overflow:visible;flex-shrink:0;">
-        <!-- SVG wird per JS befüllt -->
-      </div>
-      <div style="flex:1;min-width:160px;">
-        <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;flex-wrap:wrap;">
-          <div style="font-family:'Cinzel',serif;font-size:1rem;font-weight:700;color:var(--gold2);" id="heroNameHeld">Klar</div>
-          <div class="lvl-badge" id="lvlBadgeHeld">LVL 1</div>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:4px;">
-          <div><div class="bar-label"><span>❤️ HP</span><span id="hpTxtHeld">100/100</span></div><div class="bar"><div class="bar-fill hp-fill" id="hpBarHeld" style="width:100%"></div></div></div>
-          <div><div class="bar-label"><span>⭐ XP</span><span id="xpTxtHeld">0/50</span></div><div class="bar"><div class="bar-fill xp-fill" id="xpBarHeld" style="width:0%"></div></div></div>
-          <div><div class="bar-label"><span>💧 Mana</span><span id="manaTxtHeld">50/50</span></div><div class="bar"><div class="bar-fill mana-fill" id="manaBarHeld" style="width:100%"></div></div></div>
-        </div>
-        <div class="stat-pills" style="margin-top:7px;">
-          <div class="pill">⚔️ ATK <b id="pAtkHeld">5</b></div>
-          <div class="pill">🛡️ DEF <b id="pDefHeld">2</b></div>
-          <div class="pill">⚡ SPD <b id="pSpdHeld">1.0</b>s</div>
-          <div class="pill">🔥 CRIT <b id="pCritHeld">5</b>%</div>
-        </div>
-      </div>
+    <div class="sec-title">🗡️ Ausrüstung</div>
+    <div style="font-size:.7rem;color:var(--text2);font-style:italic;margin-bottom:8px;">Klicke ein Item im Inventar zum Ausrüsten. Klicke einen Slot zum Ablegen.</div>
+    <div class="equip-grid" id="equipGrid"></div>
+    <div style="margin-top:8px;" id="equipBonus"></div>
+  </div>
+  <!-- Inventar -->
+  <div class="card">
+    <div class="sec-title">🎒 Inventar <span style="font-size:.68rem;color:var(--text2);font-weight:400;" id="invCount">(0)</span></div>
+    <div style="display:flex;gap:5px;margin-bottom:8px;flex-wrap:wrap;">
+      <button class="ctrl-btn" onclick="autoEquipBest()" style="border-color:var(--green2);color:var(--green2);font-size:.66rem;padding:5px 10px;">🗡️ Auto-Ausrüsten</button>
+      <button class="ctrl-btn" onclick="openSellManager()" style="border-color:var(--blue2);color:var(--blue2);font-size:.66rem;padding:5px 10px;">💰 Verkaufen</button>
     </div>
+    <div class="inv-grid" id="invGrid"><div style="color:var(--text2);font-size:.78rem;font-style:italic;grid-column:1/-1;padding:10px;text-align:center;">Noch leer — geh schmieden!</div></div>
   </div>
-  <div class="card">
-    <div class="sec-title">🌅 Zeitalter</div>
-    <div id="eraTimelineHeld"></div>
-  </div>
+  <!-- Fähigkeiten -->
   <div class="card">
     <div class="sec-title">✨ Fähigkeiten</div>
-    <div style="font-size:0.72rem;color:var(--text2);font-style:italic;margin-bottom:10px;">Erforsche mit Gold. Manche brauchen Vorgänger.</div>
-    <div class="skills-grid" id="skillsGridHeld"></div>
+    <div style="font-size:.72rem;color:var(--text2);font-style:italic;margin-bottom:10px;">Erforsche mit Gold. Manche brauchen Vorgänger.</div>
+    <div class="skills-grid" id="skillsGrid"></div>
+  </div>
+  <!-- Zeitalter -->
+  <div class="card">
+    <div class="sec-title">🌅 Zeitalter</div>
+    <div id="eraTimeline"></div>
   </div>
 </div>
 
@@ -1190,8 +1112,13 @@ body {
 <!-- ═══ FORSCHUNG PAGE ═══ -->
 <div class="page" id="page-forschung">
   <div class="card">
+    <div class="sec-title">⬆️ Amboss-Upgrades</div>
+    <div style="font-size:.7rem;color:var(--text2);font-style:italic;margin-bottom:10px;">Permanente Upgrades für Held und Schmiede.</div>
+    <div class="upg-grid" id="upgGrid"></div>
+  </div>
+  <div class="card">
     <div class="sec-title">🔬 Forschungslabor</div>
-    <div style="font-size:.72rem;color:var(--text2);margin-bottom:10px;">Erforsche Technologien für dauerhaften Vorteil. Manche Forschungen dauern Zeit!</div>
+    <div style="font-size:.72rem;color:var(--text2);margin-bottom:10px;">Erforsche Technologien für dauerhaften Vorteil. Manche dauern Zeit!</div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
       <div class="pill">🔬 Aktiv: <b id="activeResearch" style="color:var(--purple2);">—</b></div>
       <div class="pill" id="researchTimer">⏳ —</div>
@@ -1606,14 +1533,18 @@ const SKILLS = [
 ];
 
 const PETS = [
-  { id:'wolf',    name:'Eisteufel',   emoji:'🐺', skill:'30% ATK als Petschaden', atkPct:0.30,defBonus:0, special:'',     cost:100 },
-  { id:'eagle',   name:'Sturmadler',  emoji:'🦅', skill:'+15% Angriffsgeschwind.',atkPct:0,   defBonus:0, special:'spd',  cost:200 },
-  { id:'cat',     name:'Schutzkatze', emoji:'🐱', skill:'+20% mehr DEF',          atkPct:0,   defBonus:0, special:'def',  cost:150 },
-  { id:'dragon',  name:'Feuerdrache', emoji:'🐲', skill:'60% ATK als Petschaden', atkPct:0.60,defBonus:0, special:'',     cost:500 },
-  { id:'phoenix', name:'Phönix',      emoji:'🦜', skill:'Heilt 5% HP nach Kill',  atkPct:0,   defBonus:0, special:'heal', cost:350 },
-  { id:'fairy',   name:'Glücksfee',   emoji:'🧚', skill:'+20% Gold & XP',         atkPct:0,   defBonus:0, special:'luck', cost:600 },
-  { id:'golem',   name:'Minigolem',   emoji:'🗿', skill:'100% ATK als Petschaden',atkPct:1.0, defBonus:0, special:'',     cost:1000},
-  { id:'void',    name:'Leeregeist',  emoji:'👻', skill:'150% ATK als Petschaden',atkPct:1.5, defBonus:0, special:'',     cost:2500},
+  { id:'wolf',    name:'Eiswolf',       emoji:'🐺', skill:'Beißt für 30% ATK',     desc:'Greift alle 1.5s an.',                    atkPct:0.30, special:'',      cost:100,  color:'#88ccff' },
+  { id:'cat',     name:'Schutzkatze',   emoji:'🐱', skill:'+20% DEF',               desc:'Erhöht Verteidigung dauerhaft.',           atkPct:0,    special:'def',   cost:150,  color:'#aaaaaa' },
+  { id:'eagle',   name:'Sturmadler',    emoji:'🦅', skill:'+15% Angriffsgeschw.',   desc:'Dein Held greift 15% schneller an.',       atkPct:0,    special:'spd',   cost:200,  color:'#f0cc55' },
+  { id:'fox',     name:'Fuchsgeist',    emoji:'🦊', skill:'+25% Gold & XP',         desc:'Mehr Belohnungen aus jedem Kampf.',        atkPct:0,    special:'luck',  cost:300,  color:'#f0903a' },
+  { id:'phoenix', name:'Phönix',        emoji:'🔥', skill:'Heilt 8% HP/Kill',       desc:'Nach jedem Kill: regeneriert HP.',         atkPct:0,    special:'heal',  cost:350,  color:'#ff6030' },
+  { id:'snake',   name:'Giftschlange',  emoji:'🐍', skill:'Vergiftet Monster',      desc:'Monster verliert 2% HP/s (stackt).',      atkPct:0,    special:'poison',cost:400,  color:'#40c070' },
+  { id:'dragon',  name:'Feuerdrache',   emoji:'🐲', skill:'Beißt für 70% ATK',      desc:'Mächtiger Flammenstoß.',                  atkPct:0.70, special:'',      cost:500,  color:'#ff4400' },
+  { id:'fairy',   name:'Glücksfee',     emoji:'🧚', skill:'+30% Gold & Drops',      desc:'Mehr Gold, XP und Item-Drops.',           atkPct:0,    special:'luck2', cost:600,  color:'#ff80ff' },
+  { id:'bear',    name:'Eisbär',        emoji:'🐻', skill:'Beißt für 80% ATK',      desc:'Starker Schlag + verlangsamt Monster.',   atkPct:0.80, special:'slow',  cost:750,  color:'#aaddff' },
+  { id:'golem',   name:'Steingolem',    emoji:'🗿', skill:'Beißt für 100% ATK',     desc:'Massiver Schlag alle 2s.',                atkPct:1.0,  special:'',      cost:1000, color:'#888888' },
+  { id:'demon',   name:'Schattendämon', emoji:'😈', skill:'+15% Crit-Chance',       desc:'Crit-Chance permanent erhöht.',           atkPct:0,    special:'crit',  cost:1500, color:'#9060e0' },
+  { id:'void',    name:'Leeregeist',    emoji:'👻', skill:'Beißt für 150% ATK',     desc:'Vernichtet alles auf seinem Weg.',        atkPct:1.5,  special:'',      cost:2500, color:'#cc00ff' },
 ];
 
 // ════════════════════════════════════════════
@@ -1790,8 +1721,8 @@ function updateHeroFigure() {
 
 function updateHeroPage() {
   const h=G.hero; const s=getStats();
-  document.getElementById('lvlBadge').textContent='LVL '+h.level;
-  updateHeroFigure();
+  try { document.getElementById('lvlBadge').textContent='LVL '+h.level; } catch(e) {}
+  try { updateHeroFigure(); } catch(e) {}
   document.getElementById('hpTxt').textContent=Math.ceil(h.hp)+'/'+h.maxHp;
   document.getElementById('hpBar').style.width=Math.max(0,h.hp/h.maxHp*100)+'%';
   document.getElementById('xpTxt').textContent=h.xp+'/'+xpNeed();
@@ -1976,7 +1907,7 @@ function renderInvGrid(id, items, showEquip) {
 // ════════════════════════════════════════════
 
 function renderUpgrades() {
-  ['upgGrid','upgGrid2'].forEach(id=>{
+  ['upgGrid'].forEach(id=>{
     const grid=document.getElementById(id);
     if(!grid)return;
     grid.innerHTML='';
@@ -2075,14 +2006,16 @@ function renderPets() {
     const owned=G.pets[pet.id];
     const active=G.activePets.has(pet.id);
     const card=document.createElement('div');
-    card.className='pet-card'+(owned?' owned':'')+(active?' active':'');
+    const col=pet.color||'var(--gold)';
+    card.style.cssText=`background:rgba(0,0,0,.3);border:2px solid ${active?col:owned?'var(--green)':'var(--border)'};border-radius:10px;padding:10px;text-align:center;cursor:pointer;transition:all .2s;${active?'box-shadow:0 0 14px '+col+'44;':''}`;
     card.innerHTML=`
-      <div class="pet-ico">${pet.emoji}</div>
-      <div class="pet-nm">${pet.name}</div>
-      <div class="pet-sk">${pet.skill}</div>
+      <div style="font-size:2rem;margin-bottom:3px;animation:monFloat 3s ease-in-out infinite;">${pet.emoji}</div>
+      <div style="font-family:'Cinzel',serif;font-size:.76rem;font-weight:700;color:${owned?col:'var(--text)'};">${pet.name}</div>
+      <div style="font-size:.68rem;color:var(--gold2);margin:2px 0;">${pet.skill}</div>
+      <div style="font-size:.6rem;color:var(--text2);font-style:italic;margin-bottom:5px;line-height:1.3;">${pet.desc||''}</div>
       ${owned
-        ?`<div class="pet-st" style="color:${active?'#f39c12':'#40c070'}">${active?'⚡ Aktiv':'💤 Inaktiv — klicken'}</div>`
-        :`<div class="pet-st" style="color:var(--gold)">💰 ${pet.cost} Gold</div>`
+        ?`<div style="font-family:'Cinzel',serif;font-size:.64rem;padding:2px 8px;border-radius:8px;border:1px solid ${active?col:'var(--green)'};color:${active?col:'var(--green2)'};">${active?'⚡ Aktiv':'💤 Klicken zum Aktivieren'}</div>`
+        :`<div style="font-family:'Cinzel',serif;font-size:.68rem;color:var(--gold);">💰 ${pet.cost} Gold</div>`
       }
     `;
     card.onclick=()=>owned?togglePet(pet.id):buyPet(pet.id);
@@ -3107,7 +3040,7 @@ function switchTab(name) {
   document.getElementById('page-'+name)?.classList.add('active');
   document.getElementById('tab-'+name)?.classList.add('active');
   if(name==='arena'){renderArena();updateArenaPanel();}
-  if(name==='held'){renderHeldPage();renderSkills();}
+  if(name==='held'){renderEquipSlots();renderEquipBonus();renderInventory();renderSkills();renderEraTimeline();}
   if(name==='forge'){renderInventory();renderUpgrades();renderForgedGrid();}
   if(name==='dungeon'){renderDungeon();}
   if(name==='pvp'){renderPVP();}
@@ -3115,7 +3048,7 @@ function switchTab(name) {
   if(name==='gilde'){renderGuild();}
   if(name==='rang'){renderRang();}
   if(name==='shop'){renderShop();}
-  if(name==='forschung'){renderResearch();}
+  if(name==='forschung'){renderUpgrades();renderResearch();}
   if(name==='quests'){renderQuests();}
   // legacy compat
   if(name==='skills'){renderSkills();}
