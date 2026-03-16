@@ -1793,7 +1793,7 @@ function checkLevelUp() {
     log(`🎉 LEVEL UP → ${G.hero.level}!`,'l');
     leveled=true;
   }
-  if(leveled){updateEraUI();}
+  if(leveled){ updateEraUI(); saveToSupabase(); }
 }
 
 // ════════════════════════════════════════════
@@ -1818,7 +1818,7 @@ function dropItem(fromForge=false) {
     ...proto,
     sv: proto.sk==='spd' ? parseFloat((proto.sv*mult).toFixed(3)) : Math.round(proto.sv*mult),
     rarity:rar.id, rarityLabel:rar.label, rarityColor:rar.col,
-    isNew:true, equipped:false, id:Date.now()+Math.random()
+    isNew:true, equipped:false, id:makeUUID()
   };
   G.inventory.unshift(item);
   G.recentForged.unshift(item);
@@ -2017,13 +2017,25 @@ const SUPA_HDR  = { 'Content-Type':'application/json', 'apikey': SUPA_KEY, 'Auth
 function getPlayerId() {
   let id = localStorage.getItem('sm_player_id');
   if (!id) {
-    id = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
-      const r = Math.random()*16|0;
-      return (c==='x'?r:(r&0x3|0x8)).toString(16);
-    });
+    id = makeUUID();
     localStorage.setItem('sm_player_id', id);
   }
   return id;
+}
+
+function makeUUID() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    const r = Math.random()*16|0;
+    return (c==='x'?r:(r&0x3|0x8)).toString(16);
+  });
+}
+
+function validUUID(id) {
+  // Check if already a valid UUID format
+  if (id && typeof id === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)) {
+    return id;
+  }
+  return makeUUID();
 }
 
 function setSaveStatus(msg, color='var(--text2)') {
@@ -2109,9 +2121,9 @@ async function saveToSupabase() {
   }));
   if (petRows.length) await sbUpsert('sm_pets', petRows);
 
-  // 5. Inventory speichern (alle nicht ausgerüsteten + ausgerüstete)
+  // 5. Inventory speichern — IDs immer als gültige UUID
   const invRows = G.inventory.map(it => ({
-    id:         it.id.toString().length === 36 ? it.id : undefined,
+    id:         validUUID(it.id),
     player_id:  pid,
     item_name:  it.name,
     item_emoji: it.emoji,
@@ -2122,12 +2134,13 @@ async function saveToSupabase() {
     is_equipped:it.equipped || false,
     is_new:     it.isNew || false
   }));
-  // Inventar komplett neu schreiben (löschen + neu einfügen)
+
+  // Inventar komplett neu schreiben
   await sbDelete('sm_inventory', `player_id=eq.${pid}`);
   if (invRows.length) {
-    // In Batches zu je 50
     for (let i=0; i<invRows.length; i+=50) {
-      await sbUpsert('sm_inventory', invRows.slice(i,i+50));
+      const ok = await sbUpsert('sm_inventory', invRows.slice(i,i+50));
+      if (!ok) console.warn('Inventory batch failed at', i);
     }
   }
 
