@@ -2690,7 +2690,27 @@ async function _doSave() {
       wave:           G.wave,
       total_kills:    G.kills,
       forge_count:    G.forgeCount,
-      era_index:      G.eraIdx
+      era_index:      G.eraIdx,
+      // Dungeon
+      dungeon_floor:      G.dungeonFloor      || 1,
+      dungeon_keys:       G.dungeonKeys       || 3,
+      dungeon_best_floor: G.dungeonBestFloor  || 0,
+      // PVP
+      pvp_points: G.pvpPoints  || 0,
+      pvp_wins:   G.pvpWins    || 0,
+      pvp_losses: G.pvpLosses  || 0,
+      // Guild
+      guild_id:   G.guildId   || null,
+      guild_role: G.guildRole || 'member',
+      // Research
+      research_active: G.researchActive || null,
+      research_end:    G.researchEnd    || 0,
+      research_done:   JSON.stringify([...G.research]),
+      // Quest progress
+      quest_progress:  JSON.stringify(G.questProgress  || {}),
+      quest_claimed:   JSON.stringify([...G.questClaimed]),
+      // Shop
+      shop_purchases:  JSON.stringify(G.shopPurchases  || {}),
     });
 
     // 2. Upgrades
@@ -2803,10 +2823,36 @@ async function loadFromSupabase() {
       baseCrit:  parseFloat(p.hero_base_crit),
       gold:      p.hero_gold,
     };
-    G.wave      = p.wave;
-    G.kills     = p.total_kills;
-    G.forgeCount= p.forge_count;
-    G.eraIdx    = p.era_index;
+    G.wave       = p.wave;
+    G.kills      = p.total_kills;
+    G.forgeCount = p.forge_count;
+    G.eraIdx     = p.era_index;
+
+    // Dungeon
+    G.dungeonFloor      = p.dungeon_floor      || 1;
+    G.dungeonKeys       = p.dungeon_keys       ?? 3;
+    G.dungeonBestFloor  = p.dungeon_best_floor || 0;
+
+    // PVP
+    G.pvpPoints  = p.pvp_points  || 0;
+    G.pvpWins    = p.pvp_wins    || 0;
+    G.pvpLosses  = p.pvp_losses  || 0;
+
+    // Guild
+    G.guildId   = p.guild_id   || null;
+    G.guildRole = p.guild_role || 'member';
+
+    // Research
+    G.researchActive = p.research_active || null;
+    G.researchEnd    = p.research_end    || 0;
+    try { G.research = new Set(JSON.parse(p.research_done || '[]')); } catch(e) { G.research = new Set(); }
+
+    // Quest progress
+    try { G.questProgress = JSON.parse(p.quest_progress || '{}'); } catch(e) { G.questProgress = {}; }
+    try { G.questClaimed  = new Set(JSON.parse(p.quest_claimed || '[]')); } catch(e) { G.questClaimed = new Set(); }
+
+    // Shop
+    try { G.shopPurchases = JSON.parse(p.shop_purchases || '{}'); } catch(e) { G.shopPurchases = {}; }
 
     const upgrades = await sbGet('sm_upgrades', `player_id=eq.${pid}`);
     G.upgrades = {};
