@@ -2282,8 +2282,9 @@ function monsterKilled(m) {
   const xp   = Math.round((m.xp + G.wave * 2) * lk);
   const gold  = Math.round((m.gold + rng(0, G.wave)) * gm * lk);
   G.hero.xp += xp; G.hero.gold += gold; G.kills++;
-  log('\u{1F480} ' + m.name + ' besiegt! +' + xp + ' XP  +' + gold + ' Gold', 'c');
+  log('💀 ' + m.name + ' besiegt! +' + xp + ' XP  +' + gold + ' Gold', 'c');
   petHealOnKill();
+  try { trackQuestProgress('kill', 1); trackQuestProgress('gold', gold); checkQuestBadge(); } catch(e) {}
   G.monsters = G.monsters.filter(x => x.id !== m.id);
   G.monster  = G.monsters[0] || null;
   checkLevelUp();
@@ -2295,7 +2296,7 @@ function monsterKilled(m) {
     if (G.monstersInWave >= G.monstersPerWave) {
       G.wave++; G.monstersInWave = 0;
       G.monstersPerWave = 3 + Math.floor(G.wave / 3);
-      log('\u{1F30A} Welle ' + G.wave + ' beginnt!', 'n');
+      log('🌊 Welle ' + G.wave + ' beginnt!', 'n');
       setTimeout(spawnWave, 1200);
     } else {
       setTimeout(spawnWave, 600);
@@ -2306,14 +2307,14 @@ function monsterKilled(m) {
 }
 
 function heroDied() {
-  log('\u{1F494} Besiegt! Regeneriere...', 'c');
+  log('💔 Besiegt! Regeneriere...', 'c');
   clearInterval(G.combatInterval); G.combatInterval = null;
   G.monsters = []; G.monster = null;
   renderArena();
   setTimeout(() => {
     G.hero.hp = Math.floor(G.hero.maxHp * 0.4);
     updateAll();
-    log('\u{1F31F} Wieder aufgestanden!', 'n');
+    log('🌟 Wieder aufgestanden!', 'n');
     spawnWave(); startCombat();
   }, 3000);
 }
@@ -2327,7 +2328,7 @@ function checkLevelUp() {
     G.hero.maxMana += rng(5, 10); G.hero.mana = G.hero.maxMana;
     G.hero.baseCrit = Math.min(50, G.hero.baseCrit + 0.2);
     if (G.hero.level % 5 === 0) G.hero.spd = Math.max(0.25, G.hero.spd - 0.1);
-    log('\u{1F389} LEVEL UP ' + G.hero.level + '!', 'l');
+    log('🎉 LEVEL UP ' + G.hero.level + '!', 'l');
     leveled = true;
   }
   if (leveled) { updateEraUI(); saveToSupabase(); }
@@ -2447,6 +2448,7 @@ function forge() {
   G.forgeCount++;
   updateHeaderStats();
   document.getElementById('fItems').textContent='Items im Inventar: '+G.inventory.length;
+  try { trackQuestProgress('forge', 1); checkQuestBadge(); } catch(e) {}
 }
 
 function forgeX5() { for(let i=0;i<5;i++) forge(); }
@@ -3234,6 +3236,7 @@ function dungeonVictory(){
   document.getElementById('dungRewardList').innerHTML=`<div class="idle-row"><span>💰 Gold</span><span>+${goldR}</span></div><div class="idle-row"><span>⭐ XP</span><span>+${xpR}</span></div><div class="idle-row"><span>🎁 Item</span><span>${item.emoji} [${item.rarityLabel}]</span></div>${isBoss?'<div class="idle-row"><span>👑 Boss-Bonus</span><span>+3 Schlüssel</span></div>':''}`;
   if(isBoss)G.dungeonKeys+=3;
   log('🏚️ Dungeon Etage '+(G.dungeonFloor-1)+' besiegt!','i');
+  try { trackQuestProgress('dung', 1); checkQuestBadge(); } catch(e) {}
   checkLevelUp();updateAll();renderDungeon();
 }
 
@@ -3743,32 +3746,7 @@ function claimQuest(q,tab){
   checkLevelUp();updateAll();renderQuests();saveToSupabase();
 }
 
-// ════════════════════════════════════════════
-// ── QUEST TRACKING HOOKS
-// ════════════════════════════════════════════
-const _origMK = monsterKilled;
-monsterKilled = function(m) {
-  _origMK(m);
-  try { trackQuestProgress('kill', 1); checkQuestBadge(); } catch(e) {}
-};
-
-const _origFG = forge;
-forge = function() {
-  _origFG();
-  try { trackQuestProgress('forge', 1); checkQuestBadge(); } catch(e) {}
-};
-
-const _origSW = spawnWave;
-spawnWave = function() {
-  _origSW();
-  try { if(G.wave > 1) trackQuestProgress('wave', 1); } catch(e) {}
-};
-
-const _origDV = dungeonVictory;
-dungeonVictory = function() {
-  _origDV();
-  try { trackQuestProgress('dung', 1); checkQuestBadge(); } catch(e) {}
-};
+// Quest tracking is done inline in each function directly
 
 // ════════════════════════════════════════════
 // ── SHOP BOOST DISPLAY
@@ -3782,13 +3760,13 @@ function renderShopBoosts() {
   }
   if ((G.shopBoosts && G.shopBoosts.goldBoost || 0) > Date.now()) {
     const m = Math.ceil((G.shopBoosts.goldBoost - Date.now()) / 60000);
-    boosts.push('\u{1F4B0} Gold-Boost: ' + m + 'min');
+    boosts.push('💰 Gold-Boost: ' + m + 'min');
   }
-  if (G.reviveReady) boosts.push('\u{1F4AB} Wiedergeburt: Bereit');
-  if (G.shopBoosts && G.shopBoosts.petFood) boosts.push('\u{1F356} Pets: +15%');
+  if (G.reviveReady) boosts.push('💫 Wiedergeburt: Bereit');
+  if (G.shopBoosts && G.shopBoosts.petFood) boosts.push('🍖 Pets: +15%');
   if (boosts.length > 0) {
     const ss = document.getElementById('saveStatus');
-    if (ss && !ss.textContent.startsWith('\u{2705}') && !ss.textContent.startsWith('\u{1F4BE}')) {
+    if (ss && !ss.textContent.startsWith('✅') && !ss.textContent.startsWith('💾')) {
       _boostIdx = (_boostIdx + 1) % boosts.length;
       ss.style.color = 'var(--green2)';
       ss.textContent = boosts[_boostIdx];
@@ -3819,7 +3797,7 @@ setInterval(() => {
       if (Date.now() >= G.researchEnd) {
         const res = RESEARCH.find(r => r.id === G.researchActive);
         G.research.add(G.researchActive);
-        log('\u{1F52C} Forschung fertig: ' + (res ? res.icon + ' ' + res.name : ''), 'l');
+        log('🔬 Forschung fertig: ' + (res ? res.icon + ' ' + res.name : ''), 'l');
         G.researchActive = null; G.researchEnd = 0;
         clearInterval(resTimerInterval);
         const page = document.getElementById('page-forschung');
@@ -3828,7 +3806,7 @@ setInterval(() => {
         const left = G.researchEnd - Date.now();
         const m = Math.floor(left / 60000), s = Math.floor((left % 60000) / 1000);
         const rt = document.getElementById('researchTimer');
-        if (rt) rt.textContent = '\u{23F3} ' + m + 'm ' + s + 's';
+        if (rt) rt.textContent = '⏳ ' + m + 'm ' + s + 's';
       }
     }
   } catch(e) {}
@@ -3863,7 +3841,7 @@ setInterval(() => { try { checkDailyReset(); } catch(e) {} }, 60000);
 async function init() {
   document.body.insertAdjacentHTML('beforeend', `
     <div id="loadingScreen" style="position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;">
-      <div style="font-family:'Cinzel',serif;font-size:2rem;color:var(--gold2);text-shadow:0 0 30px rgba(240,204,85,.5);">\u2694\uFE0F SWORDMASTER</div>
+      <div style="font-family:'Cinzel',serif;font-size:2rem;color:var(--gold2);text-shadow:0 0 30px rgba(240,204,85,.5);">⚔ SWORDMASTER</div>
       <div style="font-size:.85rem;color:var(--text2);font-style:italic;" id="loadMsg">Starte...</div>
       <div style="width:220px;height:5px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;"><div id="loadBar" style="height:100%;width:0%;background:linear-gradient(to right,var(--gold),var(--gold2));border-radius:3px;transition:width .4s ease;"></div></div>
       <div style="font-size:.68rem;color:var(--text3);font-style:italic;" id="loadSub"></div>
@@ -3895,7 +3873,7 @@ async function init() {
     loaded = await Promise.race([lp, to]);
   } catch(e) { loaded = false; }
 
-  setLoad(loaded ? '\u2705 Spielstand geladen!' : '\u{1F195} Neues Spiel...', 75, loaded ? 'Level ' + G.hero.level : '');
+  setLoad(loaded ? '✅ Spielstand geladen!' : '🆕 Neues Spiel...', 75, loaded ? 'Level ' + G.hero.level : '');
   await new Promise(r=>setTimeout(r,350));
 
   try { renderEquipSlots(); }    catch(e) {}
@@ -3914,7 +3892,7 @@ async function init() {
   try { checkQuestBadge(); }     catch(e) {}
   try { startGuildChatRefresh(); } catch(e) {}
 
-  setLoad('Los geht's! \u2694\uFE0F', 100);
+  setLoad('Los geht's! ⚔', 100);
   await new Promise(r=>setTimeout(r,300));
   removeLoader();
 
@@ -3922,10 +3900,10 @@ async function init() {
   try { spawnMonster(); startCombat(); } catch(e) {}
 
   if (loaded) {
-    log('\u2705 Willkommen zuruck! Level ' + G.hero.level + ' geladen.', 'n');
+    log('✅ Willkommen zuruck! Level ' + G.hero.level + ' geladen.', 'n');
   } else {
-    setSaveStatus('\u26A0\uFE0F Offline-Modus', 'var(--orange2)');
-    log('\u2694\uFE0F SwordMaster gestartet! SQL-Script in Supabase ausfuhren fur Cloud.', 'n');
+    setSaveStatus('⚠️ Offline-Modus', 'var(--orange2)');
+    log('⚔ SwordMaster gestartet! SQL-Script in Supabase ausfuhren fur Cloud.', 'n');
     setTimeout(()=>{ try{saveToSupabase();}catch(e){} }, 3000);
   }
 }
