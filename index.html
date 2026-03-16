@@ -2597,9 +2597,23 @@ function setSaveStatus(msg, color='var(--text2)') {
 }
 
 // ─── SUPABASE API HELPERS ───────────────────
+// Fetch mit Timeout um ERR_CONNECTION_CLOSED zu verhindern
+async function sbFetch(url, options={}, timeoutMs=8000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const r = await fetch(url, { ...options, signal: controller.signal });
+    clearTimeout(timer);
+    return r;
+  } catch(e) {
+    clearTimeout(timer);
+    throw e;
+  }
+}
+
 async function sbGet(table, filter='') {
   try {
-    const r = await fetch(`${SUPA_URL}/rest/v1/${table}?${filter}`, { headers: SUPA_HDR });
+    const r = await sbFetch(`${SUPA_URL}/rest/v1/${table}?${filter}`, { headers: SUPA_HDR });
     if (!r.ok) return null;
     return await r.json();
   } catch(e) { return null; }
@@ -2607,7 +2621,7 @@ async function sbGet(table, filter='') {
 
 async function sbUpsert(table, data) {
   try {
-    const r = await fetch(`${SUPA_URL}/rest/v1/${table}`, {
+    const r = await sbFetch(`${SUPA_URL}/rest/v1/${table}`, {
       method: 'POST',
       headers: { ...SUPA_HDR, 'Prefer': 'resolution=merge-duplicates' },
       body: JSON.stringify(data)
@@ -2618,7 +2632,7 @@ async function sbUpsert(table, data) {
 
 async function sbDelete(table, filter) {
   try {
-    const r = await fetch(`${SUPA_URL}/rest/v1/${table}?${filter}`, {
+    const r = await sbFetch(`${SUPA_URL}/rest/v1/${table}?${filter}`, {
       method: 'DELETE', headers: SUPA_HDR
     });
     return r.ok;
@@ -2629,7 +2643,29 @@ async function sbDelete(table, filter) {
 // ── SPEICHERN ───────────────────────────────
 // ════════════════════════════════════════════
 
-async function saveToSupabase() {
+// Debounced save — verhindert zu viele Requests
+let _saveTimer = null;
+let _saveQueued = false;
+
+function saveToSupabase() {
+  // Lokalen Timestamp immer sofort speichern
+  localStorage.setItem('sm3_save', Date.now().toString());
+  // Echter Save wird gebündelt — max 1x alle 10 Sekunden
+  if (_saveTimer) return;
+  _saveQueued = true;
+  _saveTimer = setTimeout(async () => {
+    _saveTimer = null;
+    _saveQueued = false;
+    await _doSave();
+  }, 10000);
+}
+
+async function saveNow() {
+  if (_saveTimer) { clearTimeout(_saveTimer); _saveTimer = null; }
+  await _doSave();
+}
+
+async function _doSave() {
   setSaveStatus('💾 Speichert...', 'var(--gold)');
   const pid = getPlayerId();
   const h = G.hero;
@@ -2697,30 +2733,26 @@ async function saveToSupabase() {
       // In Batches von 20 einfügen
       for (let i = 0; i < invRows.length; i += 20) {
         const batch = invRows.slice(i, i + 20);
-        const resp = await fetch(`${SUPA_URL}/rest/v1/sm_inventory`, {
-          method: 'POST',
-          headers: { ...SUPA_HDR, 'Prefer': 'return=minimal' },
-          body: JSON.stringify(batch)
-        });
-        if (!resp.ok) {
-          const err = await resp.text();
-          console.error('Inventory insert error:', err);
-        }
+        try {
+          await sbFetch(`${SUPA_URL}/rest/v1/sm_inventory`, {
+            method: 'POST',
+            headers: { ...SUPA_HDR, 'Prefer': 'return=minimal' },
+            body: JSON.stringify(batch)
+          });
+        } catch(e) { break; } // Netzwerkfehler → abbrechen
       }
     }
 
     // 6. Leaderboard — PATCH if exists, skip if conflict
     try {
       const lbRow = { player_id: pid, player_name: getPlayerName(), hero_level: h.level, total_kills: G.kills, hero_gold: h.gold, wave: G.wave, updated_at: new Date().toISOString() };
-      // Try update first
-      const pResp = await fetch(`${SB_URL}/rest/v1/sm_leaderboard?player_id=eq.${pid}`, {
-        method: 'PATCH', headers: { ...SB_HDR, 'Prefer': 'return=minimal' }, body: JSON.stringify(lbRow)
+      const pResp = await sbFetch(`${SUPA_URL}/rest/v1/sm_leaderboard?player_id=eq.${pid}`, {
+        method: 'PATCH', headers: { ...SUPA_HDR, 'Prefer': 'return=minimal' }, body: JSON.stringify(lbRow)
       });
-      // If no row existed (0 rows patched), insert new
       const count = pResp.headers.get('content-range');
       if (!count || count === '*/0' || count === '0-0/0') {
-        await fetch(`${SB_URL}/rest/v1/sm_leaderboard`, {
-          method: 'POST', headers: { ...SB_HDR, 'Prefer': 'return=minimal' }, body: JSON.stringify(lbRow)
+        await sbFetch(`${SUPA_URL}/rest/v1/sm_leaderboard`, {
+          method: 'POST', headers: { ...SUPA_HDR, 'Prefer': 'return=minimal' }, body: JSON.stringify(lbRow)
         }).catch(() => {});
       }
     } catch(e) {}
@@ -3791,7 +3823,7 @@ setInterval(() => {
   try { renderShopBoosts(); } catch(e) {}
 }, 500);
 
-setInterval(saveToSupabase, 30000);
+setInterval(saveNow, 60000); // Echter Save alle 60 Sekunden
 setInterval(() => { try { checkDailyReset(); } catch(e) {} }, 60000);
 
 // ════════════════════════════════════════════
