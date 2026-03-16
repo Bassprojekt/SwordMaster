@@ -2023,6 +2023,7 @@ function buyUpgrade(id) {
 
 function renderSkills() {
   const grid=document.getElementById('skillsGrid');
+  if(!grid) return;
   grid.innerHTML='';
   SKILLS.forEach(sk=>{
     const unlocked=G.skills.has(sk.id);
@@ -2068,6 +2069,7 @@ function buySkill(id) {
 
 function renderPets() {
   const grid=document.getElementById('petsGrid');
+  if(!grid) return;
   grid.innerHTML='';
   PETS.forEach(pet=>{
     const owned=G.pets[pet.id];
@@ -3550,7 +3552,7 @@ function renderShop(){
       const discounted=Math.floor(item.cost*.65);
       const c=document.createElement('div');c.className='shop-item';
       c.innerHTML=`<div class="si-icon">${item.icon}</div><div class="si-name">${item.name} <span style="font-size:.55rem;color:var(--green2);">-35%</span></div><div class="si-desc">${item.desc}</div><div class="si-cost">💰 ${discounted}</div>`;
-      c.onclick=()=>buyShopItem({...item,cost:discounted});c.appendChild(c);
+      c.onclick=()=>buyShopItem({...item,cost:discounted});
       dg.appendChild(c);
     });
   }
