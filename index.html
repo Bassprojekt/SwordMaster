@@ -2765,16 +2765,21 @@ async function saveToSupabase() {
       }
     }
 
-    // 6. Leaderboard
-    await sbUpsert('sm_leaderboard', {
-      player_id:   pid,
-      player_name: getPlayerName(),
-      hero_level:  h.level,
-      total_kills: G.kills,
-      hero_gold:   h.gold,
-      wave:        G.wave,
-      updated_at:  new Date().toISOString()
-    });
+    // 6. Leaderboard — PATCH if exists, skip if conflict
+    try {
+      const lbRow = { player_id: pid, player_name: getPlayerName(), hero_level: h.level, total_kills: G.kills, hero_gold: h.gold, wave: G.wave, updated_at: new Date().toISOString() };
+      // Try update first
+      const pResp = await fetch(`${SB_URL}/rest/v1/sm_leaderboard?player_id=eq.${pid}`, {
+        method: 'PATCH', headers: { ...SB_HDR, 'Prefer': 'return=minimal' }, body: JSON.stringify(lbRow)
+      });
+      // If no row existed (0 rows patched), insert new
+      const count = pResp.headers.get('content-range');
+      if (!count || count === '*/0' || count === '0-0/0') {
+        await fetch(`${SB_URL}/rest/v1/sm_leaderboard`, {
+          method: 'POST', headers: { ...SB_HDR, 'Prefer': 'return=minimal' }, body: JSON.stringify(lbRow)
+        }).catch(() => {});
+      }
+    } catch(e) {}
 
     localStorage.setItem('sm3_save', Date.now().toString());
     setSaveStatus('✅ ' + new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}), 'var(--green2)');
@@ -3081,6 +3086,20 @@ document.addEventListener('mousemove',e=>{ if(document.getElementById('tt').clas
 // ════════════════════════════════════════════
 // ── TAB NAVIGATION ──────────────────────────
 // ════════════════════════════════════════════
+
+function updateArenaPanel() {
+  const h = G.hero; const s = getStats();
+  try {
+    if(document.getElementById('arenaHeroHp')) document.getElementById('arenaHeroHp').textContent = Math.ceil(h.hp)+'/'+h.maxHp;
+    if(document.getElementById('arenaHpTxt')) document.getElementById('arenaHpTxt').textContent = Math.ceil(h.hp);
+    if(document.getElementById('arenaHpBar')) document.getElementById('arenaHpBar').style.width = Math.max(0,h.hp/h.maxHp*100)+'%';
+    if(document.getElementById('aAtk')) document.getElementById('aAtk').textContent = s.atk;
+    if(document.getElementById('aDef')) document.getElementById('aDef').textContent = s.def;
+    if(document.getElementById('arenaHeroName')) document.getElementById('arenaHeroName').textContent = getPlayerName();
+    const pr = document.getElementById('arenaPets');
+    if(pr){ pr.innerHTML=''; G.activePets.forEach(pid=>{ const p=PETS.find(x=>x.id===pid); if(p){const c=document.createElement('div');c.className='pill';c.style.fontSize='.62rem';c.textContent=p.emoji+' '+p.name;pr.appendChild(c);} }); }
+  } catch(e) {}
+}
 
 function switchTab(name) {
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
