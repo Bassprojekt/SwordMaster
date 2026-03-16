@@ -2154,23 +2154,17 @@ function luckMult() {
 // ════════════════════════════════════════════
 
 function renderEraTimeline() {
-  const tl=document.getElementById('eraTimeline');
-  tl.innerHTML='';
-  const curIdx=currentEra().i;
-  ERAS.forEach((e,i)=>{
-    const done=i<curIdx, cur=i===curIdx, fut=i>curIdx;
-    const item=document.createElement('div');
-    item.className='era-item'+(cur?' current':done?' done':' future');
-    item.innerHTML=`
-      <div class="era-dot">${e.emoji}</div>
-      <div class="era-info">
-        <div class="era-nm">${e.name}</div>
-        <div class="era-desc">${e.desc}</div>
-        <div class="era-lv">Ab Level ${e.minLv}</div>
-      </div>
-      <div class="era-status ${cur?'cur':done?'done':'fut'}">${cur?'⚡ Aktuell':done?'✅ Abgeschlossen':'🔒 Gesperrt'}</div>
-    `;
-    tl.appendChild(item);
+  // Support both old id and new held-page id
+  const tl = document.getElementById('eraTimeline') || document.getElementById('eraTimelineHeld');
+  if (!tl) return;
+  tl.innerHTML = '';
+  const curIdx = currentEra().i;
+  ERAS.forEach((e, i) => {
+    const done = i < curIdx, cur = i === curIdx;
+    const d = document.createElement('div');
+    d.style.cssText = 'display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.25);border:1px solid ' + (cur ? 'var(--gold)' : done ? 'var(--green)' : 'var(--border)') + ';border-radius:7px;padding:7px;margin-bottom:4px;opacity:' + (i > curIdx ? .4 : 1) + ';';
+    d.innerHTML = `<div style="font-size:1.3rem;">${e.emoji}</div><div style="flex:1;"><div style="font-family:'Cinzel',serif;font-size:.76rem;font-weight:700;color:${cur ? 'var(--gold2)' : done ? 'var(--green2)' : 'var(--text)'};">${e.name}</div><div style="font-size:.64rem;color:var(--text2);">${e.desc}</div><div style="font-size:.6rem;color:var(--text3);">Ab Level ${e.minLv}</div></div><div style="font-family:'Cinzel',serif;font-size:.62rem;color:${cur ? 'var(--gold2)' : done ? 'var(--green2)' : 'var(--text3)'};">${cur ? '⚡ Aktuell' : done ? '✅' : '🔒'}</div>`;
+    tl.appendChild(d);
   });
 }
 
