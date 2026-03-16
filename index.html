@@ -789,32 +789,47 @@ body {
 
     <!-- RIGHT: Arena -->
     <div style="display:flex;flex-direction:column;gap:10px;flex:1;min-width:260px;">
-      <div class="card" style="position:relative;">
+      <div class="card" style="position:relative;min-height:320px;">
         <div class="arena-bg"></div>
         <div class="arena-header">
           <div class="arena-zone">🗺️ Zone: <span id="zoneName">Dunkler Wald</span></div>
           <div class="wave-chip" id="waveChip">Welle 1</div>
         </div>
-        <div class="combatants">
-          <div class="fighter" id="heroFighter">
-            <div class="fighter-sprite" id="heroSprite">🧙</div>
-            <div class="fighter-name" id="arenaHeroName">Klar</div>
-            <div class="fighter-hp" id="arenaHeroHp">100/100</div>
-          </div>
-          <div class="vs-divider">VS</div>
-          <div class="fighter" id="monFighter">
-            <div class="fighter-sprite mon-float" id="monSprite">❓</div>
-            <div class="fighter-name" id="monName">...</div>
-            <div class="fighter-hp" id="monHpTxt">?/?</div>
-          </div>
+
+        <!-- Multi-Monster Arena -->
+        <div id="monsterArena" style="
+          position:relative;min-height:180px;
+          background:linear-gradient(to bottom,rgba(0,0,0,0.2),rgba(20,0,30,0.4));
+          border:1px solid var(--border);border-radius:10px;
+          margin:8px 0;overflow:hidden;
+          display:flex;align-items:flex-end;justify-content:center;gap:4px;
+          padding:8px 4px 0;">
+          <!-- Background atmosphere -->
+          <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 50% 100%,rgba(100,20,20,0.3),transparent 70%);pointer-events:none;"></div>
+          <!-- Ground line -->
+          <div style="position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(to right,transparent,var(--border2),transparent);"></div>
+          <!-- Monsters render here -->
+          <div id="monstersRow" style="display:flex;align-items:flex-end;justify-content:center;gap:8px;padding-bottom:4px;position:relative;z-index:1;flex-wrap:wrap;"></div>
         </div>
-        <div style="margin-top:8px;">
-          <div class="bar-label"><span id="monHpLbl">Monster HP</span></div>
-          <div class="bar" style="height:12px;"><div class="bar-fill hp-fill" id="monHpBar" style="width:100%"></div></div>
+
+        <!-- Hero attack indicator -->
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap;">
+          <div id="arenaHeroName" style="font-family:'Cinzel',serif;font-size:0.78rem;color:var(--gold2);">Klar</div>
+          <div style="font-size:0.7rem;color:var(--text2);">❤️ <span id="arenaHeroHp">100/100</span></div>
+          <div class="pets-row" id="arenaActivePets" style="margin:0;"></div>
         </div>
-        <div class="pets-row" id="arenaActivePets"></div>
-        <div class="log-box" id="gameLog">
-          <div class="log-e n">⚔️ Willkommen bei SwordMaster! Viel Erfolg, Krieger!</div>
+
+        <!-- Main target HP bar -->
+        <div id="targetHpSection">
+          <div class="bar-label">
+            <span id="targetMonName" style="color:var(--red2);font-family:'Cinzel',serif;font-size:0.75rem;">—</span>
+            <span id="targetMonHp" style="font-size:0.72rem;color:var(--text2);">—</span>
+          </div>
+          <div class="bar" style="height:10px;"><div class="bar-fill hp-fill" id="monHpBar" style="width:100%"></div></div>
+        </div>
+
+        <div class="log-box" id="gameLog" style="margin-top:8px;">
+          <div class="log-e n">⚔️ Willkommen! Kämpfe beginnen automatisch.</div>
         </div>
       </div>
     </div><!-- end RIGHT -->
@@ -1019,15 +1034,245 @@ const ZONES = [
 ];
 
 const MONSTERS = [
-  { name:'Waldwolf',      emoji:'🐺', hpM:1,   atkM:1,   xp:8,   gold:3  },
-  { name:'Steingolem',    emoji:'🗿', hpM:2.2, atkM:0.7, xp:15,  gold:6  },
-  { name:'Feuerdämon',    emoji:'👹', hpM:1.4, atkM:1.6, xp:22,  gold:11 },
-  { name:'Eistroll',      emoji:'🧌', hpM:2.8, atkM:0.9, xp:20,  gold:9  },
-  { name:'Todesritter',   emoji:'💀', hpM:2,   atkM:2,   xp:32,  gold:16 },
-  { name:'Schattenwyrm',  emoji:'🐉', hpM:3.2, atkM:2.2, xp:55,  gold:28 },
-  { name:'Höllenfürst',   emoji:'😈', hpM:4,   atkM:2.8, xp:85,  gold:45 },
-  { name:'Uralter Lich',  emoji:'🧟', hpM:5,   atkM:3.2, xp:130, gold:65 },
-  { name:'Quantengeist',  emoji:'👾', hpM:6.5, atkM:3.8, xp:200, gold:100},
+  // Steinzeit
+  { name:'Steinzeit-Wolf',   minLv:1,  hpM:1.0, atkM:1.0, xp:8,   gold:3,  color:'#8B6914',
+    svg:`<g>
+      <ellipse cx="30" cy="55" rx="18" ry="12" fill="#6B4C1E"/>
+      <ellipse cx="44" cy="48" rx="10" ry="8" fill="#7A5828"/>
+      <polygon points="40,40 44,32 48,40" fill="#7A5828"/>
+      <polygon points="44,40 48,32 52,40" fill="#7A5828"/>
+      <circle cx="48" cy="44" r="3" fill="#FF4444"/>
+      <circle cx="49" cy="43" r="1.2" fill="#000"/>
+      <ellipse cx="50" cy="48" rx="4" ry="2" fill="#6B4C1E"/>
+      <line x1="50" y1="46" x2="56" y2="44" stroke="#fff" stroke-width="1.2"/>
+      <line x1="50" y1="47" x2="57" y2="46" stroke="#fff" stroke-width="1.2"/>
+      <line x1="50" y1="48" x2="56" y2="48" stroke="#fff" stroke-width="1.2"/>
+      <rect x="14" y="60" width="6" height="14" rx="3" fill="#5A3E10"/>
+      <rect x="22" y="60" width="6" height="14" rx="3" fill="#5A3E10"/>
+      <rect x="30" y="60" width="6" height="14" rx="3" fill="#5A3E10"/>
+      <rect x="38" y="60" width="6" height="14" rx="3" fill="#5A3E10"/>
+    </g>` },
+  { name:'Urzeit-Bär',       minLv:1,  hpM:1.8, atkM:0.8, xp:12,  gold:5,  color:'#5C3A1E',
+    svg:`<g>
+      <ellipse cx="30" cy="58" rx="20" ry="16" fill="#5C3A1E"/>
+      <ellipse cx="30" cy="40" rx="13" ry="12" fill="#6B4426"/>
+      <ellipse cx="20" cy="32" rx="6" ry="6" fill="#6B4426"/>
+      <ellipse cx="40" cy="32" rx="6" ry="6" fill="#6B4426"/>
+      <circle cx="26" cy="40" r="3" fill="#3A2010"/>
+      <circle cx="27" cy="39" r="1.2" fill="#FF6600"/>
+      <circle cx="34" cy="40" r="3" fill="#3A2010"/>
+      <circle cx="35" cy="39" r="1.2" fill="#FF6600"/>
+      <ellipse cx="30" cy="46" rx="5" ry="3" fill="#3A2010"/>
+      <rect x="14" y="66" width="8" height="12" rx="4" fill="#4A2E14"/>
+      <rect x="38" y="66" width="8" height="12" rx="4" fill="#4A2E14"/>
+    </g>` },
+
+  // Mittelalter
+  { name:'Steingolem',       minLv:5,  hpM:2.5, atkM:0.7, xp:15,  gold:8,  color:'#707070',
+    svg:`<g>
+      <rect x="16" y="30" width="28" height="38" rx="4" fill="#707070"/>
+      <rect x="18" y="32" width="24" height="34" rx="3" fill="#888"/>
+      <rect x="14" y="38" width="8" height="20" rx="3" fill="#777"/>
+      <rect x="38" y="38" width="8" height="20" rx="3" fill="#777"/>
+      <rect x="20" y="68" width="8" height="14" rx="3" fill="#666"/>
+      <rect x="32" y="68" width="8" height="14" rx="3" fill="#666"/>
+      <rect x="12" y="28" width="36" height="16" rx="5" fill="#808080"/>
+      <circle cx="24" cy="34" r="4" fill="#FF4400"/>
+      <circle cx="25" cy="33" r="1.8" fill="#FF8800"/>
+      <circle cx="36" cy="34" r="4" fill="#FF4400"/>
+      <circle cx="37" cy="33" r="1.8" fill="#FF8800"/>
+      <path d="M22,42 Q30,45 38,42" stroke="#555" stroke-width="2" fill="none"/>
+      <line x1="20" y1="38" x2="40" y2="38" stroke="#555" stroke-width="1.5"/>
+      <line x1="22" y1="50" x2="38" y2="50" stroke="#555" stroke-width="1"/>
+      <line x1="22" y1="58" x2="38" y2="58" stroke="#555" stroke-width="1"/>
+    </g>` },
+  { name:'Skelettkrieger',   minLv:8,  hpM:1.5, atkM:1.5, xp:20,  gold:10, color:'#E8E0C8',
+    svg:`<g>
+      <circle cx="30" cy="22" r="11" fill="#E8E0C8"/>
+      <circle cx="25" cy="20" r="3.5" fill="#1A1A2E"/>
+      <circle cx="26" cy="19" r="1.5" fill="#00FFFF" opacity="0.8"/>
+      <circle cx="35" cy="20" r="3.5" fill="#1A1A2E"/>
+      <circle cx="36" cy="19" r="1.5" fill="#00FFFF" opacity="0.8"/>
+      <path d="M24,27 Q30,30 36,27" stroke="#C8C0A8" stroke-width="1.5" fill="none"/>
+      <line x1="26" y1="27" x2="26" y2="29" stroke="#C8C0A8" stroke-width="1.5"/>
+      <line x1="30" y1="28" x2="30" y2="30" stroke="#C8C0A8" stroke-width="1.5"/>
+      <line x1="34" y1="27" x2="34" y2="29" stroke="#C8C0A8" stroke-width="1.5"/>
+      <rect x="24" y="33" width="12" height="20" rx="2" fill="#D8D0B8"/>
+      <line x1="30" y1="33" x2="30" y2="53" stroke="#C0B898" stroke-width="1"/>
+      <line x1="24" y1="40" x2="36" y2="40" stroke="#C0B898" stroke-width="1"/>
+      <rect x="14" y="33" width="9" height="4" rx="2" fill="#C8C0A8"/>
+      <rect x="37" y="33" width="9" height="4" rx="2" fill="#C8C0A8"/>
+      <rect x="12" y="37" width="5" height="14" rx="2" fill="#C8C0A8"/>
+      <rect x="43" y="37" width="5" height="14" rx="2" fill="#C8C0A8"/>
+      <rect x="8" y="34" width="3" height="20" rx="1" fill="#A0A0A0"/>
+      <rect x="6" y="34" width="7" height="2" rx="1" fill="#A0A0A0"/>
+      <rect x="23" y="53" width="6" height="18" rx="2" fill="#C8C0A8"/>
+      <rect x="31" y="53" width="6" height="18" rx="2" fill="#C8C0A8"/>
+    </g>` },
+
+  // Feuerdämon
+  { name:'Feuerdämon',       minLv:12, hpM:1.4, atkM:1.8, xp:28,  gold:14, color:'#FF4400',
+    svg:`<g>
+      <ellipse cx="30" cy="75" rx="12" ry="4" fill="rgba(255,100,0,0.3)"/>
+      <rect x="22" y="52" width="8" height="22" rx="3" fill="#CC2200"/>
+      <rect x="30" y="52" width="8" height="22" rx="3" fill="#CC2200"/>
+      <ellipse cx="30" cy="50" rx="14" ry="18" fill="#DD3300"/>
+      <path d="M20,35 Q15,22 22,18 Q18,28 24,26 Q20,18 28,14 Q25,24 30,22 Q28,14 35,10 Q33,22 38,20 Q35,14 42,18 Q38,26 44,24 Q40,32 40,35Z" fill="#FF6600"/>
+      <path d="M24,30 Q22,22 26,20 Q24,26 28,25 Q26,20 31,17 Q30,24 33,23 Q32,18 36,21 Q33,27 36,26 Q33,32 33,30Z" fill="#FFAA00"/>
+      <circle cx="24" cy="38" r="4" fill="#1A0A00"/>
+      <circle cx="25" cy="37" r="2" fill="#FF8800"/>
+      <circle cx="36" cy="38" r="4" fill="#1A0A00"/>
+      <circle cx="37" cy="37" r="2" fill="#FF8800"/>
+      <path d="M25,45 Q30,48 35,45" stroke="#FF4400" stroke-width="2" fill="none"/>
+      <line x1="27" y1="45" x2="27" y2="47" stroke="#FF2200" stroke-width="1.5"/>
+      <line x1="33" y1="45" x2="33" y2="47" stroke="#FF2200" stroke-width="1.5"/>
+      <path d="M16,42 Q8,36 10,28 Q14,34 16,30Z" fill="#FF4400"/>
+      <path d="M44,42 Q52,36 50,28 Q46,34 44,30Z" fill="#FF4400"/>
+    </g>` },
+
+  // Eistroll
+  { name:'Eistroll',         minLv:18, hpM:3.0, atkM:1.0, xp:35,  gold:18, color:'#88CCFF',
+    svg:`<g>
+      <rect x="20" y="56" width="8" height="18" rx="4" fill="#4488CC"/>
+      <rect x="32" y="56" width="8" height="18" rx="4" fill="#4488CC"/>
+      <ellipse cx="30" cy="50" rx="18" ry="22" fill="#5599DD"/>
+      <rect x="10" y="34" width="10" height="24" rx="4" fill="#4488CC"/>
+      <rect x="40" y="34" width="10" height="24" rx="4" fill="#4488CC"/>
+      <ellipse cx="30" cy="28" rx="14" ry="13" fill="#66AAEE"/>
+      <path d="M18,22 Q16,14 20,12 Q19,18 22,17Z" fill="#88CCFF"/>
+      <path d="M24,18 Q23,10 27,9 Q26,15 28,14Z" fill="#88CCFF"/>
+      <path d="M32,18 Q33,10 37,11 Q35,16 36,15Z" fill="#88CCFF"/>
+      <path d="M38,22 Q42,14 40,12 Q39,18 37,17Z" fill="#88CCFF"/>
+      <circle cx="24" cy="27" r="4" fill="#1A2A3A"/>
+      <circle cx="25" cy="26" r="1.8" fill="#88DDFF"/>
+      <circle cx="36" cy="27" r="4" fill="#1A2A3A"/>
+      <circle cx="37" cy="26" r="1.8" fill="#88DDFF"/>
+      <ellipse cx="30" cy="34" rx="6" ry="3" fill="#4488CC"/>
+      <line x1="24" y1="33" x2="24" y2="37" stroke="#88CCFF" stroke-width="2"/>
+      <line x1="36" y1="33" x2="36" y2="37" stroke="#88CCFF" stroke-width="2"/>
+      <rect x="8" y="46" width="14" height="4" rx="2" fill="#88DDFF" opacity="0.6"/>
+      <rect x="38" y="46" width="14" height="4" rx="2" fill="#88DDFF" opacity="0.6"/>
+    </g>` },
+
+  // Todesritter
+  { name:'Todesritter',      minLv:28, hpM:2.2, atkM:2.2, xp:55,  gold:28, color:'#8800CC',
+    svg:`<g>
+      <rect x="22" y="58" width="7" height="16" rx="2" fill="#220033"/>
+      <rect x="31" y="58" width="7" height="16" rx="2" fill="#220033"/>
+      <rect x="21" y="60" width="9" height="6" rx="1" fill="#440066"/>
+      <rect x="30" y="60" width="9" height="6" rx="1" fill="#440066"/>
+      <rect x="18" y="28" width="24" height="30" rx="3" fill="#330044"/>
+      <rect x="20" y="30" width="20" height="26" rx="2" fill="#440055"/>
+      <line x1="30" y1="30" x2="30" y2="56" stroke="#8800CC" stroke-width="1"/>
+      <line x1="20" y1="42" x2="40" y2="42" stroke="#8800CC" stroke-width="1"/>
+      <rect x="10" y="30" width="8" height="22" rx="2" fill="#330044"/>
+      <rect x="42" y="30" width="8" height="22" rx="2" fill="#330044"/>
+      <rect x="16" y="16" width="28" height="18" rx="3" fill="#220033"/>
+      <path d="M16,18 Q30,12 44,18" fill="#330044" stroke="#8800CC" stroke-width="0.5"/>
+      <path d="M24,14 Q30,8 36,14" fill="#220033"/>
+      <circle cx="24" cy="23" r="4" fill="#1A0022"/>
+      <circle cx="25" cy="22" r="2" fill="#CC00FF"/>
+      <circle cx="36" cy="23" r="4" fill="#1A0022"/>
+      <circle cx="37" cy="22" r="2" fill="#CC00FF"/>
+      <rect x="6" y="20" width="2" height="38" rx="1" fill="#888"/>
+      <rect x="4" y="20" width="6" height="2" rx="1" fill="#888"/>
+      <path d="M6,20 L4,16 L8,16 Z" fill="#AAA"/>
+    </g>` },
+
+  // Schattenwyrm (Drache)
+  { name:'Schattenwyrm',     minLv:40, hpM:3.5, atkM:2.5, xp:90,  gold:45, color:'#440088',
+    svg:`<g>
+      <path d="M10,65 Q16,58 22,62 Q28,66 30,60 Q32,54 38,52 Q44,50 48,44 Q52,38 48,32 Q44,26 38,28 Q32,30 30,36 Q28,42 22,44 Q16,46 12,52 Q8,58 10,65Z" fill="#2A0044"/>
+      <path d="M30,36 Q34,28 42,26 Q50,24 54,30 Q58,36 54,44 Q50,52 42,54 Q36,56 32,52Z" fill="#3A0055"/>
+      <circle cx="46" cy="30" r="4" fill="#1A0022"/>
+      <circle cx="47" cy="29" r="2" fill="#AA00FF"/>
+      <path d="M42,24 Q46,18 50,22" stroke="#550088" stroke-width="2" fill="none"/>
+      <path d="M48,22 Q52,16 55,20" stroke="#550088" stroke-width="2" fill="none"/>
+      <path d="M28,60 Q22,70 16,72 Q20,64 18,60Z" fill="#2A0044"/>
+      <path d="M32,58 Q30,68 24,72 Q26,62 22,58Z" fill="#2A0044"/>
+      <ellipse cx="30" cy="48" rx="6" ry="3" fill="#550088" opacity="0.6"/>
+      <path d="M10,54 Q6,50 8,44 Q10,50 14,50Z" fill="#3A0055"/>
+      <path d="M14,58 Q8,56 8,50 Q12,55 16,54Z" fill="#3A0055"/>
+    </g>` },
+
+  // Höllenfürst
+  { name:'Höllenfürst',      minLv:55, hpM:4.5, atkM:3.0, xp:140, gold:70, color:'#FF2200',
+    svg:`<g>
+      <ellipse cx="30" cy="75" rx="16" ry="5" fill="rgba(255,50,0,0.4)"/>
+      <rect x="21" y="54" width="8" height="20" rx="3" fill="#880000"/>
+      <rect x="31" y="54" width="8" height="20" rx="3" fill="#880000"/>
+      <ellipse cx="30" cy="46" rx="16" ry="20" fill="#AA0000"/>
+      <path d="M14,28 Q10,16 16,10 Q14,20 18,18 Q14,10 22,6 Q20,16 24,14 Q22,6 30,2 Q28,12 32,10 Q30,4 38,8 Q36,16 40,14 Q38,8 46,12 Q42,20 46,18 Q42,24 42,28Z" fill="#FF4400"/>
+      <path d="M20,24 Q18,16 22,14 Q20,20 24,18 Q22,14 27,12 Q26,18 29,17 Q28,12 33,14 Q31,20 34,18 Q31,24 32,22Z" fill="#FF8800"/>
+      <circle cx="23" cy="36" r="5" fill="#1A0000"/>
+      <circle cx="24" cy="35" r="2.5" fill="#FF0000"/>
+      <circle cx="37" cy="36" r="5" fill="#1A0000"/>
+      <circle cx="38" cy="35" r="2.5" fill="#FF0000"/>
+      <path d="M23,44 Q30,48 37,44" stroke="#FF2200" stroke-width="2.5" fill="none"/>
+      <line x1="25" y1="44" x2="23" y2="48" stroke="#FF0000" stroke-width="2"/>
+      <line x1="30" y1="46" x2="30" y2="50" stroke="#FF0000" stroke-width="2"/>
+      <line x1="35" y1="44" x2="37" y2="48" stroke="#FF0000" stroke-width="2"/>
+      <path d="M14,40 Q4,32 6,20 Q10,30 14,26Z" fill="#CC2200"/>
+      <path d="M46,40 Q56,32 54,20 Q50,30 46,26Z" fill="#CC2200"/>
+      <path d="M16,30 Q10,22 14,14 Q16,22 18,20Z" fill="#FF4400"/>
+      <path d="M44,30 Q50,22 46,14 Q44,22 42,20Z" fill="#FF4400"/>
+    </g>` },
+
+  // Uralter Lich
+  { name:'Uralter Lich',     minLv:70, hpM:5.5, atkM:3.5, xp:200, gold:100, color:'#00FFAA',
+    svg:`<g>
+      <ellipse cx="30" cy="76" rx="10" ry="3" fill="rgba(0,255,170,0.2)"/>
+      <path d="M22,54 Q18,62 20,74 Q24,76 26,72 Q24,62 26,54Z" fill="#0A0A1E" opacity="0.9"/>
+      <path d="M38,54 Q42,62 40,74 Q36,76 34,72 Q36,62 34,54Z" fill="#0A0A1E" opacity="0.9"/>
+      <rect x="20" y="32" width="20" height="22" rx="3" fill="#0A0A1E"/>
+      <line x1="30" y1="32" x2="30" y2="54" stroke="#00FFAA" stroke-width="0.8" opacity="0.5"/>
+      <line x1="20" y1="42" x2="40" y2="42" stroke="#00FFAA" stroke-width="0.8" opacity="0.5"/>
+      <rect x="10" y="32" width="9" height="4" rx="2" fill="#0A0A1E"/>
+      <rect x="41" y="32" width="9" height="4" rx="2" fill="#0A0A1E"/>
+      <rect x="8" y="36" width="5" height="16" rx="2" fill="#0A0A1E"/>
+      <rect x="47" y="36" width="5" height="16" rx="2" fill="#0A0A1E"/>
+      <circle cx="30" cy="22" r="12" fill="#0A0A1E"/>
+      <path d="M18,24 Q18,14 22,12 Q20,18 22,17Z" fill="#0F0F28"/>
+      <path d="M26,18 Q26,10 30,9 Q29,15 30,14Z" fill="#0F0F28"/>
+      <path d="M34,18 Q36,10 38,12 Q36,16 36,15Z" fill="#0F0F28"/>
+      <path d="M40,22 Q44,14 42,12 Q40,18 38,17Z" fill="#0F0F28"/>
+      <circle cx="24" cy="22" r="4.5" fill="#050510"/>
+      <circle cx="25" cy="21" r="2.5" fill="#00FFAA"/>
+      <circle cx="36" cy="22" r="4.5" fill="#050510"/>
+      <circle cx="37" cy="21" r="2.5" fill="#00FFAA"/>
+      <path d="M23,28 Q30,32 37,28" stroke="#00DDAA" stroke-width="1.5" fill="none"/>
+      <line x1="25" y1="28" x2="23" y2="30" stroke="#00DDAA" stroke-width="1.5"/>
+      <line x1="35" y1="28" x2="37" y2="30" stroke="#00DDAA" stroke-width="1.5"/>
+      <circle cx="30" cy="20" r="2" fill="none" stroke="#00FFAA" stroke-width="0.8" opacity="0.6"/>
+      <circle cx="30" cy="20" r="5" fill="none" stroke="#00FFAA" stroke-width="0.5" opacity="0.3"/>
+    </g>` },
+
+  // Quantengeist
+  { name:'Quantengeist',     minLv:85, hpM:7.0, atkM:4.0, xp:300, gold:150, color:'#00DDFF',
+    svg:`<g>
+      <ellipse cx="30" cy="76" rx="14" ry="4" fill="rgba(0,200,255,0.2)"/>
+      <path d="M20,50 Q14,58 16,72 Q20,76 24,72 Q22,60 24,50Z" fill="#001830" opacity="0.85"/>
+      <path d="M40,50 Q46,58 44,72 Q40,76 36,72 Q38,60 36,50Z" fill="#001830" opacity="0.85"/>
+      <path d="M24,52 Q22,62 24,72 Q28,74 32,72 Q34,62 36,52Z" fill="#001830" opacity="0.85"/>
+      <ellipse cx="30" cy="38" rx="16" ry="20" fill="#002244"/>
+      <circle cx="30" cy="22" r="13" fill="#002244"/>
+      <circle cx="23" cy="20" r="5" fill="#001122"/>
+      <circle cx="24" cy="19" r="3" fill="#00FFFF"/>
+      <circle cx="24" cy="19" r="1.5" fill="#FFFFFF"/>
+      <circle cx="37" cy="20" r="5" fill="#001122"/>
+      <circle cx="38" cy="19" r="3" fill="#00FFFF"/>
+      <circle cx="38" cy="19" r="1.5" fill="#FFFFFF"/>
+      <path d="M23,28 Q30,32 37,28" stroke="#00FFFF" stroke-width="1.5" fill="none"/>
+      <circle cx="30" cy="18" r="8" fill="none" stroke="#00DDFF" stroke-width="0.8" opacity="0.5"/>
+      <circle cx="30" cy="18" r="12" fill="none" stroke="#00AAFF" stroke-width="0.5" opacity="0.3"/>
+      <rect x="10" y="32" width="8" height="22" rx="3" fill="#001830"/>
+      <rect x="42" y="32" width="8" height="22" rx="3" fill="#001830"/>
+      <ellipse cx="30" cy="30" rx="8" ry="3" fill="#003366" opacity="0.6"/>
+      <line x1="10" y1="43" x2="8" y2="38" stroke="#00DDFF" stroke-width="1" opacity="0.6"/>
+      <line x1="10" y1="43" x2="6" y2="44" stroke="#00DDFF" stroke-width="1" opacity="0.6"/>
+      <line x1="50" y1="43" x2="52" y2="38" stroke="#00DDFF" stroke-width="1" opacity="0.6"/>
+      <line x1="50" y1="43" x2="54" y2="44" stroke="#00DDFF" stroke-width="1" opacity="0.6"/>
+    </g>` },
 ];
 
 const RARITIES = [
@@ -1110,7 +1355,7 @@ const PETS = [
 const G = {
   hero: { level:1, xp:0, hp:100, maxHp:100, mana:50, maxMana:50, baseAtk:5, baseDef:2, spd:1.0, baseCrit:5, gold:0 },
   wave:1, monstersInWave:0, monstersPerWave:3,
-  monster:null,
+  monster:null, monsters:[],
   autoForge:false, autoInterval:null,
   inventory:[],
   recentForged:[],
@@ -1403,6 +1648,7 @@ function equipItem(item) {
   log(`🗡️ Ausgerüstet: ${item.emoji} ${item.name} (+${item.sv} ${item.sk.toUpperCase()})`,'i');
   updateAll();
   renderInventory();
+  saveToSupabase(); // sofort speichern!
 }
 
 function unequipItem(slot) {
@@ -1413,6 +1659,7 @@ function unequipItem(slot) {
   log(`📦 Abgelegt: ${item.emoji} ${item.name}`,'n');
   updateAll();
   renderInventory();
+  saveToSupabase(); // sofort speichern!
 }
 
 // ════════════════════════════════════════════
@@ -1663,137 +1910,232 @@ function renderEraTimeline() {
 // ── COMBAT ──────────────────────────────────
 // ════════════════════════════════════════════
 
-function spawnMonster() {
-  const lv=G.hero.level;
-  const era=currentEra().e;
-  const bIdx=Math.min(Math.floor(lv/10),MONSTERS.length-1);
-  const aIdx=rng(0,Math.min(Math.floor(lv/7),MONSTERS.length-1));
-  const proto=Math.random()<0.4?MONSTERS[aIdx]:MONSTERS[bIdx];
-  const eraEmoji=era.emoji;
-  const emoji=Math.random()<0.25?eraEmoji:proto.emoji;
-
-  const hp=Math.round((15+lv*9)*proto.hpM);
-  const atk=Math.round((2+lv*1.3)*proto.atkM);
-  G.monster={...proto,emoji,hp,maxHp:hp,atk};
-  G.monstersInWave++;
-  updateArena();
+function getEligibleMonsters() {
+  const lv = G.hero.level;
+  return MONSTERS.filter(m => m.minLv <= lv);
 }
+
+function spawnWave() {
+  const lv = G.hero.level;
+  const eligible = getEligibleMonsters();
+  const count = Math.min(4, 1 + Math.floor(G.wave / 4));
+  G.monsters = [];
+  for (let i = 0; i < count; i++) {
+    const pool = eligible.slice(Math.max(0, eligible.length - 4));
+    const proto = pool[rng(0, pool.length - 1)];
+    const hp = Math.round((15 + lv * 9) * proto.hpM);
+    const atk = Math.round((2 + lv * 1.3) * proto.atkM);
+    G.monsters.push({ ...proto, id: makeUUID(), hp, maxHp: hp, atk, atkCd: 1 + Math.random() * 0.8 + i * 0.3 });
+  }
+  G.monster = G.monsters[0];
+  G.monstersInWave++;
+  renderArena();
+}
+
+function spawnMonster() { spawnWave(); }
 
 function startCombat() {
-  if(G.combatInterval) return;
-  G.combatInterval=setInterval(tick,250);
+  if (G.combatInterval) return;
+  G.combatInterval = setInterval(tick, 250);
 }
 
-let hCD=0, mCD=0, pCD=0;
+let hCD = 0, pCD = 0;
 
 function tick() {
-  if(!G.monster){
-    if(G.monstersInWave>=G.monstersPerWave){
-      G.wave++; G.monstersInWave=0;
-      G.monstersPerWave=3+Math.floor(G.wave/3);
-      log('🌊 Welle '+G.wave,'n');
-      setTimeout(spawnMonster,1500);
+  if (!G.monsters || G.monsters.length === 0) {
+    if (G.monstersInWave >= G.monstersPerWave) {
+      G.wave++; G.monstersInWave = 0;
+      G.monstersPerWave = 3 + Math.floor(G.wave / 3);
+      log('🌊 Welle ' + G.wave + ' — ' + currentZone().name, 'n');
+      setTimeout(spawnWave, 1500);
     } else {
-      setTimeout(spawnMonster,700);
+      setTimeout(spawnWave, 700);
     }
     return;
   }
 
-  const h=G.hero; const m=G.monster; const s=getStats();
-  hCD-=0.25; mCD-=0.25; pCD-=0.25;
+  const h = G.hero; const s = getStats();
+  hCD -= 0.25; pCD -= 0.25;
 
-  // Hero attack
-  if(hCD<=0){
-    hCD=s.spd;
-    let dmg=Math.max(1,s.atk+rng(-1,3)-Math.floor(m.atk*0.08));
-    const isCrit=Math.random()*100<s.crit;
-    if(isCrit) dmg=Math.floor(dmg*1.8);
-    if(G.skills.has('doubleStrike')&&Math.random()<0.05){
-      const d2=Math.floor(dmg*0.7);
-      m.hp-=d2;
-      floatDmg(document.getElementById('monSprite'),d2,'#f0cc55');
+  if (hCD <= 0) {
+    hCD = s.spd;
+    const target = G.monsters[0];
+    if (target) {
+      let dmg = Math.max(1, s.atk + rng(-1, 3) - Math.floor(target.atk * 0.08));
+      const isCrit = Math.random() * 100 < s.crit;
+      if (isCrit) dmg = Math.floor(dmg * 1.8);
+      if (G.skills.has('doubleStrike') && Math.random() < 0.05) {
+        const d2 = Math.floor(dmg * 0.7);
+        target.hp -= d2;
+        floatDmgEl('mon_' + target.id, d2, '#f0cc55');
+      }
+      if (G.skills.has('bloodRage') && h.hp < h.maxHp * 0.4) dmg = Math.floor(dmg * 1.2);
+      target.hp -= dmg;
+      if (G.skills.has('vampirism')) { const heal = Math.floor(dmg * 0.08); h.hp = Math.min(h.maxHp, h.hp + heal); }
+      floatDmgEl('mon_' + target.id, dmg, isCrit ? '#f0cc55' : '#e05050');
+      const el = document.getElementById('mon_' + target.id);
+      if (el) { el.style.filter = 'brightness(3) saturate(0)'; setTimeout(() => { if(el) el.style.filter = ''; }, 200); }
+      if (target.hp <= 0) { monsterKilled(target); return; }
     }
-    if(G.skills.has('bloodRage')&&h.hp<h.maxHp*0.4) dmg=Math.floor(dmg*1.2);
-    m.hp-=dmg;
-    if(G.skills.has('vampirism')){ const heal=Math.floor(dmg*0.08); h.hp=Math.min(h.maxHp,h.hp+heal); }
-    document.getElementById('heroSprite').classList.add('attacking');
-    setTimeout(()=>document.getElementById('heroSprite').classList.remove('attacking'),280);
-    document.getElementById('monSprite').classList.add('mon-hit');
-    setTimeout(()=>{ document.getElementById('monSprite').classList.remove('mon-hit'); document.getElementById('monSprite').classList.add('mon-float'); },240);
-    floatDmg(document.getElementById('monSprite'),dmg,isCrit?'#f0cc55':'#e05050');
-    updateArena();
-    if(m.hp<=0){monDied();return;}
+    updateArenaHpBar();
   }
 
-  // Pet attack
-  if(pCD<=0&&G.activePets.size>0){
-    pCD=1.4;
-    const pd=petATKBonus();
-    if(pd>0&&G.monster){
-      m.hp-=pd;
-      floatDmg(document.getElementById('monSprite'),pd,'#f39c12');
-      updateArena();
-      if(m.hp<=0){monDied();return;}
+  if (pCD <= 0 && G.activePets.size > 0 && G.monsters.length > 0) {
+    pCD = 1.4;
+    const pd = petATKBonus();
+    if (pd > 0) {
+      const t = G.monsters[0];
+      t.hp -= pd;
+      floatDmgEl('mon_' + t.id, pd, '#f39c12');
+      if (t.hp <= 0) { monsterKilled(t); return; }
+      updateArenaHpBar();
     }
   }
 
-  // Monster attack
-  if(mCD<=0){
-    mCD=1.1+Math.random()*0.7;
-    let s2=getStats();
-    let mDmg=Math.max(1,m.atk-Math.floor(s2.def*0.6));
-    if(G.skills.has('ironSkin'))mDmg=Math.floor(mDmg*0.85);
-    h.hp-=mDmg;
-    floatDmg(document.getElementById('heroSprite'),mDmg,'#ff9040');
-    if(h.hp<=0){h.hp=0;updateAll();updateArena();heroDied();return;}
-  }
+  G.monsters.forEach(m => {
+    m.atkCd -= 0.25;
+    if (m.atkCd <= 0) {
+      m.atkCd = 1.1 + Math.random() * 0.7;
+      let mDmg = Math.max(1, m.atk - Math.floor(s.def * 0.6));
+      if (G.skills.has('ironSkin')) mDmg = Math.floor(mDmg * 0.85);
+      h.hp -= mDmg;
+      const heroEl = document.getElementById('heroSprite');
+      if (heroEl) floatDmg(heroEl, mDmg, '#ff9040');
+      if (h.hp <= 0) { h.hp = 0; updateAll(); heroDied(); return; }
+    }
+  });
 
-  if(h.mana<h.maxMana)h.mana=Math.min(h.maxMana,h.mana+0.4);
+  if (h.mana < h.maxMana) h.mana = Math.min(h.maxMana, h.mana + 0.4);
   updateHeaderStats();
 }
 
-function monDied() {
-  const m=G.monster; const lk=luckMult(); const gm=goldMult();
-  const xp=Math.round((m.xp+G.wave*2)*lk);
-  const gold=Math.round((m.gold+rng(0,G.wave))*gm*lk);
-  G.hero.xp+=xp; G.hero.gold+=gold; G.kills++;
-  log(`💀 ${m.name} +${xp}XP +${gold}G`,'c');
+function monsterKilled(m) {
+  const lk = luckMult(); const gm = goldMult();
+  const xp   = Math.round((m.xp + G.wave * 2) * lk);
+  const gold  = Math.round((m.gold + rng(0, G.wave)) * gm * lk);
+  G.hero.xp += xp; G.hero.gold += gold; G.kills++;
+  log('\u{1F480} ' + m.name + ' besiegt! +' + xp + ' XP  +' + gold + ' Gold', 'c');
   petHealOnKill();
-  const dropCh=0.22+G.hero.level*0.008+dropBonus();
-  if(Math.random()<dropCh) dropItem();
-  G.monster=null;
-  updateArena();
+  G.monsters = G.monsters.filter(x => x.id !== m.id);
+  G.monster  = G.monsters[0] || null;
   checkLevelUp();
   updateAll();
   renderUpgrades();
   renderSkills();
+  if (G.monsters.length === 0) {
+    renderArena();
+    if (G.monstersInWave >= G.monstersPerWave) {
+      G.wave++; G.monstersInWave = 0;
+      G.monstersPerWave = 3 + Math.floor(G.wave / 3);
+      log('\u{1F30A} Welle ' + G.wave + ' beginnt!', 'n');
+      setTimeout(spawnWave, 1200);
+    } else {
+      setTimeout(spawnWave, 600);
+    }
+  } else {
+    renderArena();
+  }
 }
 
 function heroDied() {
-  log('💔 Besiegt! Regeneriere...','c');
-  clearInterval(G.combatInterval); G.combatInterval=null; G.monster=null;
-  updateArena();
-  setTimeout(()=>{
-    G.hero.hp=Math.floor(G.hero.maxHp*0.4);
+  log('\u{1F494} Besiegt! Regeneriere...', 'c');
+  clearInterval(G.combatInterval); G.combatInterval = null;
+  G.monsters = []; G.monster = null;
+  renderArena();
+  setTimeout(() => {
+    G.hero.hp = Math.floor(G.hero.maxHp * 0.4);
     updateAll();
-    log('🌟 Wieder aufgestanden!','n');
-    spawnMonster(); startCombat();
-  },3000);
+    log('\u{1F31F} Wieder aufgestanden!', 'n');
+    spawnWave(); startCombat();
+  }, 3000);
 }
 
 function checkLevelUp() {
-  let leveled=false;
-  while(G.hero.xp>=xpNeed()){
-    G.hero.xp-=xpNeed(); G.hero.level++;
-    G.hero.baseAtk+=rng(2,4); G.hero.baseDef+=rng(1,2);
-    G.hero.maxHp+=rng(18,28); G.hero.hp=G.hero.maxHp;
-    G.hero.maxMana+=rng(5,10); G.hero.mana=G.hero.maxMana;
-    G.hero.baseCrit=Math.min(50,G.hero.baseCrit+0.2);
-    if(G.hero.level%5===0) G.hero.spd=Math.max(0.25,G.hero.spd-0.1);
-    log(`🎉 LEVEL UP → ${G.hero.level}!`,'l');
-    leveled=true;
+  let leveled = false;
+  while (G.hero.xp >= xpNeed()) {
+    G.hero.xp -= xpNeed(); G.hero.level++;
+    G.hero.baseAtk += rng(2, 4); G.hero.baseDef += rng(1, 2);
+    G.hero.maxHp += rng(18, 28); G.hero.hp = G.hero.maxHp;
+    G.hero.maxMana += rng(5, 10); G.hero.mana = G.hero.maxMana;
+    G.hero.baseCrit = Math.min(50, G.hero.baseCrit + 0.2);
+    if (G.hero.level % 5 === 0) G.hero.spd = Math.max(0.25, G.hero.spd - 0.1);
+    log('\u{1F389} LEVEL UP ' + G.hero.level + '!', 'l');
+    leveled = true;
   }
-  if(leveled){ updateEraUI(); saveToSupabase(); }
+  if (leveled) { updateEraUI(); saveToSupabase(); }
+}
+
+function renderArena() {
+  const row = document.getElementById('monstersRow');
+  if (!row) return;
+  row.innerHTML = '';
+  if (!G.monsters || G.monsters.length === 0) {
+    row.innerHTML = '<div style="color:var(--text2);font-style:italic;font-size:0.8rem;padding:20px;">Naechste Welle kommt...</div>';
+    const tn = document.getElementById('targetMonName');
+    const th = document.getElementById('targetMonHp');
+    const hb = document.getElementById('monHpBar');
+    if(tn) tn.textContent = '---';
+    if(th) th.textContent = '';
+    if(hb) hb.style.width = '0%';
+    const wc = document.getElementById('waveChip');
+    const zn = document.getElementById('zoneName');
+    if(wc) wc.textContent = 'Welle ' + G.wave;
+    if(zn) zn.textContent = currentZone().name;
+    return;
+  }
+  G.monsters.forEach((m, idx) => {
+    const isTarget = idx === 0;
+    const size = isTarget ? 90 : 68;
+    const wrapper = document.createElement('div');
+    wrapper.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;transition:transform .15s;';
+    wrapper.onclick = () => { G.monsters = [m, ...G.monsters.filter(x => x.id !== m.id)]; G.monster = m; renderArena(); };
+    const hpPct = Math.max(0, m.hp / m.maxHp * 100);
+    const hpColor = hpPct > 60 ? '#40c070' : hpPct > 30 ? '#f0a020' : '#e05050';
+    wrapper.innerHTML = `
+      <div id="mon_${m.id}" style="animation:monFloat ${2+idx*0.4}s ease-in-out infinite;transition:filter .15s;">
+        <svg viewBox="0 0 60 90" width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg"
+          style="filter:drop-shadow(0 4px 8px rgba(0,0,0,0.8))${isTarget?' drop-shadow(0 0 6px '+m.color+')':''};">
+          ${m.svg}
+        </svg>
+      </div>
+      <div style="font-family:'Cinzel',serif;font-size:${isTarget?'0.66':'0.56'}rem;color:${isTarget?m.color:'var(--text2)'};text-align:center;max-width:${size}px;line-height:1.2;">${m.name}${isTarget?' &#127919;':''}</div>
+      <div style="width:${size-8}px;height:5px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden;">
+        <div style="width:${hpPct}%;height:100%;background:${hpColor};border-radius:3px;transition:width .25s;"></div>
+      </div>
+      <div style="font-size:0.56rem;color:var(--text2);font-family:'Cinzel',serif;">${Math.ceil(m.hp)}/${m.maxHp}</div>
+    `;
+    row.appendChild(wrapper);
+  });
+  const main = G.monsters[0];
+  if (main) {
+    const tn = document.getElementById('targetMonName');
+    const th = document.getElementById('targetMonHp');
+    const hb = document.getElementById('monHpBar');
+    if(tn) tn.textContent = main.name;
+    if(th) th.textContent = Math.ceil(main.hp) + '/' + main.maxHp;
+    if(hb) hb.style.width = Math.max(0, main.hp / main.maxHp * 100) + '%';
+  }
+  const wc = document.getElementById('waveChip');
+  const zn = document.getElementById('zoneName');
+  if(wc) wc.textContent = 'Welle ' + G.wave;
+  if(zn) zn.textContent = currentZone().name;
+}
+
+function updateArenaHpBar() {
+  const main = G.monsters && G.monsters[0];
+  if (!main) return;
+  const th = document.getElementById('targetMonHp');
+  const hb = document.getElementById('monHpBar');
+  if(th) th.textContent = Math.ceil(main.hp) + '/' + main.maxHp;
+  if(hb) hb.style.width = Math.max(0, main.hp / main.maxHp * 100) + '%';
+}
+
+function updateArena() { renderArena(); }
+
+function floatDmgEl(elId, dmg, color) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  floatDmg(el, dmg, color);
 }
 
 // ════════════════════════════════════════════
@@ -1921,6 +2263,7 @@ function autoEquipBest() {
   updateAll();
   renderInventory();
   renderForgedGrid();
+  saveToSupabase(); // sofort speichern!
 }
 
 // ─── Sell Manager ───
@@ -2081,100 +2424,98 @@ async function saveToSupabase() {
   const pid = getPlayerId();
   const h = G.hero;
 
-  // 1. Spieler-Hauptdaten
-  const playerOk = await sbUpsert('sm_players', {
-    id: pid,
-    player_name:   getPlayerName(),
-    last_seen:     new Date().toISOString(),
-    hero_level:    h.level,
-    hero_xp:       h.xp,
-    hero_hp:       Math.ceil(h.hp),
-    hero_max_hp:   h.maxHp,
-    hero_mana:     Math.ceil(h.mana),
-    hero_max_mana: h.maxMana,
-    hero_base_atk: h.baseAtk,
-    hero_base_def: h.baseDef,
-    hero_spd:      h.spd,
-    hero_base_crit:h.baseCrit,
-    hero_gold:     h.gold,
-    wave:          G.wave,
-    total_kills:   G.kills,
-    forge_count:   G.forgeCount,
-    era_index:     G.eraIdx
-  });
-
-  // 2. Upgrades speichern
-  const upgRows = Object.entries(G.upgrades).map(([upgrade_id, level]) => ({
-    player_id: pid, upgrade_id, level
-  }));
-  if (upgRows.length) await sbUpsert('sm_upgrades', upgRows);
-
-  // 3. Skills speichern
-  const skillRows = [...G.skills].map(skill_id => ({
-    player_id: pid, skill_id
-  }));
-  if (skillRows.length) await sbUpsert('sm_skills', skillRows);
-
-  // 4. Pets speichern
-  const petRows = Object.entries(G.pets).map(([pet_id, owned]) => ({
-    player_id: pid, pet_id, is_active: G.activePets.has(pet_id)
-  }));
-  if (petRows.length) await sbUpsert('sm_pets', petRows);
-
-  // 5. Inventory speichern — IDs immer als gültige UUID
-  const invRows = G.inventory.map(it => ({
-    id:         validUUID(it.id),
-    player_id:  pid,
-    item_name:  it.name,
-    item_emoji: it.emoji,
-    item_slot:  it.slot,
-    item_stat:  it.sk,
-    stat_value: it.sv,
-    rarity:     it.rarity,
-    is_equipped:it.equipped || false,
-    is_new:     it.isNew || false
-  }));
-
-  // Inventar komplett neu schreiben
-  await sbDelete('sm_inventory', `player_id=eq.${pid}`);
-  if (invRows.length) {
-    for (let i=0; i<invRows.length; i+=50) {
-      const ok = await sbUpsert('sm_inventory', invRows.slice(i,i+50));
-      if (!ok) console.warn('Inventory batch failed at', i);
-    }
-  }
-
-  // 6. Equipped Slots speichern
-  await sbDelete('sm_equipped', `player_id=eq.${pid}`);
-  const eqRows = Object.entries(G.equipped)
-    .filter(([,item]) => item)
-    .map(([slot, item]) => ({ player_id: pid, slot, item_name: item.name, item_rarity: item.rarity }));
-  if (eqRows.length) {
-    await fetch(`${SUPA_URL}/rest/v1/sm_equipped`, {
-      method: 'POST',
-      headers: { ...SUPA_HDR, 'Prefer': 'resolution=merge-duplicates' },
-      body: JSON.stringify(eqRows)
+  try {
+    // 1. Spieler upsert
+    await sbUpsert('sm_players', {
+      id: pid,
+      player_name:    getPlayerName(),
+      last_seen:      new Date().toISOString(),
+      hero_level:     h.level,
+      hero_xp:        h.xp,
+      hero_hp:        Math.ceil(h.hp),
+      hero_max_hp:    h.maxHp,
+      hero_mana:      Math.ceil(h.mana),
+      hero_max_mana:  h.maxMana,
+      hero_base_atk:  h.baseAtk,
+      hero_base_def:  h.baseDef,
+      hero_spd:       h.spd,
+      hero_base_crit: h.baseCrit,
+      hero_gold:      h.gold,
+      wave:           G.wave,
+      total_kills:    G.kills,
+      forge_count:    G.forgeCount,
+      era_index:      G.eraIdx
     });
-  }
 
-  // 7. Leaderboard
-  await sbUpsert('sm_leaderboard', {
-    player_id:   pid,
-    player_name: getPlayerName(),
-    hero_level:  h.level,
-    total_kills: G.kills,
-    hero_gold:   h.gold,
-    wave:        G.wave,
-    updated_at:  new Date().toISOString()
-  });
+    // 2. Upgrades
+    const upgRows = Object.entries(G.upgrades).map(([upgrade_id, level]) => ({
+      player_id: pid, upgrade_id, level
+    }));
+    if (upgRows.length) await sbUpsert('sm_upgrades', upgRows);
 
-  // Timestamp lokal merken
-  localStorage.setItem('sm3_save', Date.now().toString());
+    // 3. Skills
+    const skillRows = [...G.skills].map(skill_id => ({ player_id: pid, skill_id }));
+    if (skillRows.length) await sbUpsert('sm_skills', skillRows);
 
-  if (playerOk) {
-    setSaveStatus('✅ Gespeichert ' + new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}), 'var(--green2)');
-  } else {
-    setSaveStatus('⚠️ Offline — lokal gespeichert', 'var(--orange2)');
+    // 4. Pets
+    const petRows = Object.entries(G.pets).map(([pet_id]) => ({
+      player_id: pid, pet_id, is_active: G.activePets.has(pet_id)
+    }));
+    if (petRows.length) await sbUpsert('sm_pets', petRows);
+
+    // 5. Inventory — erst alles löschen dann neu einfügen
+    if (G.inventory.length > 0) {
+      // Lösche zuerst
+      const delResp = await fetch(
+        `${SUPA_URL}/rest/v1/sm_inventory?player_id=eq.${pid}`,
+        { method:'DELETE', headers: SUPA_HDR }
+      );
+
+      // Dann einfügen (ohne id Feld — Supabase generiert UUID automatisch)
+      const invRows = G.inventory.map(it => ({
+        player_id:  pid,
+        item_name:  it.name  || '?',
+        item_emoji: it.emoji || '❓',
+        item_slot:  it.slot  || 'weapon',
+        item_stat:  it.sk    || 'atk',
+        stat_value: Number(it.sv) || 0,
+        rarity:     it.rarity || 'common',
+        is_equipped: it.equipped ? true : false,
+        is_new:      it.isNew   ? true : false
+      }));
+
+      // In Batches von 20 einfügen
+      for (let i = 0; i < invRows.length; i += 20) {
+        const batch = invRows.slice(i, i + 20);
+        const resp = await fetch(`${SUPA_URL}/rest/v1/sm_inventory`, {
+          method: 'POST',
+          headers: { ...SUPA_HDR, 'Prefer': 'return=minimal' },
+          body: JSON.stringify(batch)
+        });
+        if (!resp.ok) {
+          const err = await resp.text();
+          console.error('Inventory insert error:', err);
+        }
+      }
+    }
+
+    // 6. Leaderboard
+    await sbUpsert('sm_leaderboard', {
+      player_id:   pid,
+      player_name: getPlayerName(),
+      hero_level:  h.level,
+      total_kills: G.kills,
+      hero_gold:   h.gold,
+      wave:        G.wave,
+      updated_at:  new Date().toISOString()
+    });
+
+    localStorage.setItem('sm3_save', Date.now().toString());
+    setSaveStatus('✅ ' + new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}), 'var(--green2)');
+
+  } catch(e) {
+    console.error('Save error:', e);
+    setSaveStatus('⚠️ Speicherfehler', 'var(--orange2)');
   }
 }
 
@@ -2237,11 +2578,12 @@ async function loadFromSupabase() {
 
     const inv = await sbGet('sm_inventory', `player_id=eq.${pid}&order=created_at.desc`);
     G.inventory = []; G.recentForged = [];
-    G.equipped = {weapon:null,helmet:null,chest:null,gloves:null,boots:null,ring:null};
+    G.equipped = {weapon:null, helmet:null, chest:null, gloves:null, boots:null, ring:null};
 
-    if (inv) {
+    if (inv && inv.length > 0) {
+      // Erst alle Items laden
       inv.forEach(it => {
-        const rar = RARITIES.find(r=>r.id===it.rarity) || RARITIES[0];
+        const rar = RARITIES.find(r => r.id === it.rarity) || RARITIES[0];
         const item = {
           id:          it.id,
           name:        it.item_name,
@@ -2258,10 +2600,29 @@ async function loadFromSupabase() {
         };
         G.inventory.push(item);
         G.recentForged.push(item);
-        if (it.is_equipped && G.equipped[it.item_slot] === null) {
-          G.equipped[it.item_slot] = item;
+      });
+
+      // Dann ausgerüstete Items in G.equipped eintragen
+      // Falls mehrere Items denselben Slot haben (sollte nicht sein),
+      // nimm das beste (höchster stat_value)
+      const validSlots = ['weapon','helmet','chest','gloves','boots','ring'];
+      validSlots.forEach(slot => {
+        const equippedItems = G.inventory.filter(it => it.equipped && it.slot === slot);
+        if (equippedItems.length > 0) {
+          // Nimm das mit dem höchsten Wert
+          equippedItems.sort((a,b) => b.sv - a.sv);
+          G.equipped[slot] = equippedItems[0];
+          // Stelle sicher dass equipped=true gesetzt ist
+          equippedItems[0].equipped = true;
+          // Alle anderen auf false setzen (Duplikate bereinigen)
+          equippedItems.slice(1).forEach(it => it.equipped = false);
         }
       });
+
+      console.log('Loaded equipped:', Object.entries(G.equipped)
+        .filter(([,v])=>v)
+        .map(([k,v])=>`${k}:${v.name}`)
+        .join(', ') || 'nichts');
     }
 
     const savedTs = new Date(p.last_seen).getTime();
