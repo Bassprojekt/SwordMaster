@@ -1649,18 +1649,28 @@ function floatDmg(el,dmg,col='#e05050') {
 // ════════════════════════════════════════════
 
 function updateAll() {
-  updateHeaderStats();
-  updateHeroPage();
-  updateEraUI();
+  try { updateHeaderStats(); } catch(e) {}
+  try { updateHeroPage(); } catch(e) {}
+  try { updateEraUI(); } catch(e) {}
+  try { updateArenaPanel(); } catch(e) {}
+  // sync arena HP bar
+  try {
+    const h=G.hero;
+    const ab=document.getElementById('arenaHpBar');
+    if(ab) ab.style.width=Math.max(0,h.hp/h.maxHp*100)+'%';
+    const ah=document.getElementById('arenaHeroHp');
+    if(ah) ah.textContent=Math.ceil(h.hp)+'/'+h.maxHp;
+  } catch(e) {}
 }
 
 function updateHeaderStats() {
   const h=G.hero;
-  document.getElementById('hHp').textContent=Math.ceil(h.hp);
-  document.getElementById('hMaxHp').textContent=h.maxHp;
-  document.getElementById('hGold').textContent=h.gold;
-  document.getElementById('hLv').textContent=h.level;
-  document.getElementById('hKills').textContent=G.kills;
+  const _t=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+  _t('hHp',Math.ceil(h.hp));
+  _t('hMaxHp',h.maxHp);
+  _t('hGold',h.gold);
+  _t('hLv',h.level);
+  _t('hKills',G.kills);
 }
 
 // ─── Hero Figure Color Update ───
@@ -1723,22 +1733,23 @@ function updateHeroPage() {
   const h=G.hero; const s=getStats();
   try { document.getElementById('lvlBadge').textContent='LVL '+h.level; } catch(e) {}
   try { updateHeroFigure(); } catch(e) {}
-  document.getElementById('hpTxt').textContent=Math.ceil(h.hp)+'/'+h.maxHp;
-  document.getElementById('hpBar').style.width=Math.max(0,h.hp/h.maxHp*100)+'%';
-  document.getElementById('xpTxt').textContent=h.xp+'/'+xpNeed();
-  document.getElementById('xpBar').style.width=Math.min(100,h.xp/xpNeed()*100)+'%';
-  document.getElementById('manaTxt').textContent=Math.ceil(h.mana)+'/'+h.maxMana;
-  document.getElementById('manaBar').style.width=Math.max(0,h.mana/h.maxMana*100)+'%';
-  document.getElementById('pAtk').textContent=s.atk;
-  document.getElementById('pDef').textContent=s.def;
-  document.getElementById('pSpd').textContent=s.spd.toFixed(2);
-  document.getElementById('pCrit').textContent=s.crit;
-  document.getElementById('fGold').textContent=h.gold;
-  document.getElementById('fItems').textContent='Items im Inventar: '+G.inventory.length;
+  const _s=(id,prop,val)=>{ const e=document.getElementById(id); if(e){ if(prop==='text')e.textContent=val; else if(prop==='width')e.style.width=val; } };
+  _s('hpTxt','text',Math.ceil(h.hp)+'/'+h.maxHp);
+  _s('hpBar','width',Math.max(0,h.hp/h.maxHp*100)+'%');
+  _s('xpTxt','text',h.xp+'/'+xpNeed());
+  _s('xpBar','width',Math.min(100,h.xp/xpNeed()*100)+'%');
+  _s('manaTxt','text',Math.ceil(h.mana)+'/'+h.maxMana);
+  _s('manaBar','width',Math.max(0,h.mana/h.maxMana*100)+'%');
+  _s('pAtk','text',s.atk);
+  _s('pDef','text',s.def);
+  _s('pSpd','text',s.spd.toFixed(2));
+  _s('pCrit','text',s.crit);
+  _s('fGold','text',h.gold);
+  _s('fItems','text','Items im Inventar: '+G.inventory.length);
   const autoMs=forgeMs();
-  document.getElementById('fAutoSpeed').textContent=G.autoForge?('Auto-Schmied: alle '+autoMs+'ms'):'';
-  renderEquipSlots();
-  renderEquipBonus();
+  _s('fAutoSpeed','text',G.autoForge?('Auto-Schmied: alle '+autoMs+'ms'):'');
+  try { renderEquipSlots(); } catch(e) {}
+  try { renderEquipBonus(); } catch(e) {}
 }
 
 function updateEraUI() {
