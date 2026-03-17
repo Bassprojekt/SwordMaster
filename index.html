@@ -903,45 +903,135 @@ body {
 .dung-stat-row b{color:var(--text);}
 
 /* ══ SKILL TREE ══ */
+/* ══ SKILL TREE ══ */
 .skill-branch-tab {
-  padding:7px 14px;
+  flex:1; min-width:0;
+  padding:0;
   background:var(--panel2);
   border:1px solid var(--border);
-  border-radius:8px;
+  border-radius:10px;
   font-family:'Cinzel',serif;
-  font-size:.7rem;font-weight:700;
+  font-size:.62rem;font-weight:700;
   color:var(--text2);
-  cursor:pointer;transition:all .18s;
+  cursor:pointer;transition:all .2s;
   letter-spacing:.04em;
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+  padding:8px 6px;
+  position:relative;overflow:hidden;
 }
-.skill-branch-tab:hover { border-color:var(--gold);color:var(--gold); }
+.skill-branch-tab::before {
+  content:'';position:absolute;bottom:0;left:0;right:0;height:2px;
+  background:currentColor;opacity:0;transition:opacity .2s;
+  border-radius:0 0 10px 10px;
+}
+.skill-branch-tab:hover { color:var(--text);border-color:var(--border2); }
 .skill-branch-tab.active {
   border-color:var(--gold2);
   color:var(--gold2);
-  background:rgba(201,162,39,.1);
-  box-shadow:0 0 10px rgba(201,162,39,.2);
+  background:rgba(201,162,39,.08);
+}
+.skill-branch-tab.active::before { opacity:1; }
+.stab-icon { font-size:1.3rem;line-height:1; }
+.stab-label { font-size:.58rem;letter-spacing:.06em; }
+.stab-prog {
+  font-size:.5rem;color:var(--text3);font-family:'Cinzel',serif;
+  background:rgba(0,0,0,.3);border-radius:8px;padding:1px 5px;
+}
+.stab-bar-wrap { width:100%;height:3px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;margin-top:2px; }
+.stab-bar-fill { height:100%;border-radius:2px;transition:width .4s ease; }
+
+/* SVG skill node */
+.st-node { cursor:pointer; }
+.st-node:hover .st-node-rect { opacity:.85; }
+@keyframes skillPulse {
+  0%,100%{stroke-opacity:.4}50%{stroke-opacity:1}
+}
+@keyframes connFlow {
+  to { stroke-dashoffset: -20; }
+}
+.st-conn-active {
+  animation: connFlow .8s linear infinite;
+  stroke-dasharray: 6 4;
 }
 
-/* SVG skill node styles (inline SVG, no external) */
-.st-node {
-  cursor:pointer;
-  transition:opacity .15s;
+/* Skill detail panel */
+#skillDetailBox {
+  margin-top:10px;
+  background:rgba(0,0,0,.35);
+  border-radius:12px;
+  overflow:hidden;
 }
-.st-node:hover rect, .st-node:hover circle {
-  filter:brightness(1.3);
+.sd-header {
+  display:flex;align-items:center;gap:12px;
+  padding:12px 14px 10px;
+  border-bottom:1px solid rgba(255,255,255,.06);
 }
+.sd-icon-wrap {
+  width:48px;height:48px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.8rem;flex-shrink:0;
+}
+.sd-body { padding:10px 14px 12px;display:flex;flex-direction:column;gap:8px; }
+.sd-effect {
+  font-size:.78rem;color:var(--text);line-height:1.55;
+}
+.sd-tags { display:flex;gap:5px;flex-wrap:wrap; }
+.sd-tag {
+  font-family:'Cinzel',serif;font-size:.58rem;
+  padding:2px 7px;border-radius:10px;
+  border:1px solid;
+}
+.sd-synergy-box {
+  background:rgba(255,255,255,.03);
+  border:1px solid rgba(255,255,255,.06);
+  border-radius:7px;padding:7px 10px;
+}
+.sd-synergy-title {
+  font-family:'Cinzel',serif;font-size:.6rem;
+  color:var(--text3);letter-spacing:.06em;margin-bottom:5px;
+}
+.sd-synergy-item {
+  font-size:.7rem;color:var(--text2);
+  display:flex;align-items:center;gap:6px;margin-bottom:2px;
+}
+.sd-synergy-dot { width:6px;height:6px;border-radius:50%;flex-shrink:0; }
+.sd-footer {
+  display:flex;gap:8px;align-items:center;flex-wrap:wrap;
+  padding:8px 14px 12px;
+  border-top:1px solid rgba(255,255,255,.05);
+}
+.sd-cost-badge {
+  font-family:'Cinzel',serif;font-size:.76rem;font-weight:700;
+}
+.sd-req-txt { font-size:.68rem;color:var(--text3);flex:1; }
 
 #sdBuyBtn {
-  padding:7px 18px;
+  padding:8px 20px;
   border-radius:8px;
-  background:linear-gradient(135deg,rgba(201,162,39,.2),rgba(201,162,39,.05));
+  background:linear-gradient(135deg,rgba(201,162,39,.25),rgba(201,162,39,.06));
   border:1px solid var(--gold);
   font-family:'Cinzel',serif;font-size:.72rem;font-weight:700;
   color:var(--gold2);cursor:pointer;transition:all .18s;
   letter-spacing:.04em;
 }
-#sdBuyBtn:hover:not(:disabled) { background:rgba(201,162,39,.3); }
+#sdBuyBtn:hover:not(:disabled) { background:rgba(201,162,39,.35);box-shadow:0 0 12px rgba(201,162,39,.3); }
 #sdBuyBtn:disabled { opacity:.4;cursor:not-allowed; }
+
+/* Tier labels in tree */
+.st-tier-label { pointer-events:none; }
+
+/* Skill progress bar in header */
+.skill-tree-header {
+  display:flex;align-items:center;gap:10px;
+  margin-bottom:10px;
+}
+.skill-points-pill {
+  background:rgba(0,0,0,.3);border:1px solid var(--border2);
+  border-radius:20px;padding:3px 10px;
+  font-family:'Cinzel',serif;font-size:.68rem;
+  color:var(--gold2);display:flex;align-items:center;gap:5px;
+  margin-left:auto;
+}
 
 /* ══ WHITE MODE ══ */
 body.white-mode {
@@ -1397,33 +1487,71 @@ input[type=range].vol-slider::-webkit-slider-thumb:hover { transform:scale(1.2);
   </div>
   <!-- Skill-Tree -->
   <div class="card" style="padding:12px 14px;">
-    <div class="sec-title">✨ Fähigkeiten-Baum</div>
-    <!-- Branch tabs -->
-    <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;" id="skillTreeTabs">
-      <button class="skill-branch-tab active" id="stab-krieger" onclick="setSkillBranch('krieger')">⚔️ Krieger</button>
-      <button class="skill-branch-tab" id="stab-magier" onclick="setSkillBranch('magier')">🔮 Magier</button>
-      <button class="skill-branch-tab" id="stab-schatten" onclick="setSkillBranch('schatten')">🗡️ Schatten</button>
-      <button class="skill-branch-tab" id="stab-allgemein" onclick="setSkillBranch('allgemein')">🌟 Allgemein</button>
+    <!-- Header row -->
+    <div class="skill-tree-header">
+      <div class="sec-title" style="margin-bottom:0;">✨ Fähigkeiten-Baum</div>
+      <div class="skill-points-pill">⭐ <span id="skillsUnlocked">0</span> / <span id="skillsTotal">0</span> Fähigkeiten</div>
     </div>
-    <div style="font-size:.68rem;color:var(--text2);font-style:italic;margin-bottom:8px;" id="skillBranchDesc">Krieger: Hoher Schaden, maximale Überlebensfähigkeit</div>
+    <!-- Branch tabs -->
+    <div style="display:flex;gap:5px;margin-bottom:10px;" id="skillTreeTabs">
+      <button class="skill-branch-tab active" id="stab-krieger" onclick="setSkillBranch('krieger')">
+        <div class="stab-icon">⚔️</div>
+        <div class="stab-label">KRIEGER</div>
+        <div class="stab-prog" id="stab-prog-krieger">0/0</div>
+        <div class="stab-bar-wrap"><div class="stab-bar-fill" id="stab-bar-krieger" style="width:0%;background:#e05050;"></div></div>
+      </button>
+      <button class="skill-branch-tab" id="stab-magier" onclick="setSkillBranch('magier')">
+        <div class="stab-icon">🔮</div>
+        <div class="stab-label">MAGIER</div>
+        <div class="stab-prog" id="stab-prog-magier">0/0</div>
+        <div class="stab-bar-wrap"><div class="stab-bar-fill" id="stab-bar-magier" style="width:0%;background:#8844ee;"></div></div>
+      </button>
+      <button class="skill-branch-tab" id="stab-schatten" onclick="setSkillBranch('schatten')">
+        <div class="stab-icon">🗡️</div>
+        <div class="stab-label">SCHATTEN</div>
+        <div class="stab-prog" id="stab-prog-schatten">0/0</div>
+        <div class="stab-bar-wrap"><div class="stab-bar-fill" id="stab-bar-schatten" style="width:0%;background:#44bbaa;"></div></div>
+      </button>
+      <button class="skill-branch-tab" id="stab-allgemein" onclick="setSkillBranch('allgemein')">
+        <div class="stab-icon">🌟</div>
+        <div class="stab-label">ALLG.</div>
+        <div class="stab-prog" id="stab-prog-allgemein">0/0</div>
+        <div class="stab-bar-wrap"><div class="stab-bar-fill" id="stab-bar-allgemein" style="width:0%;background:#cc9933;"></div></div>
+      </button>
+    </div>
+    <!-- Branch description -->
+    <div style="font-size:.7rem;color:var(--text2);font-style:italic;margin-bottom:10px;padding:6px 10px;background:rgba(0,0,0,.2);border-radius:7px;border-left:2px solid var(--gold);" id="skillBranchDesc"></div>
     <!-- SVG Tree Canvas -->
-    <div style="position:relative;width:100%;overflow-x:auto;">
+    <div style="position:relative;width:100%;overflow-x:auto;overflow-y:hidden;">
       <svg id="skillTreeSvg" width="100%" style="display:block;" xmlns="http://www.w3.org/2000/svg"></svg>
     </div>
-    <!-- Skill Detail Popup -->
-    <div id="skillDetailBox" style="display:none;margin-top:10px;background:rgba(0,0,0,.35);border:1px solid var(--border2);border-radius:10px;padding:12px;">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
-        <div style="font-size:1.8rem;" id="sdIcon"></div>
-        <div>
-          <div style="font-family:'Cinzel',serif;font-size:.9rem;font-weight:700;" id="sdName"></div>
-          <div style="font-size:.68rem;" id="sdBranch"></div>
+    <!-- Skill Detail Panel -->
+    <div id="skillDetailBox" style="display:none;">
+      <div class="sd-header" id="sdHeader">
+        <div class="sd-icon-wrap" id="sdIconWrap">
+          <div id="sdIcon" style="font-size:1.8rem;"></div>
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-family:'Cinzel',serif;font-size:.92rem;font-weight:700;color:var(--text);" id="sdName"></div>
+          <div style="font-size:.62rem;margin-top:2px;" id="sdBranch"></div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-family:'Cinzel',serif;font-size:.68rem;color:var(--text3);">TIER</div>
+          <div style="font-family:'Cinzel',serif;font-size:1.1rem;font-weight:700;" id="sdTier">—</div>
         </div>
       </div>
-      <div style="font-size:.76rem;color:var(--text2);margin-bottom:8px;" id="sdDesc"></div>
-      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-        <div style="font-family:'Cinzel',serif;font-size:.75rem;" id="sdCost"></div>
-        <div style="font-size:.7rem;color:var(--text3);" id="sdReq"></div>
-        <button id="sdBuyBtn" style="margin-left:auto;" onclick="buySkillFromDetail()"></button>
+      <div class="sd-body">
+        <div class="sd-effect" id="sdDesc"></div>
+        <div class="sd-tags" id="sdTags"></div>
+        <div class="sd-synergy-box" id="sdSynergyBox" style="display:none;">
+          <div class="sd-synergy-title">⚡ SYNERGIEN</div>
+          <div id="sdSynergies"></div>
+        </div>
+      </div>
+      <div class="sd-footer">
+        <div class="sd-cost-badge" id="sdCost"></div>
+        <div class="sd-req-txt" id="sdReq"></div>
+        <button id="sdBuyBtn" onclick="buySkillFromDetail()">✨ Erforschen</button>
       </div>
     </div>
   </div>
@@ -3241,20 +3369,66 @@ function buyUpgrade(id) {
 // ── SKILLS ──────────────────────────────────
 // ════════════════════════════════════════════
 
-// ── Skill Tree Rendering ─────────────────────
+// Synergy definitions: which skills boost each other
+const SKILL_SYNERGIES = {
+  blood_rage:    [{id:'vampirism',    note:'Vampirismus heilt mehr bei niedrigem HP'},
+                  {id:'berserker',    note:'Berserker-ATK-Bonus stapelt mit Blutraserei'}],
+  vampirism:     [{id:'blood_rage',   note:'Bis zu 33% mehr Heilung unter 40% HP'},
+                  {id:'warlord',      note:'Kriegsherr multipliziert Vampir-Heilung'}],
+  arcane_power:  [{id:'chain_lightning',note:'Kettenblitz profitiert von Krit-Chance'},
+                  {id:'overload',     note:'Überlastung verdoppelt Krit-Bonus'}],
+  time_warp:     [{id:'chrono_strike',note:'Chronoschlag wird häufiger ausgelöst'},
+                  {id:'god_mode',     note:'Gottesmodus maximiert Zeitverzerrung'}],
+  shadow_step:   [{id:'assassinate',  note:'Ausweichen reset gibt mehr Erstschlag-Chancen'},
+                  {id:'phantom',      note:'Phantom verdreifacht Ausweich-Chance'}],
+  gold_sense:    [{id:'treasure_hunt',note:'Schatzsuche maximiert Gold-Drops'},
+                  {id:'golden_touch', note:'+50% in Schatzkammern on top'}],
+  forge_mastery: [{id:'master_smith', note:'Meisterschmied verdoppelt Qualitäts-Bonus'},
+                  {id:'legendary_forge',note:'Mythische Items werden mögich'}],
+  war_cry:       [{id:'beast_bond',   note:'3 aktive Pets = dreifacher Kriegsruf-Bonus'},
+                  {id:'alpha_pack',   note:'Alpha-Rudel stapelt mit Kriegsruf'}],
+  warlord:       [{id:'vampirism',    note:'20% mehr ATK = 20% mehr Vampir-Heilung'},
+                  {id:'berserker',    note:'Kombination gibt bis zu +50% ATK'}],
+  phantom:       [{id:'death_mark',   note:'Unsichtbare Angriffe triggern Todeszeichen'},
+                  {id:'assassinate',  note:'Combo: Phantom + Meucheln = massiver Erstschlag'}],
+};
+
+const TIER_NAMES = ['Einstieg', 'Fortgeschritten', 'Meister', 'Legende'];
+
+function updateSkillTabBars() {
+  let totalUnlocked = 0;
+  let totalAll = 0;
+  Object.entries(SKILL_TREE).forEach(([key, b]) => {
+    const all = b.nodes.length;
+    const unlocked = b.nodes.filter(n => G.skills.has(n.id)).length;
+    totalUnlocked += unlocked; totalAll += all;
+    const prog = document.getElementById('stab-prog-' + key);
+    const bar  = document.getElementById('stab-bar-' + key);
+    if (prog) prog.textContent = unlocked + '/' + all;
+    if (bar)  bar.style.width = (all > 0 ? Math.round(unlocked/all*100) : 0) + '%';
+  });
+  const su = document.getElementById('skillsUnlocked');
+  const st = document.getElementById('skillsTotal');
+  if (su) su.textContent = totalUnlocked;
+  if (st) st.textContent = totalAll;
+}
+
 function setSkillBranch(branch) {
   _activeSkillBranch = branch;
   _selectedSkillId = null;
   document.querySelectorAll('.skill-branch-tab').forEach(b => b.classList.remove('active'));
   const tab = document.getElementById('stab-' + branch);
   if (tab) tab.classList.add('active');
+  const b = SKILL_TREE[branch];
   const desc = document.getElementById('skillBranchDesc');
-  if (desc) desc.textContent = BRANCH_DESCS[branch] || '';
-  document.getElementById('skillDetailBox').style.display = 'none';
+  if (desc && b) desc.textContent = b.desc || '';
+  const det = document.getElementById('skillDetailBox');
+  if (det) det.style.display = 'none';
   renderSkills();
 }
 
 function renderSkills() {
+  updateSkillTabBars();
   const svg = document.getElementById('skillTreeSvg');
   if (!svg) return;
 
@@ -3264,19 +3438,18 @@ function renderSkills() {
   const nodes = branch.nodes;
   const branchColor = branch.color || '#c9a227';
 
-  // Layout constants
-  const COL_W = 100;   // px per column
-  const ROW_H = 110;   // px per row
-  const NODE_W = 82;
-  const NODE_H = 68;
-  const PAD_X = 10;
-  const PAD_Y = 18;
+  // Layout constants — wider nodes, more breathing room
+  const COL_W  = 108;
+  const ROW_H  = 126;
+  const NODE_W = 88;
+  const NODE_H = 76;
+  const PAD_X  = 8;
+  const PAD_Y  = 44;   // extra top padding for tier labels
 
-  // Find grid dimensions
-  const maxCol = Math.max(...nodes.map(n => n.col));
+  const maxCol  = Math.max(...nodes.map(n => n.col));
   const maxTier = Math.max(...nodes.map(n => n.tier));
   const svgW = (maxCol + 1) * COL_W + PAD_X * 2;
-  const svgH = (maxTier + 1) * ROW_H + PAD_Y * 2 + 10;
+  const svgH = (maxTier + 1) * ROW_H + PAD_Y + 24;
 
   svg.setAttribute('viewBox', `0 0 ${svgW} ${svgH}`);
   svg.setAttribute('height', svgH);
@@ -3285,114 +3458,225 @@ function renderSkills() {
   const nodeById = {};
   nodes.forEach(n => nodeById[n.id] = n);
 
-  const nodeX = n => PAD_X + n.col * COL_W + (COL_W - NODE_W) / 2;
-  const nodeY = n => PAD_Y + n.tier * ROW_H;
+  const nodeX  = n => PAD_X + n.col * COL_W + (COL_W - NODE_W) / 2;
+  const nodeY  = n => PAD_Y + n.tier * ROW_H;
   const nodeCX = n => nodeX(n) + NODE_W / 2;
   const nodeCY = n => nodeY(n) + NODE_H / 2;
 
-  // ── Draw connector lines first (behind nodes) ──
+  // ── Tier background bands ──
+  for (let t = 0; t <= maxTier; t++) {
+    const bandY = PAD_Y + t * ROW_H - 8;
+    const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    rect.setAttribute('x', 0);
+    rect.setAttribute('y', bandY);
+    rect.setAttribute('width', svgW);
+    rect.setAttribute('height', ROW_H);
+    rect.setAttribute('fill', t % 2 === 0 ? 'rgba(255,255,255,0.015)' : 'rgba(0,0,0,0.08)');
+    svg.appendChild(rect);
+
+    const tierName = TIER_NAMES[t] || ('Tier ' + t);
+    const tierLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    tierLabel.setAttribute('x', 4);
+    tierLabel.setAttribute('y', bandY + 14);
+    tierLabel.setAttribute('fill', branchColor);
+    tierLabel.setAttribute('font-size', '8');
+    tierLabel.setAttribute('font-family', 'Cinzel,serif');
+    tierLabel.setAttribute('opacity', '0.5');
+    tierLabel.setAttribute('class', 'st-tier-label');
+    tierLabel.textContent = 'T' + t + ' · ' + tierName.toUpperCase();
+    svg.appendChild(tierLabel);
+  }
+
+  // ── Draw connector lines first ──
   nodes.forEach(n => {
     n.req.forEach(reqId => {
       const parent = nodeById[reqId];
       if (!parent) return;
-      const x1 = nodeCX(parent), y1 = nodeY(parent) + NODE_H;
-      const x2 = nodeCX(n),      y2 = nodeY(n);
+      const x1 = nodeCX(parent), y1 = nodeY(parent) + NODE_H + 2;
+      const x2 = nodeCX(n),      y2 = nodeY(n) - 2;
       const bothUnlocked = G.skills.has(n.id) && G.skills.has(reqId);
       const parentUnlocked = G.skills.has(reqId);
       const midY = (y1 + y2) / 2;
 
-      const line = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-      line.setAttribute('d', `M${x1},${y1} C${x1},${midY} ${x2},${midY} ${x2},${y2}`);
-      line.setAttribute('fill', 'none');
-      line.setAttribute('stroke', bothUnlocked ? branchColor : parentUnlocked ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.08)');
-      line.setAttribute('stroke-width', bothUnlocked ? '2.5' : '1.5');
-      if (!parentUnlocked) line.setAttribute('stroke-dasharray', '4 4');
-      svg.appendChild(line);
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      const d = `M${x1},${y1} C${x1},${midY} ${x2},${midY} ${x2},${y2}`;
+      path.setAttribute('d', d);
+      path.setAttribute('fill', 'none');
+      path.setAttribute('stroke-linecap', 'round');
+
+      if (bothUnlocked) {
+        // Animated flowing line for active connections
+        path.setAttribute('stroke', branchColor);
+        path.setAttribute('stroke-width', '2.5');
+        path.setAttribute('stroke-dasharray', '6 4');
+        path.setAttribute('class', 'st-conn-active');
+        // Static glow underneath
+        const glow = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        glow.setAttribute('d', d); glow.setAttribute('fill', 'none');
+        glow.setAttribute('stroke', branchColor); glow.setAttribute('stroke-width', '6');
+        glow.setAttribute('opacity', '0.08'); glow.setAttribute('stroke-linecap', 'round');
+        svg.appendChild(glow);
+      } else if (parentUnlocked) {
+        path.setAttribute('stroke', 'rgba(255,255,255,0.22)');
+        path.setAttribute('stroke-width', '1.5');
+        path.setAttribute('stroke-dasharray', '5 5');
+      } else {
+        path.setAttribute('stroke', 'rgba(255,255,255,0.06)');
+        path.setAttribute('stroke-width', '1');
+        path.setAttribute('stroke-dasharray', '3 6');
+      }
+      svg.appendChild(path);
+
+      // Arrow tip at bottom of connector
+      if (parentUnlocked || bothUnlocked) {
+        const aw = 5, ah = 7;
+        const arr = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+        arr.setAttribute('points', `${x2},${y2} ${x2-aw},${y2-ah} ${x2+aw},${y2-ah}`);
+        arr.setAttribute('fill', bothUnlocked ? branchColor : 'rgba(255,255,255,0.2)');
+        arr.setAttribute('opacity', bothUnlocked ? '0.8' : '0.5');
+        svg.appendChild(arr);
+      }
     });
   });
 
   // ── Draw nodes ──
   nodes.forEach(n => {
-    const unlocked = G.skills.has(n.id);
-    const reqOk = n.req.length === 0 || n.req.some(r => G.skills.has(r));
+    const unlocked  = G.skills.has(n.id);
+    const reqOk     = n.req.length === 0 || n.req.some(r => G.skills.has(r));
     const canAfford = G.hero.gold >= n.cost;
     const isSelected = _selectedSkillId === n.id;
+    const isMastery = n.tier === 3;
 
     const x = nodeX(n), y = nodeY(n);
 
     const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     g.setAttribute('class', 'st-node');
     g.setAttribute('transform', `translate(${x},${y})`);
-    g.style.cursor = 'pointer';
+    g.style.cursor = unlocked ? 'default' : (!reqOk ? 'not-allowed' : 'pointer');
+    if (!reqOk && !unlocked) g.style.opacity = '0.35';
 
-    // Background rect
-    const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-    rect.setAttribute('width', NODE_W);
-    rect.setAttribute('height', NODE_H);
-    rect.setAttribute('rx', '8');
-
-    let fillColor, strokeColor, opacity;
-    if (unlocked) {
-      fillColor = 'rgba(46,139,87,0.2)'; strokeColor = '#40c070'; opacity = '1';
-    } else if (!reqOk) {
-      fillColor = 'rgba(0,0,0,0.3)'; strokeColor = 'rgba(255,255,255,0.08)'; opacity = '0.4';
-    } else if (canAfford) {
-      fillColor = isSelected ? 'rgba(201,162,39,0.2)' : 'rgba(0,0,0,0.35)';
-      strokeColor = isSelected ? '#f0cc55' : branchColor;
-      opacity = '1';
-    } else {
-      fillColor = 'rgba(0,0,0,0.3)'; strokeColor = 'rgba(255,255,255,0.15)'; opacity = '0.7';
-    }
-    rect.setAttribute('fill', fillColor);
-    rect.setAttribute('stroke', strokeColor);
-    rect.setAttribute('stroke-width', isSelected ? '2' : '1');
-    g.style.opacity = opacity;
-
-    // Glow for unlocked
-    if (unlocked) {
+    // Outer glow for mastery nodes
+    if (isMastery) {
       const glow = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-      glow.setAttribute('width', NODE_W); glow.setAttribute('height', NODE_H); glow.setAttribute('rx', '8');
-      glow.setAttribute('fill', 'none'); glow.setAttribute('stroke', '#40c070');
-      glow.setAttribute('stroke-width', '3'); glow.setAttribute('opacity', '0.25');
+      glow.setAttribute('x', '-4'); glow.setAttribute('y', '-4');
+      glow.setAttribute('width', NODE_W + 8); glow.setAttribute('height', NODE_H + 8);
+      glow.setAttribute('rx', '12');
+      glow.setAttribute('fill', 'none');
+      glow.setAttribute('stroke', branchColor);
+      glow.setAttribute('stroke-width', unlocked ? '3' : '1.5');
+      glow.setAttribute('opacity', unlocked ? '0.4' : '0.15');
+      if (unlocked) glow.style.animation = 'skillPulse 2s ease-in-out infinite';
       g.appendChild(glow);
     }
 
+    // Main background rect
+    const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    rect.setAttribute('class', 'st-node-rect');
+    rect.setAttribute('width', NODE_W);
+    rect.setAttribute('height', NODE_H);
+    rect.setAttribute('rx', isMastery ? '10' : '8');
+
+    let fillColor, strokeColor, strokeW = 1;
+    if (unlocked) {
+      fillColor = 'rgba(46,139,87,0.18)';
+      strokeColor = '#40c070';
+      strokeW = 1.5;
+    } else if (isSelected && reqOk) {
+      fillColor = 'rgba(201,162,39,0.15)';
+      strokeColor = '#f0cc55';
+      strokeW = 2;
+    } else if (reqOk && canAfford) {
+      fillColor = 'rgba(0,0,0,0.4)';
+      strokeColor = branchColor;
+    } else if (reqOk) {
+      fillColor = 'rgba(0,0,0,0.35)';
+      strokeColor = 'rgba(255,255,255,0.18)';
+    } else {
+      fillColor = 'rgba(0,0,0,0.25)';
+      strokeColor = 'rgba(255,255,255,0.06)';
+    }
+    rect.setAttribute('fill', fillColor);
+    rect.setAttribute('stroke', strokeColor);
+    rect.setAttribute('stroke-width', strokeW);
     g.appendChild(rect);
 
-    // Icon
+    // Shimmer overlay for unlocked
+    if (unlocked) {
+      const sh = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      sh.setAttribute('width', NODE_W); sh.setAttribute('height', NODE_H / 2);
+      sh.setAttribute('rx', '8');
+      sh.setAttribute('fill', 'rgba(255,255,255,0.04)');
+      g.appendChild(sh);
+    }
+
+    // Icon (bigger for mastery)
     const iconT = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    iconT.setAttribute('x', NODE_W / 2); iconT.setAttribute('y', '26');
-    iconT.setAttribute('text-anchor', 'middle'); iconT.setAttribute('dominant-baseline', 'central');
-    iconT.setAttribute('font-size', '18'); iconT.textContent = n.icon;
+    iconT.setAttribute('x', NODE_W / 2);
+    iconT.setAttribute('y', isMastery ? '30' : '26');
+    iconT.setAttribute('text-anchor', 'middle');
+    iconT.setAttribute('dominant-baseline', 'central');
+    iconT.setAttribute('font-size', isMastery ? '22' : '18');
+    iconT.textContent = n.icon;
     g.appendChild(iconT);
 
-    // Name (truncate if long)
+    // Name
     const nameT = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    nameT.setAttribute('x', NODE_W / 2); nameT.setAttribute('y', '42');
-    nameT.setAttribute('text-anchor', 'middle'); nameT.setAttribute('dominant-baseline', 'central');
-    nameT.setAttribute('font-size', '8.5');
-    nameT.setAttribute('fill', unlocked ? '#40c070' : 'rgba(255,255,255,0.85)');
-    nameT.setAttribute('font-family', 'Cinzel,serif'); nameT.setAttribute('font-weight', '700');
-    const shortName = n.name.length > 14 ? n.name.slice(0, 13) + '…' : n.name;
-    nameT.textContent = shortName;
+    nameT.setAttribute('x', NODE_W / 2);
+    nameT.setAttribute('y', isMastery ? '50' : '46');
+    nameT.setAttribute('text-anchor', 'middle');
+    nameT.setAttribute('dominant-baseline', 'central');
+    nameT.setAttribute('font-size', n.name.length > 13 ? '7.5' : '8.5');
+    nameT.setAttribute('fill', unlocked ? '#5de89a' : isSelected ? '#f0cc55' : 'rgba(255,255,255,0.88)');
+    nameT.setAttribute('font-family', 'Cinzel,serif');
+    nameT.setAttribute('font-weight', '700');
+    nameT.textContent = n.name.length > 16 ? n.name.slice(0, 15) + '…' : n.name;
     g.appendChild(nameT);
 
-    // Cost or checkmark
+    // Status / cost line
     const costT = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    costT.setAttribute('x', NODE_W / 2); costT.setAttribute('y', '57');
-    costT.setAttribute('text-anchor', 'middle'); costT.setAttribute('dominant-baseline', 'central');
-    costT.setAttribute('font-size', '8'); costT.setAttribute('font-family', 'Cinzel,serif');
+    costT.setAttribute('x', NODE_W / 2);
+    costT.setAttribute('y', isMastery ? '63' : '60');
+    costT.setAttribute('text-anchor', 'middle');
+    costT.setAttribute('dominant-baseline', 'central');
+    costT.setAttribute('font-size', '7.5');
+    costT.setAttribute('font-family', 'Cinzel,serif');
     if (unlocked) {
-      costT.setAttribute('fill', '#40c070'); costT.textContent = '✅ Erforscht';
+      costT.setAttribute('fill', '#40c070');
+      costT.textContent = '✅ Erforscht';
     } else if (!reqOk) {
-      costT.setAttribute('fill', 'rgba(255,255,255,0.3)'); costT.textContent = '🔒 Gesperrt';
+      costT.setAttribute('fill', 'rgba(255,255,255,0.28)');
+      costT.textContent = '🔒 Gesperrt';
     } else {
-      costT.setAttribute('fill', canAfford ? '#f0cc55' : 'rgba(255,255,255,0.35)');
+      costT.setAttribute('fill', canAfford ? '#f0cc55' : '#ff6060');
       costT.textContent = '💰 ' + n.cost.toLocaleString() + 'G';
     }
     g.appendChild(costT);
 
-    // Click handler
+    // Mastery crown indicator
+    if (isMastery) {
+      const crown = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      crown.setAttribute('x', NODE_W - 6); crown.setAttribute('y', '8');
+      crown.setAttribute('text-anchor', 'end'); crown.setAttribute('font-size', '9');
+      crown.textContent = '👑';
+      g.appendChild(crown);
+    }
+
+    // Synergy dot if has synergies
+    if (SKILL_SYNERGIES[n.id] && unlocked) {
+      const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      dot.setAttribute('cx', NODE_W - 5); dot.setAttribute('cy', NODE_H - 5);
+      dot.setAttribute('r', '4');
+      dot.setAttribute('fill', '#f0cc55');
+      dot.setAttribute('stroke', 'rgba(0,0,0,.5)'); dot.setAttribute('stroke-width', '1');
+      g.appendChild(dot);
+      const dotT = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      dotT.setAttribute('x', NODE_W - 5); dotT.setAttribute('y', NODE_H - 5);
+      dotT.setAttribute('text-anchor', 'middle'); dotT.setAttribute('dominant-baseline', 'central');
+      dotT.setAttribute('font-size', '5'); dotT.setAttribute('fill', '#000');
+      dotT.textContent = '⚡';
+      g.appendChild(dotT);
+    }
+
     g.addEventListener('click', () => selectSkillNode(n.id));
     svg.appendChild(g);
   });
@@ -3409,50 +3693,109 @@ function selectSkillNode(id) {
   if (!box) return;
   box.style.display = 'block';
 
+  // Find branch
+  let branchKey = '', branchData = null;
+  for (const [key, b] of Object.entries(SKILL_TREE)) {
+    if (b.nodes.find(n => n.id === id)) { branchKey = key; branchData = b; break; }
+  }
+
+  // Header
   document.getElementById('sdIcon').textContent = sk.icon;
   document.getElementById('sdName').textContent = sk.name;
 
-  // Find branch
-  let branchName = '';
-  for (const [key, b] of Object.entries(SKILL_TREE)) {
-    if (b.nodes.find(n => n.id === id)) { branchName = b.label; break; }
-  }
   const branchEl = document.getElementById('sdBranch');
-  if (branchEl) branchEl.textContent = branchName;
-  branchEl.style.color = 'var(--text3)';
-  branchEl.style.fontSize = '.68rem';
+  if (branchEl && branchData) {
+    branchEl.textContent = branchData.label + ' · ' + TIER_NAMES[sk.tier || 0];
+    branchEl.style.color = branchData.color || 'var(--text3)';
+    branchEl.style.fontSize = '.65rem';
+  }
 
+  const tierEl = document.getElementById('sdTier');
+  if (tierEl) {
+    tierEl.textContent = sk.tier !== undefined ? sk.tier : '?';
+    tierEl.style.color = sk.tier === 3 ? '#f0cc55' : 'var(--text2)';
+  }
+
+  // Icon wrap color
+  const iconWrap = document.getElementById('sdIconWrap');
+  if (iconWrap && branchData) {
+    iconWrap.style.background = branchData.color + '18';
+    iconWrap.style.border = '1px solid ' + branchData.color + '44';
+  }
+
+  // Header border color
+  const header = document.getElementById('sdHeader');
+  if (header && branchData) {
+    header.style.borderBottom = '1px solid ' + branchData.color + '22';
+  }
+
+  // Description
   document.getElementById('sdDesc').textContent = sk.desc;
 
+  // Tags
+  const tagsEl = document.getElementById('sdTags');
+  if (tagsEl) {
+    const tags = [];
+    if (sk.tier === 3) tags.push({ label:'⚜️ Meisterschaft', color:'#f0cc55' });
+    if (branchData) tags.push({ label: branchData.label, color: branchData.color });
+    if (G.skills.has(id)) tags.push({ label:'✅ Erforscht', color:'#40c070' });
+    tagsEl.innerHTML = tags.map(t =>
+      `<span class="sd-tag" style="color:${t.color};border-color:${t.color}40;">${t.label}</span>`
+    ).join('');
+  }
+
+  // Synergies
+  const syns = SKILL_SYNERGIES[id] || [];
+  const synBox = document.getElementById('sdSynergyBox');
+  const synList = document.getElementById('sdSynergies');
+  if (synBox && synList) {
+    if (syns.length > 0) {
+      synBox.style.display = 'block';
+      synList.innerHTML = syns.map(s => {
+        const synSkill = SKILLS.find(x => x.id === s.id);
+        const active = G.skills.has(s.id);
+        return `<div class="sd-synergy-item">
+          <div class="sd-synergy-dot" style="background:${active ? '#40c070' : 'rgba(255,255,255,0.2)'}"></div>
+          <span style="font-weight:700;color:${active ? '#40c070' : 'var(--text2)'};">${synSkill ? synSkill.icon + ' ' + synSkill.name : s.id}</span>
+          <span style="color:var(--text3);font-size:.65rem;"> — ${s.note}</span>
+        </div>`;
+      }).join('');
+    } else {
+      synBox.style.display = 'none';
+    }
+  }
+
+  // Footer: cost, req, button
   const unlocked = G.skills.has(id);
   const reqOk = sk.req.length === 0 || sk.req.some(r => G.skills.has(r));
   const canAfford = G.hero.gold >= sk.cost;
 
   const costEl = document.getElementById('sdCost');
-  const reqEl = document.getElementById('sdReq');
+  const reqEl  = document.getElementById('sdReq');
   const buyBtn = document.getElementById('sdBuyBtn');
 
   if (unlocked) {
-    costEl.textContent = '✅ Bereits erforscht';
-    costEl.style.color = 'var(--green2)';
-    reqEl.textContent = '';
-    buyBtn.textContent = 'Erforscht';
-    buyBtn.disabled = true;
+    if (costEl) { costEl.textContent = '✅ Bereits erforscht'; costEl.style.color = 'var(--green2)'; }
+    if (reqEl)  reqEl.textContent = '';
+    if (buyBtn) { buyBtn.textContent = '✅ Erforscht'; buyBtn.disabled = true; }
   } else if (!reqOk) {
     const reqNames = sk.req.map(r => SKILLS.find(s => s.id === r)?.name || r).join(' oder ');
-    reqEl.textContent = '🔒 Benötigt: ' + reqNames;
-    reqEl.style.color = 'var(--text3)';
-    costEl.textContent = '💰 ' + sk.cost.toLocaleString() + ' Gold';
-    costEl.style.color = 'var(--text2)';
-    buyBtn.textContent = 'Gesperrt';
-    buyBtn.disabled = true;
+    if (reqEl)  { reqEl.textContent = '🔒 Benötigt: ' + reqNames; reqEl.style.color = 'var(--text3)'; }
+    if (costEl) { costEl.textContent = '💰 ' + sk.cost.toLocaleString() + 'G'; costEl.style.color = 'var(--text2)'; }
+    if (buyBtn) { buyBtn.textContent = '🔒 Gesperrt'; buyBtn.disabled = true; }
   } else {
-    reqEl.textContent = sk.req.length > 0 ? ('Vorgänger: ' + sk.req.map(r => SKILLS.find(s=>s.id===r)?.name||r).join(', ')) : '';
-    reqEl.style.color = 'var(--text3)';
-    costEl.textContent = '💰 ' + sk.cost.toLocaleString() + ' Gold';
-    costEl.style.color = canAfford ? 'var(--gold2)' : 'var(--red2)';
-    buyBtn.textContent = canAfford ? '✨ Erforschen' : '❌ Zu wenig Gold';
-    buyBtn.disabled = !canAfford;
+    if (reqEl) {
+      reqEl.textContent = sk.req.length > 0 ? ('↳ ' + sk.req.map(r => SKILLS.find(s=>s.id===r)?.name||r).join(', ')) : '';
+      reqEl.style.color = 'var(--text3)';
+    }
+    if (costEl) {
+      costEl.textContent = '💰 ' + sk.cost.toLocaleString() + ' Gold';
+      costEl.style.color = canAfford ? 'var(--gold2)' : 'var(--red2)';
+    }
+    if (buyBtn) {
+      buyBtn.textContent = canAfford ? '✨ Erforschen' : '❌ Zu wenig Gold (' + sk.cost.toLocaleString() + 'G)';
+      buyBtn.disabled = !canAfford;
+    }
   }
 }
 
@@ -3473,7 +3816,6 @@ function buySkill(id) {
   updateAll();
   renderSkills();
   renderUpgrades();
-  // Refresh detail box
   if (_selectedSkillId === id) selectSkillNode(id);
 }
 
