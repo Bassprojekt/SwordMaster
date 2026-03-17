@@ -1033,6 +1033,142 @@ body {
   margin-left:auto;
 }
 
+/* ══ MATERIALIEN & OFEN ══ */
+.mat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.mat-slot {
+  background: rgba(0,0,0,.3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 7px 5px 6px;
+  text-align: center;
+  transition: border-color .2s;
+}
+.mat-slot:hover { border-color: var(--gold); }
+.mat-emoji { font-size: 1.4rem; display: block; margin-bottom: 2px; }
+.mat-name  { font-family: Cinzel,serif; font-size: .52rem; color: var(--text2); display: block; margin-bottom: 2px; }
+.mat-count { font-family: Cinzel,serif; font-size: .72rem; font-weight: 700; color: var(--text); }
+.mat-count.rich { color: var(--green2); }
+.mat-count.empty { color: var(--text3); }
+
+/* Furnace */
+.furnace-card {
+  position: relative; overflow: hidden;
+  background: var(--panel);
+  border: 1px solid var(--border2);
+  border-radius: 12px;
+  padding: 14px;
+}
+.furnace-card::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 50% 120%, rgba(255,100,0,.12), transparent 60%);
+  pointer-events: none;
+}
+.furnace-level-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: rgba(255,100,0,.1);
+  border: 1px solid rgba(255,100,0,.35);
+  border-radius: 20px; padding: 3px 10px;
+  font-family: Cinzel,serif; font-size: .68rem; font-weight: 700;
+  color: #ff9040;
+}
+.furnace-upgrade-btn {
+  width: 100%; padding: 9px;
+  background: linear-gradient(135deg, rgba(255,100,0,.2), rgba(255,100,0,.06));
+  border: 1px solid rgba(255,100,0,.5);
+  border-radius: 8px;
+  font-family: Cinzel,serif; font-size: .74rem; font-weight: 700;
+  color: #ff9040; cursor: pointer; transition: all .18s;
+  margin-top: 8px;
+}
+.furnace-upgrade-btn:hover:not(:disabled) { background: rgba(255,100,0,.3); box-shadow: 0 0 14px rgba(255,100,0,.25); }
+.furnace-upgrade-btn:disabled { opacity: .4; cursor: not-allowed; }
+.furnace-stat { display: flex; justify-content: space-between; font-size: .7rem; color: var(--text2); padding: 3px 0; border-bottom: 1px solid rgba(255,255,255,.04); }
+.furnace-stat:last-child { border-bottom: none; }
+.furnace-stat b { color: var(--text); font-family: Cinzel,serif; }
+
+/* Auto-sell rules */
+.autosell-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 7px 10px;
+  background: rgba(0,0,0,.2);
+  border: 1px solid var(--border);
+  border-radius: 7px; margin-bottom: 5px;
+  font-family: Cinzel,serif; font-size: .7rem;
+  transition: border-color .15s;
+}
+.autosell-row:last-child { margin-bottom: 0; }
+.autosell-row.active { border-color: var(--green2); background: rgba(64,192,112,.06); }
+.autosell-toggle {
+  position: relative; width: 36px; height: 20px; cursor: pointer; flex-shrink: 0;
+}
+.autosell-toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+.autosell-slider {
+  position: absolute; inset: 0; background: var(--border2); border-radius: 20px; transition: background .2s;
+}
+.autosell-slider::after {
+  content: ''; position: absolute; left: 3px; top: 3px;
+  width: 14px; height: 14px; background: #fff; border-radius: 50%;
+  transition: transform .2s; box-shadow: 0 1px 3px rgba(0,0,0,.4);
+}
+.autosell-toggle input:checked + .autosell-slider { background: var(--green2); }
+.autosell-toggle input:checked + .autosell-slider::after { transform: translateX(16px); }
+
+/* Forge Multi-Buttons */
+.forge-multi-row {
+  display: flex; gap: 5px; flex-wrap: wrap; justify-content: center;
+  margin-top: 6px;
+}
+.forge-multi-btn {
+  flex: 1; min-width: 44px;
+  padding: 6px 4px;
+  background: var(--panel2);
+  border: 1px solid var(--border2);
+  border-radius: 7px;
+  font-family: Cinzel,serif; font-size: .65rem; font-weight: 700;
+  color: var(--text2); cursor: pointer; transition: all .15s;
+  text-align: center;
+}
+.forge-multi-btn:hover { border-color: var(--gold); color: var(--gold2); }
+.forge-multi-btn.on { border-color: var(--green2); color: var(--green2); background: rgba(64,192,112,.07); }
+
+/* Recipe cards */
+.recipe-card {
+  background: rgba(0,0,0,.25);
+  border: 1px solid var(--border);
+  border-radius: 10px; padding: 10px 12px;
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 6px; transition: border-color .15s;
+}
+.recipe-card:hover { border-color: var(--gold); }
+.recipe-card.locked { opacity: .45; }
+.recipe-icon { font-size: 1.5rem; flex-shrink: 0; }
+.recipe-info { flex: 1; min-width: 0; }
+.recipe-name { font-family: Cinzel,serif; font-size: .78rem; font-weight: 700; color: var(--text); }
+.recipe-mats { font-size: .64rem; color: var(--text2); margin-top: 2px; }
+.recipe-reward { font-size: .62rem; color: var(--gold2); margin-top: 2px; font-family: Cinzel,serif; }
+.recipe-craft-btn {
+  padding: 6px 12px; border-radius: 7px;
+  background: rgba(201,162,39,.1); border: 1px solid var(--gold);
+  font-family: Cinzel,serif; font-size: .64rem; font-weight: 700;
+  color: var(--gold2); cursor: pointer; transition: all .15s; flex-shrink: 0;
+}
+.recipe-craft-btn:hover:not(:disabled) { background: rgba(201,162,39,.25); }
+.recipe-craft-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+/* Masterwork flash */
+@keyframes masterworkFlash {
+  0%   { box-shadow: 0 0 0 rgba(240,204,85,0); }
+  30%  { box-shadow: 0 0 40px rgba(240,204,85,.9); }
+  100% { box-shadow: 0 0 0 rgba(240,204,85,0); }
+}
+.masterwork-flash { animation: masterworkFlash .8s ease-out; }
+
 /* ══ WHITE MODE ══ */
 body.white-mode {
   --bg:       #f0eee8;
@@ -1384,58 +1520,102 @@ input[type=range].vol-slider::-webkit-slider-thumb:hover { transform:scale(1.2);
 
 <!-- ═══ FORGE PAGE ═══ -->
 <div class="page" id="page-forge">
-  <!-- Top row: Forge left, action buttons right -->
+
+  <!-- ROW 1: Schmiede + Ofen nebeneinander -->
   <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-start;">
 
-    <!-- Forge Card -->
-    <div class="card" style="flex:1;min-width:220px;">
-      <div class="sec-title">🔨 Schmiede</div>
+    <!-- Schmiede-Button Card -->
+    <div class="card furnace-card" style="flex:1;min-width:200px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+        <div class="sec-title" style="margin-bottom:0;">🔨 Schmiede</div>
+        <div class="furnace-level-badge">🔥 Ofen Lv<span id="furnaceLvDisplay">1</span></div>
+      </div>
       <div class="forge-center">
         <button class="big-forge-btn" id="forgeBtn" onclick="forge()">
           🔨<div class="fl">SCHMIEDEN</div>
         </button>
-        <div class="forge-controls">
+        <!-- Multi-forge buttons -->
+        <div class="forge-multi-row">
+          <button class="forge-multi-btn" onclick="forgeN(1)">×1</button>
+          <button class="forge-multi-btn" onclick="forgeN(5)">×5</button>
+          <button class="forge-multi-btn" onclick="forgeN(10)">×10</button>
+          <button class="forge-multi-btn" onclick="forgeN(50)">×50</button>
+          <button class="forge-multi-btn" onclick="forgeMax()">MAX</button>
+        </div>
+        <div class="forge-controls" style="margin-top:6px;">
           <button class="ctrl-btn" id="autoBtn" onclick="toggleAuto()">
             <div class="dot" id="autoDot"></div>Auto-Schmied
           </button>
-          <button class="ctrl-btn" onclick="forgeX5()">⚡ ×5</button>
         </div>
-        <div style="text-align:center;">
-          <div style="font-family:'Cinzel',serif;font-size:1rem;color:var(--gold2);">💰 <span id="fGold">0</span> Gold</div>
-          <div style="font-size:0.72rem;color:var(--text2);margin-top:4px;" id="fItems">Items: 0</div>
-          <div style="font-size:0.7rem;color:var(--text2);font-style:italic;margin-top:2px;" id="fAutoSpeed"></div>
+        <div style="text-align:center;margin-top:8px;">
+          <div style="font-family:'Cinzel',serif;font-size:.95rem;color:var(--gold2);">💰 <span id="fGold">0</span> Gold</div>
+          <div style="font-size:.68rem;color:var(--text2);margin-top:3px;" id="fItems"></div>
+          <div style="font-size:.64rem;color:var(--text2);font-style:italic;" id="fAutoSpeed"></div>
+          <div style="font-size:.62rem;color:var(--orange2);margin-top:2px;" id="forgeMatCost"></div>
         </div>
       </div>
     </div>
 
-    <!-- Action Buttons Card (right side) -->
-    <div class="card" style="flex:1;min-width:200px;">
-      <div class="sec-title">⚡ Aktionen</div>
-      <div style="display:flex;flex-direction:column;gap:8px;">
-        <button class="action-btn green" onclick="autoEquipBest()">
-          🗡️ Auto-Ausrüsten
-          <span style="font-size:0.65rem;display:block;font-weight:400;opacity:0.8;margin-top:2px;">Bestes Item je Slot anlegen</span>
-        </button>
-        <button class="action-btn blue" onclick="openSellManager()">
-          💰 Verkaufs-Manager
-          <span style="font-size:0.65rem;display:block;font-weight:400;opacity:0.8;margin-top:2px;">Items nach Seltenheit verkaufen</span>
-        </button>
-        <button class="action-btn gold" onclick="setForgedView('all')">
-          📦 Alle Items anzeigen
-          <span style="font-size:0.65rem;display:block;font-weight:400;opacity:0.8;margin-top:2px;"><span id="fItemsCount">0</span> Items gesamt</span>
-        </button>
+    <!-- Ofen-Upgrade Card -->
+    <div class="card" style="flex:1;min-width:185px;">
+      <div class="sec-title">🔥 Hochofen</div>
+      <div style="display:flex;flex-direction:column;gap:4px;margin-bottom:10px;">
+        <div class="furnace-stat"><span>Items je Schmied</span><b id="furnaceItemsPerForge">1</b></div>
+        <div class="furnace-stat"><span>Seltenheits-Bonus</span><b id="furnaceRarBonus">+0%</b></div>
+        <div class="furnace-stat"><span>Material-Effizienz</span><b id="furnaceMatEff">100%</b></div>
+        <div class="furnace-stat"><span>Schmiede-Speed</span><b id="furnaceSpeed">2.0s</b></div>
+      </div>
+      <div style="font-size:.64rem;color:var(--text3);margin-bottom:4px;" id="furnaceUpgCostLabel"></div>
+      <button class="furnace-upgrade-btn" id="furnaceUpgBtn" onclick="upgradeFurnace()">🔥 Ofen upgraden</button>
+      <div style="margin-top:6px;">
+        <button class="action-btn green" style="padding:7px;" onclick="autoEquipBest()">🗡️ Auto-Ausrüsten</button>
+        <button class="action-btn blue"  style="padding:7px;margin-top:5px;" onclick="openSellManager()">💰 Verkaufen</button>
       </div>
     </div>
   </div>
 
-  <!-- All Forged Items -->
+  <!-- ROW 2: Materialien -->
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px;">
+      <div class="sec-title" style="margin-bottom:0;">⚗️ Materialien</div>
+      <div style="font-size:.62rem;color:var(--text3);font-style:italic;">Aus Monster-Kills gesammelt</div>
+    </div>
+    <div class="mat-grid" id="materialsGrid"></div>
+    <div style="font-size:.62rem;color:var(--text3);font-style:italic;margin-top:4px;">💡 Materialien verbessern Seltenheit und Menge beim Schmieden</div>
+  </div>
+
+  <!-- ROW 3: Rezepte + Auto-Sell nebeneinander -->
+  <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-start;">
+
+    <!-- Rezepte -->
+    <div class="card" style="flex:1;min-width:200px;">
+      <div class="sec-title">📜 Rezepte</div>
+      <div id="recipesGrid"></div>
+    </div>
+
+    <!-- Auto-Sell Regeln -->
+    <div class="card" style="flex:1;min-width:185px;">
+      <div class="sec-title">⚡ Auto-Verkauf</div>
+      <div style="font-size:.68rem;color:var(--text2);margin-bottom:8px;">Items dieser Seltenheit sofort automatisch verkaufen:</div>
+      <div id="autoSellRules"></div>
+      <div style="margin-top:8px;font-family:Cinzel,serif;font-size:.68rem;color:var(--text2);">
+        💰 Auto-Verkauf Einnahmen: <b id="autoSellTotal" style="color:var(--gold2);">0G</b>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 4: Alle geschmiedeten Items -->
   <div class="card" id="forgedPanel">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
-      <div class="sec-title" style="margin-bottom:0;">🎁 <span id="forgedPanelTitle">Alle geschmiedeten Items</span></div>
-      <div style="font-size:0.7rem;color:var(--text2);font-style:italic;" id="forgedCount">0 Items</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px;">
+      <div class="sec-title" style="margin-bottom:0;">🎁 <span id="forgedPanelTitle">Zuletzt geschmiedet</span></div>
+      <div style="display:flex;gap:5px;align-items:center;">
+        <div style="font-size:.68rem;color:var(--text2);" id="forgedCount">0 Items</div>
+        <button class="ctrl-btn" onclick="setForgedView('recent')" id="btnShowRecent" style="font-size:.6rem;padding:3px 8px;">Aktuell</button>
+        <button class="ctrl-btn" onclick="setForgedView('all')" id="btnShowAll" style="font-size:.6rem;padding:3px 8px;">Alle (<span id="fItemsCount">0</span>)</button>
+      </div>
     </div>
     <div class="inv-grid" id="forgedGrid">
-      <div style="color:var(--text2);font-size:0.8rem;font-style:italic;grid-column:1/-1;padding:10px;text-align:center;">Noch nichts geschmiedet.</div>
+      <div style="color:var(--text2);font-size:.8rem;font-style:italic;grid-column:1/-1;padding:10px;text-align:center;">Noch nichts geschmiedet.</div>
     </div>
   </div>
 
@@ -3820,6 +4000,391 @@ function buySkill(id) {
 }
 
 // ════════════════════════════════════════════
+// ── MATERIALIEN & OFEN SYSTEM
+// ════════════════════════════════════════════
+
+const MATERIALS = [
+  { id:'iron',     name:'Eisen',      emoji:'🪨', color:'#888',    dropRate:.40, minLv:1,  desc:'Gewöhnliches Eisen' },
+  { id:'copper',   name:'Kupfer',     emoji:'🟫', color:'#cc7740', dropRate:.30, minLv:1,  desc:'Weiches Metall' },
+  { id:'silver',   name:'Silber',     emoji:'⬜', color:'#aaa',    dropRate:.20, minLv:8,  desc:'Leitfähiges Silber' },
+  { id:'steel',    name:'Stahl',      emoji:'⚙️', color:'#6699bb', dropRate:.15, minLv:15, desc:'Gehärteter Stahl' },
+  { id:'gold_ore', name:'Golderz',    emoji:'🟡', color:'#f0cc55', dropRate:.10, minLv:22, desc:'Wertvolles Gold' },
+  { id:'mithril',  name:'Mithril',    emoji:'💠', color:'#55ccff', dropRate:.07, minLv:30, desc:'Magisches Mithril' },
+  { id:'darksteel',name:'Dunkelstahl',emoji:'⬛', color:'#665577', dropRate:.04, minLv:40, desc:'Dunkle Legierung' },
+  { id:'stardust', name:'Sternenstaub',emoji:'✨',color:'#ffaaff', dropRate:.02, minLv:55, desc:'Kosmische Energie' },
+];
+
+// Ofenstufen: jede Stufe verbessert Schmied-Output
+const FURNACE_LEVELS = [
+  { lv:1,  name:'Lehmofen',        emoji:'🪨', itemsPerForge:1, rarBonus:0,    matEff:1.0, speedMult:1.0,  upgCost:{iron:0,      gold:0}    },
+  { lv:2,  name:'Eisenschmelze',   emoji:'🔩', itemsPerForge:1, rarBonus:0.10, matEff:1.1, speedMult:0.90, upgCost:{iron:30,     gold:200}  },
+  { lv:3,  name:'Stahlofen',       emoji:'⚙️', itemsPerForge:2, rarBonus:0.20, matEff:1.2, speedMult:0.82, upgCost:{steel:20,    gold:600}  },
+  { lv:4,  name:'Goldherd',        emoji:'🟡', itemsPerForge:2, rarBonus:0.35, matEff:1.4, speedMult:0.72, upgCost:{gold_ore:15, gold:1500} },
+  { lv:5,  name:'Mithrilofen',     emoji:'💠', itemsPerForge:3, rarBonus:0.50, matEff:1.6, speedMult:0.60, upgCost:{mithril:10,  gold:4000} },
+  { lv:6,  name:'Dunkelschmiede',  emoji:'⬛', itemsPerForge:3, rarBonus:0.65, matEff:1.8, speedMult:0.50, upgCost:{darksteel:8, gold:10000}},
+  { lv:7,  name:'Sternenschmiede', emoji:'🌟', itemsPerForge:5, rarBonus:0.85, matEff:2.0, speedMult:0.38, upgCost:{stardust:5,  gold:25000}},
+  { lv:8,  name:'Gottesamboss',    emoji:'👑', itemsPerForge:5, rarBonus:1.00, matEff:2.5, speedMult:0.28, upgCost:{stardust:15, gold:75000}},
+];
+
+// Rezepte: garantierter Slot + Mindest-Seltenheit gegen Materialien
+const RECIPES = [
+  { id:'r_iron_sword',   name:'Eisenschwert',    emoji:'⚔️', slot:'weapon', minRar:'uncommon', mats:{iron:5},           gold:50,   minFurnace:1, desc:'Garantiertes Uncommon Weapon' },
+  { id:'r_steel_helm',   name:'Stahlhelm',       emoji:'⛑️', slot:'helmet', minRar:'rare',     mats:{steel:8,iron:10},  gold:200,  minFurnace:3, desc:'Garantiertes Rare Helmet' },
+  { id:'r_mithril_chest',name:'Mithril-Rüstung', emoji:'🛡️', slot:'chest',  minRar:'epic',     mats:{mithril:5,steel:15},gold:800, minFurnace:5, desc:'Garantiertes Epic Chest' },
+  { id:'r_gold_ring',    name:'Goldring',         emoji:'💍', slot:'ring',   minRar:'rare',     mats:{gold_ore:8},       gold:300,  minFurnace:4, desc:'Garantiertes Rare Ring' },
+  { id:'r_dark_blade',   name:'Dunkle Klinge',    emoji:'🗡️', slot:'weapon', minRar:'epic',     mats:{darksteel:6,mithril:3},gold:1200,minFurnace:6,desc:'Garantiertes Epic Weapon' },
+  { id:'r_star_gloves',  name:'Sternenhandschuhe',emoji:'✨', slot:'gloves', minRar:'legendary',mats:{stardust:3,mithril:8},gold:3000,minFurnace:7,desc:'Garantiertes Legendary Gloves' },
+  { id:'r_godweapon',    name:'Götterspeer',      emoji:'⚡', slot:'weapon', minRar:'mythic',   mats:{stardust:10,darksteel:10},gold:10000,minFurnace:8,desc:'Garantiertes MYTHIC Weapon' },
+];
+
+// Auto-Sell Konfiguration
+const AUTO_SELL_RARITIES = ['common','uncommon','rare','epic','legendary'];
+
+// State init
+if (!G.materials)     G.materials     = {};
+if (!G.furnaceLevel)  G.furnaceLevel  = 1;
+if (!G.autoSellRules) G.autoSellRules = { common: false, uncommon: false, rare: false, epic: false, legendary: false };
+if (!G.autoSellEarned) G.autoSellEarned = 0;
+
+// ── Helfer ──
+function getFurnace()    { return FURNACE_LEVELS[Math.min(G.furnaceLevel-1, FURNACE_LEVELS.length-1)]; }
+function getMat(id)      { return G.materials[id] || 0; }
+function addMat(id, amt) { G.materials[id] = (G.materials[id] || 0) + amt; }
+function useMat(id, amt) { G.materials[id] = Math.max(0, (G.materials[id] || 0) - amt); }
+
+function canAffordRecipe(r) {
+  if (G.furnaceLevel < r.minFurnace) return false;
+  if (G.hero.gold < r.gold) return false;
+  for (const [mat, qty] of Object.entries(r.mats)) {
+    if (getMat(mat) < qty) return false;
+  }
+  return true;
+}
+
+function matEfficiency() {
+  const f = getFurnace();
+  return f.matEff * (G.skills.has('master_smith') ? 1.3 : 1);
+}
+
+// ── Material-Drop aus Kämpfen ──
+function dropMaterials(monster) {
+  if (!monster) return;
+  const lv = G.hero.level;
+  const eligible = MATERIALS.filter(m => lv >= m.minLv);
+  if (!eligible.length) return;
+  // 40% Chance ein Material zu droppen
+  if (Math.random() > 0.40) return;
+  const mat = eligible[rng(0, eligible.length - 1)];
+  // Zufällige Menge 1-3, beeinflusst von Drops-Bonus
+  const base = rng(1, 3);
+  const bonus = dropBonus();
+  const amt = Math.max(1, Math.round(base * (1 + bonus) * matEfficiency()));
+  addMat(mat.id, amt);
+  // Kein Log-Spam — nur bei seltenen Materialien
+  if (mat.minLv >= 30) log('💎 ' + mat.emoji + ' ' + mat.name + ' ×' + amt + ' gefunden!', 'i');
+  renderMaterials();
+}
+
+// ── Ofen-Upgrade ──
+function upgradeFurnace() {
+  const nextLv = G.furnaceLevel + 1;
+  const next = FURNACE_LEVELS[nextLv - 1];
+  if (!next) { log('🔥 Maximale Ofenstufe erreicht!', 'i'); return; }
+  // Kosten prüfen
+  for (const [mat, qty] of Object.entries(next.upgCost)) {
+    if (mat === 'gold') {
+      if (G.hero.gold < qty) { log('❌ Zu wenig Gold! Brauche ' + qty.toLocaleString() + 'G', 'c'); return; }
+    } else {
+      if (getMat(mat) < qty) {
+        const matDef = MATERIALS.find(m => m.id === mat);
+        log('❌ Zu wenig ' + (matDef?.name || mat) + '! Brauche ' + qty, 'c');
+        return;
+      }
+    }
+  }
+  // Kosten abziehen
+  for (const [mat, qty] of Object.entries(next.upgCost)) {
+    if (mat === 'gold') G.hero.gold -= qty;
+    else useMat(mat, qty);
+  }
+  G.furnaceLevel = nextLv;
+  log('🔥 Ofen auf Stufe ' + nextLv + ' (' + next.name + ') upgegraded!', 'l');
+  try { playSfx('levelup'); } catch(e) {}
+  if (G.autoForge) restartAuto();
+  updateAll();
+  renderFurnace();
+  renderMaterials();
+  renderRecipes();
+  saveToSupabase();
+}
+
+// ── Rezept craften ──
+function craftRecipe(recipeId) {
+  const r = RECIPES.find(x => x.id === recipeId);
+  if (!r || !canAffordRecipe(r)) return;
+  // Gold abziehen
+  G.hero.gold -= r.gold;
+  // Materialien abziehen
+  for (const [mat, qty] of Object.entries(r.mats)) useMat(mat, qty);
+  // Item erzeugen mit Mindest-Seltenheit
+  const minRarIdx = RARITIES.findIndex(x => x.id === r.minRar);
+  const rar = RARITIES[Math.max(minRarIdx, RARITIES.findIndex(x => x.id === pickRarity().id))];
+  const itemDef = ITEM_DEFS.filter(i => i.slot === r.slot);
+  const proto = itemDef[rng(0, itemDef.length - 1)];
+  const rarIdx = RARITIES.findIndex(x => x.id === rar.id);
+  const mult = 1.2 + rarIdx * 0.6 + Math.random() * 0.4;
+  const item = {
+    ...proto,
+    sv: proto.sk === 'spd' ? parseFloat((proto.sv*mult).toFixed(3)) : Math.round(proto.sv*mult),
+    rarity: rar.id, rarityLabel: rar.label, rarityColor: rar.col,
+    isNew: true, equipped: false, id: makeUUID(), crafted: true
+  };
+  G.inventory.unshift(item);
+  G.recentForged.unshift(item);
+  if (G.inventory.length > 200) G.inventory.pop();
+  log('📜 Rezept: ' + r.emoji + ' ' + r.name + ' → [' + rar.label + '] ' + item.emoji + ' ' + item.name + ' +' + item.sv + ' ' + item.sk.toUpperCase(), 'l');
+  try { playSfx('buy'); } catch(e) {}
+  G.forgeCount++;
+  checkAutoSell();
+  updateAll();
+  renderForgedGrid();
+  renderInventory();
+  renderRecipes();
+  renderMaterials();
+  saveToSupabase();
+}
+
+// ── Forge mit Ofen-Integration ──
+function forgeWithFurnace() {
+  const f = getFurnace();
+  const itemCount = f.itemsPerForge + (G.skills.has('double_strike') ? 0 : 0); // base
+  // Materialien-Bonus auf Seltenheit: wenn genug Materialien vorhanden
+  G._forgeMatBonus = calcForgeMatBonus();
+  for (let i = 0; i < itemCount; i++) {
+    forgeCounter++;
+    let rar = pickRarityWithFurnace();
+    // forgeMastery: jedes 10. ist mindestens Selten
+    if (G.skills.has('forgeMastery') && forgeCounter % 10 === 0) {
+      const rIdx = RARITIES.findIndex(r => r.id === rar.id);
+      if (rIdx < 2) rar = RARITIES[2];
+    }
+    // Meisterwerk: 1% Chance auf Legendary+ unabhängig von allem
+    if (Math.random() < 0.01 + (G.furnaceLevel - 1) * 0.002) {
+      rar = RARITIES[Math.min(5, Math.max(4, RARITIES.findIndex(r => r.id === rar.id) + 1))];
+      // Flash
+      setTimeout(() => {
+        const btn = document.getElementById('forgeBtn');
+        if (btn) { btn.classList.add('masterwork-flash'); setTimeout(() => btn.classList.remove('masterwork-flash'), 900); }
+      }, 50);
+      log('✨✨ MEISTERWERK! ' + rar.label + ' Item erschmiedet!', 'l');
+    }
+    const rarIdx = RARITIES.findIndex(r => r.id === rar.id);
+    const minI = Math.max(0, Math.floor(rarIdx * ITEM_DEFS.length / 6) - 2);
+    const pool = ITEM_DEFS.slice(minI);
+    const proto = pool[rng(0, pool.length - 1)];
+    const mult = 1 + rarIdx * 0.55 + Math.random() * 0.45;
+    const item = {
+      ...proto,
+      sv: proto.sk === 'spd' ? parseFloat((proto.sv*mult).toFixed(3)) : Math.round(proto.sv*mult),
+      rarity: rar.id, rarityLabel: rar.label, rarityColor: rar.col,
+      isNew: true, equipped: false, id: makeUUID()
+    };
+    G.inventory.unshift(item);
+    G.recentForged.unshift(item);
+    if (G.inventory.length > 200) G.inventory.pop();
+    if (i === 0) log('🎁 [' + rar.label + '] ' + item.emoji + ' ' + item.name + ' +' + item.sv + ' ' + item.sk.toUpperCase() + (itemCount > 1 ? ' (×'+itemCount+')' : ''), 'i');
+    // Auto-sell check
+    checkAutoSellItem(item);
+  }
+  renderForgedGrid();
+  renderInventory();
+  G._forgeMatBonus = 0;
+}
+
+function calcForgeMatBonus() {
+  // Materialien geben temporären Rarity-Bonus
+  let bonus = 0;
+  const mats = G.materials;
+  if ((mats.stardust   || 0) >= 5)  bonus += 0.30;
+  else if ((mats.darksteel || 0) >= 10) bonus += 0.20;
+  else if ((mats.mithril  || 0) >= 15) bonus += 0.15;
+  else if ((mats.gold_ore || 0) >= 20) bonus += 0.10;
+  else if ((mats.steel    || 0) >= 30) bonus += 0.06;
+  return bonus;
+}
+
+function pickRarityWithFurnace() {
+  const f = getFurnace();
+  const b = rarBonus() + f.rarBonus + (G._forgeMatBonus || 0);
+  const w = RARITIES.map((r, i) => i === 0 ? Math.max(10, r.weight*(1-b)) : r.weight*(1+b*0.3));
+  const tot = w.reduce((s,x) => s+x, 0);
+  let rv = Math.random() * tot;
+  for (let i = 0; i < RARITIES.length; i++) { rv -= w[i]; if (rv <= 0) return RARITIES[i]; }
+  return RARITIES[0];
+}
+
+// ── Auto-Sell ──
+function toggleAutoSell(rarityId, val) {
+  G.autoSellRules[rarityId] = val;
+  renderAutoSellRules();
+  saveToSupabase();
+}
+
+function checkAutoSell() {
+  G.inventory.forEach(item => checkAutoSellItem(item));
+}
+
+function checkAutoSellItem(item) {
+  if (!G.autoSellRules[item.rarity]) return;
+  if (item.equipped) return;
+  const val = sellValue(item);
+  G.hero.gold += val;
+  G.autoSellEarned = (G.autoSellEarned || 0) + val;
+  G.inventory = G.inventory.filter(x => x.id !== item.id);
+  const el = document.getElementById('autoSellTotal');
+  if (el) el.textContent = G.autoSellEarned.toLocaleString() + 'G';
+}
+
+function sellValue(item) {
+  const rarIdx = RARITIES.findIndex(r => r.id === item.rarity);
+  return Math.max(1, Math.round(item.sv * (rarIdx + 1) * 2));
+}
+
+// ── Forge N / MAX ──
+function forgeN(n) {
+  for (let i = 0; i < n; i++) {
+    const btn = document.getElementById('forgeBtn');
+    if (btn) { btn.classList.add('forging'); setTimeout(() => btn.classList.remove('forging'), 180); }
+    forgeWithFurnace();
+    G.forgeCount++;
+  }
+  try { playSfx('forge'); } catch(e) {}
+  updateHeaderStats();
+  document.getElementById('fItems') && (document.getElementById('fItems').textContent = 'Inventar: ' + G.inventory.length + ' Items');
+  try { trackQuestProgress('forge', n); checkQuestBadge(); } catch(e) {}
+  updateAll();
+}
+
+function forgeMax() {
+  // Schmiedet so viele wie Gold und Inventarplatz erlauben (max 100 auf einmal)
+  const maxItems = Math.min(100, 200 - G.inventory.length);
+  if (maxItems <= 0) { log('❌ Inventar voll! Verkaufe erst Items.', 'c'); return; }
+  forgeN(maxItems);
+  log('⚡ MAX-Schmieden: ' + maxItems + ' Items erzeugt!', 'l');
+}
+
+// ── UI Render ──
+function renderMaterials() {
+  const grid = document.getElementById('materialsGrid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  MATERIALS.forEach(m => {
+    const count = getMat(m.id);
+    const lv = G.hero.level;
+    const unlocked = lv >= m.minLv;
+    const d = document.createElement('div');
+    d.className = 'mat-slot';
+    if (!unlocked) d.style.opacity = '.35';
+    d.style.borderColor = count > 0 ? m.color + '66' : '';
+    d.innerHTML = '<span class="mat-emoji">' + m.emoji + '</span>' +
+      '<span class="mat-name">' + m.name + '</span>' +
+      '<span class="mat-count' + (count >= 20 ? ' rich' : count === 0 ? ' empty' : '') + '">' +
+      (unlocked ? count : '🔒') + '</span>';
+    d.title = m.desc + (unlocked ? '' : ' (ab Lv ' + m.minLv + ')');
+    grid.appendChild(d);
+  });
+  // Update forge mat cost hint
+  const bonus = calcForgeMatBonus();
+  const hint = document.getElementById('forgeMatCost');
+  if (hint) hint.textContent = bonus > 0 ? ('⚗️ Mat-Bonus: +' + Math.round(bonus*100) + '% Seltenheit') : '';
+}
+
+function renderFurnace() {
+  const f = getFurnace();
+  const nextLv = G.furnaceLevel + 1;
+  const next = nextLv <= FURNACE_LEVELS.length ? FURNACE_LEVELS[nextLv - 1] : null;
+  const _t = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+  _t('furnaceLvDisplay', G.furnaceLevel);
+  _t('furnaceItemsPerForge', f.itemsPerForge);
+  _t('furnaceRarBonus', '+' + Math.round(f.rarBonus * 100) + '%');
+  _t('furnaceMatEff', Math.round(f.matEff * 100) + '%');
+  _t('furnaceSpeed', (forgeMs() / 1000).toFixed(1) + 's');
+  const btn = document.getElementById('furnaceUpgBtn');
+  const costLbl = document.getElementById('furnaceUpgCostLabel');
+  if (!next) {
+    if (btn) { btn.textContent = '👑 Maximale Stufe!'; btn.disabled = true; }
+    if (costLbl) costLbl.textContent = '';
+  } else {
+    const costParts = Object.entries(next.upgCost).map(([mat, qty]) => {
+      if (mat === 'gold') return '💰 ' + qty.toLocaleString() + 'G';
+      const m = MATERIALS.find(x => x.id === mat);
+      const have = getMat(mat);
+      return (m ? m.emoji + ' ' : '') + have + '/' + qty + ' ' + (m ? m.name : mat);
+    });
+    if (costLbl) costLbl.textContent = 'Kosten: ' + costParts.join(' · ');
+    const canUpg = Object.entries(next.upgCost).every(([mat, qty]) =>
+      mat === 'gold' ? G.hero.gold >= qty : getMat(mat) >= qty
+    );
+    if (btn) {
+      btn.textContent = '🔥 → ' + next.emoji + ' ' + next.name + ' (Lv' + nextLv + ')';
+      btn.disabled = !canUpg;
+    }
+  }
+}
+
+function renderRecipes() {
+  const grid = document.getElementById('recipesGrid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  RECIPES.forEach(r => {
+    const locked = G.furnaceLevel < r.minFurnace;
+    const canCraft = !locked && canAffordRecipe(r);
+    const d = document.createElement('div');
+    d.className = 'recipe-card' + (locked ? ' locked' : '');
+    const matsStr = Object.entries(r.mats).map(([mat, qty]) => {
+      const m = MATERIALS.find(x => x.id === mat);
+      const have = getMat(mat);
+      const ok = have >= qty;
+      return '<span style="color:' + (ok ? 'var(--green2)' : 'var(--red2)') + ';">' +
+        (m ? m.emoji : '') + qty + '</span>';
+    }).join(' ');
+    const rarDef = RARITIES.find(x => x.id === r.minRar);
+    d.innerHTML = '<div class="recipe-icon">' + r.emoji + '</div>' +
+      '<div class="recipe-info">' +
+        '<div class="recipe-name">' + r.name + '</div>' +
+        '<div class="recipe-mats">' + matsStr + ' · 💰' + r.gold + 'G' + (locked ? ' · 🔥Ofen Lv'+r.minFurnace : '') + '</div>' +
+        '<div class="recipe-reward">→ Garantiert [' + (rarDef?.label || r.minRar) + '] ' + r.slot + '</div>' +
+      '</div>' +
+            '<button class="recipe-craft-btn" data-rid="' + r.id + '" onclick="craftRecipe(this.dataset.rid)" ' + (canCraft ? '' : 'disabled') + '>' +     (locked ? '🔒' : canCraft ? '⚒️' : '❌') + '</button>';
+    grid.appendChild(d);
+  });
+}
+
+function renderAutoSellRules() {
+  const div = document.getElementById('autoSellRules');
+  if (!div) return;
+  div.innerHTML = '';
+  AUTO_SELL_RARITIES.forEach(rarId => {
+    const rar = RARITIES.find(r => r.id === rarId);
+    if (!rar) return;
+    const active = G.autoSellRules[rarId] || false;
+    const row = document.createElement('div');
+    row.className = 'autosell-row' + (active ? ' active' : '');
+    row.innerHTML = '<span style="display:flex;align-items:center;gap:6px;">' +
+      '<span style="width:8px;height:8px;border-radius:50%;background:' + rar.col + ';display:inline-block;"></span>' +
+      '<span style="font-family:Cinzel,serif;font-size:.7rem;color:' + (active?rar.col:'var(--text2)') + ';">' + rar.label + '</span>' +
+      '</span>' +
+      '<label class="autosell-toggle">' +
+        '<input type="checkbox" data-rid="' + rarId + '"' + (active ? ' checked' : '') + ' onchange="toggleAutoSell(this.dataset.rid,this.checked)">' +
+        '<span class="autosell-slider"></span>' +
+      '</label>';
+    div.appendChild(row);
+  });
+  const el = document.getElementById('autoSellTotal');
+  if (el) el.textContent = (G.autoSellEarned || 0).toLocaleString() + 'G';
+}
+
+// ════════════════════════════════════════════
 // ── PETS ────────────────────────────────────
 // ════════════════════════════════════════════
 
@@ -4096,6 +4661,7 @@ function monsterKilled(m) {
   G.hero.xp += xp; G.hero.gold += gold + pickpocketBonus; G.kills++;
   log('💀 ' + m.name + ' besiegt! +' + xp + ' XP  +' + (gold+pickpocketBonus) + ' Gold' + (pickpocketBonus?'  (+'+pickpocketBonus+'G Taschendiebstahl!)':''), 'c');
   try { playSfx('kill'); } catch(e) {}
+  try { dropMaterials(m); } catch(e) {}
   petHealOnKill();
   try { trackQuestProgress('kill', 1); trackQuestProgress('gold', gold); checkQuestBadge(); } catch(e) {}
   G.monsters = G.monsters.filter(x => x.id !== m.id);
@@ -4260,14 +4826,15 @@ function forge() {
   btn.classList.add('forging');
   setTimeout(()=>btn.classList.remove('forging'),180);
   try { playSfx('forge'); } catch(e) {}
-  dropItem(true);
+  forgeWithFurnace();
   G.forgeCount++;
   updateHeaderStats();
-  document.getElementById('fItems').textContent='Items im Inventar: '+G.inventory.length;
+  const fi = document.getElementById('fItems');
+  if (fi) fi.textContent = 'Inventar: ' + G.inventory.length + ' Items';
   try { trackQuestProgress('forge', 1); checkQuestBadge(); } catch(e) {}
 }
 
-function forgeX5() { for(let i=0;i<5;i++) forge(); }
+function forgeX5() { forgeN(5); }
 
 function toggleAuto() {
   G.autoForge=!G.autoForge;
@@ -4621,6 +5188,14 @@ let _saveQueued = false;
 function saveToSupabase() {
   // Lokalen Timestamp immer sofort speichern
   localStorage.setItem('sm3_save', Date.now().toString());
+  try {
+    localStorage.setItem('sm3_forge', JSON.stringify({
+      materials: G.materials || {},
+      furnaceLevel: G.furnaceLevel || 1,
+      autoSellRules: G.autoSellRules || {},
+      autoSellEarned: G.autoSellEarned || 0,
+    }));
+  } catch(e) {}
   // Echter Save wird gebündelt — max 1x alle 10 Sekunden
   if (_saveTimer) return;
   _saveQueued = true;
@@ -4683,6 +5258,8 @@ async function _doSave() {
       quest_claimed:   JSON.stringify([...G.questClaimed]),
       // Shop
       shop_purchases:  JSON.stringify(G.shopPurchases  || {}),
+      // Forge extras — stored as JSON in extra fields
+      // (Materialien + Ofen werden via local_guild-ähnlichem Blob gespeichert)
     });
 
     // 2. Upgrades — erst löschen dann neu (verhindert 409)
@@ -5111,7 +5688,7 @@ function switchTab(name) {
   document.getElementById('tab-'+name)?.classList.add('active');
   if(name==='arena'){renderArena();updateArenaPanel();}
   if(name==='held'){renderEquipSlots();renderEquipBonus();renderInventory();renderSkills();renderEraTimeline();}
-  if(name==='forge'){renderInventory();renderUpgrades();renderForgedGrid();}
+  if(name==='forge'){renderInventory();renderUpgrades();renderForgedGrid();try{renderMaterials();}catch(e){}try{renderFurnace();}catch(e){}try{renderRecipes();}catch(e){}try{renderAutoSellRules();}catch(e){}}
   if(name==='dungeon'){renderDungeon();}
   if(name==='pvp'){renderPVP();}
   if(name==='pets'){renderPets();}
@@ -5570,6 +6147,7 @@ function dungeonVictory() {
   const goldR = Math.round((m.gold * 1.6 + G.dungeonFloor * 4) * (isBoss ? (bossData?.reward?.gold/100||3) : 1));
   const xpR = Math.round((m.xp * 1.3 + G.dungeonFloor * 2.5) * (isBoss ? 2.5 : 1) * xpMult());
   G.hero.gold += goldR; G.hero.xp += xpR; G.kills++;
+  try { dropMaterials(G.dungeonMonster); } catch(e) {}
   if (G.dungeonFloor > G.dungeonBestFloor) G.dungeonBestFloor = G.dungeonFloor;
   const item = dropItem();
   G.dungeonMonster = null;
@@ -6632,6 +7210,10 @@ async function continueInit() {
   await new Promise(r=>setTimeout(r,350));
 
   try { renderEquipSlots(); }    catch(e) {}
+  try { renderMaterials(); }     catch(e) {}
+  try { renderFurnace(); }       catch(e) {}
+  try { renderRecipes(); }       catch(e) {}
+  try { renderAutoSellRules(); } catch(e) {}
   try { renderInventory(); }     catch(e) {}
   try { renderUpgrades(); }      catch(e) {}
   try { renderSkills(); }        catch(e) {}
@@ -6651,6 +7233,14 @@ async function continueInit() {
   await new Promise(r=>setTimeout(r,300));
   removeLoader();
 
+  // Materialien aus LocalStorage laden
+  try {
+    const fd = JSON.parse(localStorage.getItem('sm3_forge') || '{}');
+    if (fd.materials)     G.materials     = fd.materials;
+    if (fd.furnaceLevel)  G.furnaceLevel  = fd.furnaceLevel;
+    if (fd.autoSellRules) G.autoSellRules = fd.autoSellRules;
+    if (fd.autoSellEarned) G.autoSellEarned = fd.autoSellEarned;
+  } catch(e) {}
   try { checkIdle(); }           catch(e) {}
   try { spawnMonster(); startCombat(); } catch(e) {}
 
