@@ -861,6 +861,47 @@ body {
   font-family:'Cinzel',serif;font-size:.7rem;
   color:var(--text2);margin-top:6px;text-align:center;
 }
+/* ══ DUNGEON ══ */
+.dung-room {
+  aspect-ratio:1;
+  background:rgba(0,0,0,.3);
+  border:1px solid var(--border);
+  border-radius:6px;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  gap:2px;font-size:.7rem;
+  position:relative;overflow:hidden;
+  transition:all .15s;cursor:default;
+}
+.dr-label{font-family:'Cinzel',serif;font-size:.5rem;color:var(--text3);line-height:1;}
+.dung-done{border-color:var(--green);opacity:.6;}
+.dung-done::after{content:'';position:absolute;inset:0;background:rgba(46,139,87,.08);}
+.dung-current{border-color:var(--gold);box-shadow:0 0 8px rgba(201,162,39,.35);cursor:pointer;}
+.dung-current:hover{transform:scale(1.06);}
+.dung-locked{opacity:.35;}
+.dung-boss{border-color:var(--red2) !important;box-shadow:0 0 10px rgba(224,80,80,.4) !important;animation:bossPulse 1.8s infinite;}
+.dung-trap{border-color:var(--orange2) !important;}
+.dung-treasure{border-color:var(--gold2) !important;box-shadow:0 0 8px rgba(240,204,85,.3) !important;}
+.dung-shop{border-color:var(--blue2) !important;}
+.dung-rest{border-color:var(--green2) !important;}
+@keyframes bossPulse{0%,100%{box-shadow:0 0 10px rgba(224,80,80,.4)}50%{box-shadow:0 0 20px rgba(224,80,80,.7)}}
+
+.boss-fight-bg::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 50% 40%,rgba(176,48,48,.25),transparent 65%);
+  pointer-events:none;animation:bossGlow 2s ease-in-out infinite;
+}
+@keyframes bossGlow{0%,100%{opacity:.6}50%{opacity:1}}
+
+.dung-stat-row{
+  display:flex;justify-content:space-between;
+  font-family:'Cinzel',serif;font-size:.68rem;
+  color:var(--text2);padding:2px 0;
+  border-bottom:1px solid rgba(255,255,255,.04);
+}
+.dung-stat-row:last-child{border-bottom:none;}
+.dung-stat-row b{color:var(--text);}
+
 /* ══ WHITE MODE ══ */
 body.white-mode {
   --bg:       #f0eee8;
@@ -1328,45 +1369,100 @@ input[type=range].vol-slider::-webkit-slider-thumb:hover { transform:scale(1.2);
 
 <!-- ═══ DUNGEON PAGE ═══ -->
 <div class="page" id="page-dungeon">
-  <div class="card">
-    <div class="sec-title">🏚️ Dungeon — <span id="dungeonName" style="color:var(--text2);font-weight:400;font-size:.78rem;">Katakomben</span></div>
-    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px;">
-      <div class="pill">Etage <b id="dungFloor" style="color:var(--gold2);">1</b>/50</div>
-      <div class="pill">🗝️ Schlüssel: <b id="dungKeys" style="color:var(--blue2);">3</b></div>
-      <div class="pill">🏆 Rekord: Etage <b id="dungBest" style="color:var(--purple2);">0</b></div>
-      <button class="ctrl-btn" onclick="startDungeon()" id="dungStartBtn" style="margin-left:auto;border-color:var(--gold);color:var(--gold2);">⚔️ Dungeon betreten</button>
+
+  <!-- Header-Info -->
+  <div class="card" style="padding:12px 14px;">
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
+      <div style="font-family:'Cinzel',serif;font-size:1rem;font-weight:700;color:var(--gold2);" id="dungeonName">🏚️ Katakomben</div>
+      <div style="font-size:.68rem;color:var(--text3);font-style:italic;" id="dungeonZoneDesc">Alte Knochen und erste Prüfungen</div>
     </div>
-    <!-- Floor Map -->
-    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-bottom:10px;" id="dungeonMap"></div>
-    <!-- Active Fight -->
+    <div style="display:flex;gap:7px;flex-wrap:wrap;align-items:center;">
+      <div class="pill">Etage <b id="dungFloor" style="color:var(--gold2);">1</b></div>
+      <div class="pill">🗝️ <b id="dungKeys" style="color:var(--blue2);">3</b> Schlüssel</div>
+      <div class="pill">🏆 Rekord <b id="dungBest" style="color:var(--purple2);">0</b></div>
+      <div class="pill" id="dungNextKeyPill" style="display:none;font-size:.62rem;color:var(--text3);">⏳ <span id="dungNextKeyTimer">30:00</span></div>
+    </div>
+  </div>
+
+  <!-- Floor Map -->
+  <div class="card" style="padding:10px 12px;">
+    <div style="font-family:'Cinzel',serif;font-size:.72rem;color:var(--text2);margin-bottom:8px;">🗺️ Aktuelle Zone — <span id="dungMapLabel">Etagen 1–10</span></div>
+    <div style="display:grid;grid-template-columns:repeat(10,1fr);gap:4px;margin-bottom:8px;" id="dungeonMap"></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+      <button class="ctrl-btn" onclick="startDungeon()" id="dungStartBtn" style="border-color:var(--gold);color:var(--gold2);flex:1;">⚔️ Raum betreten</button>
+      <div style="font-size:.68rem;color:var(--text3);font-style:italic;" id="dungRoomTypeHint">Normal-Raum</div>
+    </div>
+  </div>
+
+  <!-- Active Room (fight / trap / treasure / boss) -->
+  <div id="dungeonRoom" style="display:none;">
+
+    <!-- Fight -->
     <div id="dungeonFight" style="display:none;">
-      <div style="background:rgba(0,0,0,.3);border:1px solid var(--border);border-radius:10px;padding:12px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:5px;">
-          <div style="font-family:'Cinzel',serif;font-size:.88rem;color:var(--red2);" id="dungMonName">Monster</div>
-          <div style="font-size:.72rem;color:var(--text2);" id="dungMonHpTxt">100/100</div>
+      <div class="card" style="position:relative;overflow:hidden;">
+        <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 50% 100%,rgba(100,20,20,.2),transparent 70%);pointer-events:none;"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;flex-wrap:wrap;gap:4px;">
+          <div style="font-family:'Cinzel',serif;font-size:.9rem;font-weight:700;" id="dungMonName">Monster</div>
+          <div style="font-size:.7rem;color:var(--text2);" id="dungMonHpTxt">—</div>
         </div>
-        <div class="bar" style="height:10px;margin-bottom:8px;"><div class="bar-fill hp-fill" id="dungMonHpBar" style="width:100%"></div></div>
-        <div id="dungMonSvg" style="text-align:center;padding:8px 0;"></div>
+        <div class="bar" style="height:11px;margin-bottom:8px;"><div class="bar-fill hp-fill" id="dungMonHpBar" style="width:100%"></div></div>
+        <div id="dungMonSvg" style="text-align:center;padding:6px 0;min-height:80px;"></div>
+        <!-- Hero HP in fight -->
+        <div style="margin:6px 0;">
+          <div class="bar-label"><span style="font-size:.68rem;">❤️ Dein Leben</span><span id="dungHeroHpTxt" style="font-size:.68rem;color:var(--text2);"></span></div>
+          <div class="bar" style="height:7px;"><div class="bar-fill" style="background:linear-gradient(to right,#145a32,#40c070);" id="dungHeroHpBar"></div></div>
+        </div>
         <div style="display:flex;gap:6px;margin-top:8px;">
-          <button class="ctrl-btn" onclick="dungeonAttack()" style="flex:1;border-color:var(--red2);color:var(--red2);">⚔️ Angreifen</button>
-          <button class="ctrl-btn" onclick="dungeonFlee()">🏃 Fliehen</button>
+          <button class="ctrl-btn" onclick="dungeonAttack()" id="dungAttackBtn" style="flex:2;border-color:var(--red2);color:var(--red2);">⚔️ Angreifen</button>
+          <button class="ctrl-btn" onclick="dungeonUseSkill()" id="dungSkillBtn" style="flex:1;border-color:var(--purple2);color:var(--purple2);">✨ Skill</button>
+          <button class="ctrl-btn" onclick="dungeonFlee()" style="flex:1;">🏃 Fliehen</button>
         </div>
-        <div class="log-box" id="dungLog" style="height:80px;margin-top:8px;"></div>
+        <div class="log-box" id="dungLog" style="height:90px;margin-top:8px;"></div>
       </div>
     </div>
-    <!-- Reward -->
-    <div id="dungeonReward" style="display:none;margin-top:8px;">
+
+    <!-- Trap Room -->
+    <div id="dungeonTrap" style="display:none;">
+      <div class="card" style="text-align:center;border-color:var(--orange2);">
+        <div style="font-size:2.5rem;margin-bottom:6px;" id="dungTrapEmoji">⚡</div>
+        <div style="font-family:'Cinzel',serif;font-size:.92rem;font-weight:700;color:var(--orange2);margin-bottom:6px;" id="dungTrapName">Falle!</div>
+        <div style="font-size:.78rem;color:var(--text2);margin-bottom:12px;" id="dungTrapDesc">Eine Falle schnappt zu!</div>
+        <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+          <button class="ctrl-btn" onclick="dungeonTrapDisarm()" id="dungTrapDisarmBtn" style="border-color:var(--green2);color:var(--green2);">🔓 Entschärfen (DEF)</button>
+          <button class="ctrl-btn" onclick="dungeonTrapEndure()" style="border-color:var(--orange2);color:var(--orange2);">💪 Durchhalten</button>
+        </div>
+        <div style="font-size:.68rem;color:var(--text3);margin-top:8px;" id="dungTrapHint"></div>
+      </div>
+    </div>
+
+    <!-- Treasure Room -->
+    <div id="dungeonTreasure" style="display:none;">
+      <div class="card" style="text-align:center;border-color:var(--gold);">
+        <div style="font-size:2.5rem;margin-bottom:6px;">🎁</div>
+        <div style="font-family:'Cinzel',serif;font-size:.92rem;font-weight:700;color:var(--gold2);margin-bottom:4px;" id="dungTreasureName">Schatzkammer!</div>
+        <div style="font-size:.78rem;color:var(--text2);margin-bottom:12px;" id="dungTreasureDesc">Ein Raum voller Reichtümer!</div>
+        <div id="dungTreasureList" style="margin-bottom:10px;"></div>
+        <button class="ctrl-btn" onclick="dungeonClaimTreasure()" style="width:100%;border-color:var(--gold);color:var(--gold2);">💰 Einsammeln!</button>
+      </div>
+    </div>
+
+    <!-- Reward after fight/event -->
+    <div id="dungeonReward" style="display:none;">
       <div class="card" style="border-color:var(--gold);">
-        <div class="sec-title">🎁 Dungeon-Beute!</div>
+        <div class="sec-title">🎁 Beute!</div>
         <div id="dungRewardList"></div>
-        <button class="ctrl-btn" onclick="claimDungeonReward()" style="width:100%;margin-top:8px;border-color:var(--green2);color:var(--green2);">✅ Einsammeln</button>
+        <button class="ctrl-btn" onclick="claimDungeonReward()" style="width:100%;margin-top:8px;border-color:var(--green2);color:var(--green2);">✅ Weiter</button>
       </div>
     </div>
-  </div>
+
+  </div><!-- end dungeonRoom -->
+
+  <!-- Zone Overview -->
   <div class="card">
-    <div class="sec-title">📖 Dungeon-Ebenen</div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:6px;" id="dungeonTiers"></div>
+    <div class="sec-title">🗺️ Dungeon-Zonen</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:6px;" id="dungeonTiers"></div>
   </div>
+
 </div>
 
 <!-- ═══ PVP PAGE ═══ -->
@@ -3759,122 +3855,501 @@ function renderSkillsTo(grid){
 // ════════════════════════════════════════════
 // ── DUNGEON SYSTEM
 // ════════════════════════════════════════════
-const DUNGEON_NAMES=['Katakomben','Finsteres Verlies','Krypta','Höhlensystem','Höllenkatakomben'];
-const DUNGEON_TIERS=[
-  {name:'Katakomben',emoji:'💀',floors:'1–10',diff:'Leicht',desc:'Alte Knochen und Fallen'},
-  {name:'Kerker',emoji:'⛓️',floors:'11–20',diff:'Mittel',desc:'Dunkel und gefährlich'},
-  {name:'Krypta',emoji:'🏚️',floors:'21–30',diff:'Schwer',desc:'Vergessene Schätze'},
-  {name:'Höhlen',emoji:'🗿',floors:'31–40',diff:'Sehr Schwer',desc:'Uralte Monster'},
-  {name:'Höllen',emoji:'🔥',floors:'41–50',diff:'Extrem',desc:'Nur die Stärksten'},
+
+// Zone definitions (10 floors each)
+const DUNGEON_ZONES = [
+  { name:'🏚️ Katakomben',  desc:'Alte Knochen und erste Prüfungen',  floors:'1–10',   diff:'Leicht',     emoji:'💀', color:'var(--text2)',   minFloor:1  },
+  { name:'⛓️ Kerker',       desc:'Dunkelheit und verrostete Fallen',   floors:'11–20',  diff:'Mittel',     emoji:'⛓️', color:'var(--blue2)',   minFloor:11 },
+  { name:'🏚️ Krypta',      desc:'Vergessene Schätze und Untote',      floors:'21–30',  diff:'Schwer',     emoji:'🕯️', color:'var(--purple2)', minFloor:21 },
+  { name:'🗿 Höhlen',       desc:'Uralte Monster in Finsternis',       floors:'31–40',  diff:'Sehr Schwer',emoji:'🗿', color:'var(--orange2)', minFloor:31 },
+  { name:'🔥 Höllen-Ebene', desc:'Nur die Stärksten überleben hier',   floors:'41–50',  diff:'Extrem',     emoji:'🔥', color:'var(--red2)',    minFloor:41 },
+  { name:'👑 Göttliche Prüfung', desc:'Jenseits des Verstehens',       floors:'51–60',  diff:'Legendär',   emoji:'👑', color:'var(--gold2)',   minFloor:51 },
 ];
 
+// Room type table per 10-floor block
+// Each block of 10: positions 1-9 are random, position 10 = boss
+// Weights: fight=50, trap=20, treasure=15, rest=10, shop=5
+const ROOM_TYPES = ['fight','fight','fight','fight','fight','trap','trap','treasure','rest','shop'];
+
+const DUNGEON_TRAPS = [
+  { name:'Pfeilvolley',     emoji:'🏹', desc:'Pfeile schießen aus der Wand!',     dmgPct:.12, disarmStat:'def', disarmThreshold:20 },
+  { name:'Säurepfütze',     emoji:'☠️', desc:'Giftige Säure bedeckt den Boden!',  dmgPct:.18, disarmStat:'def', disarmThreshold:30 },
+  { name:'Stachelgrube',    emoji:'⚡', desc:'Du trittst in eine Stachelgrube!',  dmgPct:.22, disarmStat:'def', disarmThreshold:40 },
+  { name:'Feuerwall',       emoji:'🔥', desc:'Flammen blockieren den Weg!',       dmgPct:.15, disarmStat:'def', disarmThreshold:25 },
+  { name:'Felsfall',        emoji:'🪨', desc:'Riesige Felsbrocken stürzen herab!',dmgPct:.25, disarmStat:'def', disarmThreshold:50 },
+  { name:'Blitzrune',       emoji:'⚡', desc:'Eine magische Rune entlädt sich!',  dmgPct:.20, disarmStat:'def', disarmThreshold:35 },
+];
+
+const DUNGEON_BOSSES = [
+  { floor:10,  name:'Krypta-Wächter',   emoji:'💀', hpMult:5,  atkMult:2.0, reward:{gold:300,  xp:200,  keys:2, items:2} },
+  { floor:20,  name:'Kerkermeister',     emoji:'⛓️', hpMult:7,  atkMult:2.2, reward:{gold:800,  xp:500,  keys:3, items:3} },
+  { floor:30,  name:'Krypta-Lich',       emoji:'💫', hpMult:10, atkMult:2.5, reward:{gold:2000, xp:1200, keys:3, items:4} },
+  { floor:40,  name:'Höhlen-Titan',      emoji:'🗿', hpMult:14, atkMult:3.0, reward:{gold:5000, xp:3000, keys:4, items:5} },
+  { floor:50,  name:'Höllen-Fürst',      emoji:'🔥', hpMult:20, atkMult:3.5, reward:{gold:12000,xp:7000, keys:5, items:6} },
+  { floor:60,  name:'Göttlicher Richter',emoji:'👑', hpMult:30, atkMult:4.0, reward:{gold:30000,xp:18000,keys:5, items:7} },
+];
+
+// State init
 if(!G.dungeonFloor)G.dungeonFloor=1;
 if(!G.dungeonKeys)G.dungeonKeys=3;
 if(!G.dungeonBestFloor)G.dungeonBestFloor=0;
 if(!G.dungeonActive)G.dungeonActive=false;
 if(!G.dungeonMonster)G.dungeonMonster=null;
 if(!G.dungeonRewards)G.dungeonRewards=[];
+if(!G.dungeonRoomMap)G.dungeonRoomMap={};  // floor → room type
 
-function renderDungeon(){
-  const tier=Math.floor((G.dungeonFloor-1)/10);
-  if(document.getElementById('dungeonName'))document.getElementById('dungeonName').textContent=DUNGEON_NAMES[Math.min(tier,DUNGEON_NAMES.length-1)];
-  if(document.getElementById('dungFloor'))document.getElementById('dungFloor').textContent=G.dungeonFloor;
-  if(document.getElementById('dungKeys'))document.getElementById('dungKeys').textContent=G.dungeonKeys;
-  if(document.getElementById('dungBest'))document.getElementById('dungBest').textContent=G.dungeonBestFloor;
-  // Floor map (show 10 rooms of current tier)
-  const map=document.getElementById('dungeonMap');if(!map)return;map.innerHTML='';
-  const tierStart=tier*10+1;
-  for(let i=0;i<10;i++){
-    const roomNum=tierStart+i;const d=document.createElement('div');d.className='dung-room';
-    if(roomNum<G.dungeonFloor){d.classList.add('dung-done');d.innerHTML='✅<div class="dr-label">'+roomNum+'</div>';}
-    else if(roomNum===G.dungeonFloor){
-      const isBoss=roomNum%10===0;d.classList.add('dung-current');if(isBoss)d.classList.add('dung-boss');
-      d.innerHTML=(isBoss?'👑':'⚔️')+'<div class="dr-label">'+(isBoss?'BOSS':roomNum)+'</div>';
-    }else{d.classList.add('dung-locked');d.innerHTML='🔒<div class="dr-label">'+roomNum+'</div>';}
-    map.appendChild(d);
-  }
-  // Tiers info
-  const ti=document.getElementById('dungeonTiers');if(ti){ti.innerHTML='';DUNGEON_TIERS.forEach((t,i)=>{const d=document.createElement('div');d.style.cssText='background:rgba(0,0,0,.25);border:1px solid '+(i===tier?'var(--gold)':'var(--border)')+';border-radius:7px;padding:8px;text-align:center;';d.innerHTML=`<div style="font-size:1.2rem;">${t.emoji}</div><div style="font-family:'Cinzel',serif;font-size:.7rem;font-weight:700;">${t.name}</div><div style="font-size:.6rem;color:var(--text2);">Etagen ${t.floors}</div><div style="font-size:.58rem;color:var(--orange2);">${t.diff}</div>`;ti.appendChild(d);});}
+// Get or generate room type for a floor
+function getDungeonRoomType(floor) {
+  if (floor % 10 === 0) return 'boss';
+  if (G.dungeonRoomMap[floor]) return G.dungeonRoomMap[floor];
+  const type = ROOM_TYPES[rng(0, ROOM_TYPES.length - 1)];
+  G.dungeonRoomMap[floor] = type;
+  return type;
 }
 
-function startDungeon(){
-  if(G.dungeonKeys<=0){log('❌ Keine Dungeon-Schlüssel!','c');return;}
+const ROOM_ICONS = { fight:'⚔️', trap:'⚡', treasure:'🎁', rest:'💤', shop:'🛒', boss:'👑' };
+
+function getRoomClass(floor, current) {
+  if (floor < current) return 'dung-done';
+  if (floor > current) return 'dung-locked';
+  const t = getDungeonRoomType(floor);
+  const base = 'dung-current';
+  if (t === 'boss') return base + ' dung-boss';
+  if (t === 'trap') return base + ' dung-trap';
+  if (t === 'treasure') return base + ' dung-treasure';
+  if (t === 'shop') return base + ' dung-shop';
+  if (t === 'rest') return base + ' dung-rest';
+  return base;
+}
+
+function renderDungeon() {
+  const floor = G.dungeonFloor;
+  const tier = Math.min(Math.floor((floor - 1) / 10), DUNGEON_ZONES.length - 1);
+  const zone = DUNGEON_ZONES[tier];
+
+  // Name + desc
+  const dn = document.getElementById('dungeonName');
+  if (dn) dn.textContent = zone.name;
+  const dd = document.getElementById('dungeonZoneDesc');
+  if (dd) dd.textContent = zone.desc;
+
+  // Pills
+  const _t = (id, v) => { const e = document.getElementById(id); if(e) e.textContent = v; };
+  _t('dungFloor', floor);
+  _t('dungKeys', G.dungeonKeys);
+  _t('dungBest', G.dungeonBestFloor);
+
+  // Room type hint
+  const roomType = getDungeonRoomType(floor);
+  const hints = { fight:'⚔️ Kampf-Raum', trap:'⚡ Falle voraus!', treasure:'🎁 Schatzkammer!', rest:'💤 Rast-Raum', shop:'🛒 Händler', boss:'👑 ENDBOSS!' };
+  const hint = document.getElementById('dungRoomTypeHint');
+  if (hint) {
+    hint.textContent = hints[roomType] || '❓ Unbekannt';
+    hint.style.color = roomType === 'boss' ? 'var(--red2)' : roomType === 'treasure' ? 'var(--gold2)' : roomType === 'trap' ? 'var(--orange2)' : 'var(--text3)';
+  }
+
+  // Floor map — show 10 rooms of current tier
+  const map = document.getElementById('dungeonMap');
+  const ml = document.getElementById('dungMapLabel');
+  if (map) {
+    map.innerHTML = '';
+    const tierStart = tier * 10 + 1;
+    if (ml) ml.textContent = 'Etagen ' + tierStart + '–' + (tierStart + 9);
+    for (let i = 0; i < 10; i++) {
+      const roomNum = tierStart + i;
+      const d = document.createElement('div');
+      d.className = 'dung-room ' + getRoomClass(roomNum, floor);
+      const type = getDungeonRoomType(roomNum);
+      const isDone = roomNum < floor;
+      const isCurrent = roomNum === floor;
+      d.innerHTML = (isDone ? '✅' : (isCurrent ? ROOM_ICONS[type] : '🔒')) + '<div class="dr-label">' + (type === 'boss' ? 'BOSS' : roomNum) + '</div>';
+      map.appendChild(d);
+    }
+  }
+
+  // Zone overview
+  const ti = document.getElementById('dungeonTiers');
+  if (ti) {
+    ti.innerHTML = '';
+    DUNGEON_ZONES.forEach((z, i) => {
+      const unlocked = floor >= z.minFloor || i === 0;
+      const isCurrent = i === tier;
+      const d = document.createElement('div');
+      d.style.cssText = 'background:rgba(0,0,0,.25);border:1px solid ' + (isCurrent ? 'var(--gold)' : 'var(--border)') + ';border-radius:7px;padding:8px;text-align:center;opacity:' + (unlocked ? '1' : '.4') + ';';
+      d.innerHTML = '<div style="font-size:1.2rem;">' + z.emoji + '</div>' +
+        '<div style="font-family:'Cinzel',serif;font-size:.68rem;font-weight:700;color:' + (isCurrent ? 'var(--gold2)' : 'var(--text)') + ';">' + z.name.replace(/^[^ ]+ /,'') + '</div>' +
+        '<div style="font-size:.58rem;color:var(--text2);">' + z.floors + '</div>' +
+        '<div style="font-size:.56rem;color:' + z.color + ';">' + z.diff + '</div>' +
+        (unlocked ? '' : '<div style="font-size:.54rem;color:var(--text3);">Etage ' + z.minFloor + '</div>');
+      ti.appendChild(d);
+    });
+  }
+}
+
+function startDungeon() {
+  if (G.dungeonKeys <= 0) { log('❌ Keine Dungeon-Schlüssel! Warte auf Aufladen.', 'c'); return; }
+  if (G.dungeonActive) { log('❌ Du bist bereits im Dungeon!', 'c'); return; }
   G.dungeonKeys--;
-  const lv=G.hero.level+Math.floor(G.dungeonFloor/5);
-  const elig=MONSTERS.filter(m=>m.minLv<=lv);const proto=elig[rng(0,elig.length-1)];
-  const isBoss=G.dungeonFloor%10===0;
-  const hp=Math.round((20+lv*12)*proto.hpM*(isBoss?4:1.5));const atk=Math.round((3+lv*1.5)*proto.atkM*(isBoss?1.5:1));
-  G.dungeonMonster={...proto,id:makeUUID(),hp,maxHp:hp,atk,isBoss};
-  document.getElementById('dungStartBtn').style.display='none';
-  document.getElementById('dungeonFight').style.display='block';
-  document.getElementById('dungeonReward').style.display='none';
-  document.getElementById('dungMonName').textContent=(isBoss?'👑 BOSS: ':'')+proto.name;
-  // Show monster SVG
-  const ms=document.getElementById('dungMonSvg');if(ms)ms.innerHTML=`<svg viewBox="0 0 60 90" width="70" height="70" xmlns="http://www.w3.org/2000/svg" style="filter:drop-shadow(0 0 8px ${proto.color});">${proto.svg}</svg>`;
+  G.dungeonActive = true;
+
+  const roomType = getDungeonRoomType(G.dungeonFloor);
+  document.getElementById('dungStartBtn').style.display = 'none';
+  document.getElementById('dungeonRoom').style.display = 'block';
+  document.getElementById('dungeonFight').style.display = 'none';
+  document.getElementById('dungeonTrap').style.display = 'none';
+  document.getElementById('dungeonTreasure').style.display = 'none';
+  document.getElementById('dungeonReward').style.display = 'none';
+
+  renderDungeon();
+
+  if (roomType === 'fight' || roomType === 'boss') {
+    startDungeonFight(roomType === 'boss');
+  } else if (roomType === 'trap') {
+    startDungeonTrap();
+  } else if (roomType === 'treasure') {
+    startDungeonTreasure();
+  } else if (roomType === 'rest') {
+    startDungeonRest();
+  } else if (roomType === 'shop') {
+    startDungeonShop();
+  }
+}
+
+function startDungeonFight(isBoss) {
+  const lv = G.hero.level + Math.floor(G.dungeonFloor / 5);
+  const elig = MONSTERS.filter(m => m.minLv <= lv);
+  const proto = elig[rng(0, elig.length - 1)];
+  const bossData = DUNGEON_BOSSES.find(b => b.floor === G.dungeonFloor);
+  const hpMult = isBoss ? (bossData ? bossData.hpMult : 5) : 1.6;
+  const atkMult = isBoss ? (bossData ? bossData.atkMult : 2) : 1;
+  const bossName = isBoss && bossData ? bossData.emoji + ' ' + bossData.name : proto.name;
+  const bossEmoji = isBoss && bossData ? bossData.emoji : proto.emoji;
+
+  const hp = Math.round((25 + lv * 14) * proto.hpM * hpMult);
+  const atk = Math.round((4 + lv * 1.8) * proto.atkM * atkMult);
+  G.dungeonMonster = { ...proto, id:makeUUID(), hp, maxHp:hp, atk, isBoss, bossData };
+
+  document.getElementById('dungeonFight').style.display = 'block';
+  const mn = document.getElementById('dungMonName');
+  if (mn) {
+    mn.textContent = bossName;
+    mn.style.color = isBoss ? 'var(--gold2)' : 'var(--red2)';
+    mn.style.fontSize = isBoss ? '1.05rem' : '.9rem';
+  }
+  const ms = document.getElementById('dungMonSvg');
+  if (ms) ms.innerHTML = '<svg viewBox="0 0 60 90" width="' + (isBoss?90:70) + '" height="' + (isBoss?90:70) + '" xmlns="http://www.w3.org/2000/svg" style="filter:drop-shadow(0 0 ' + (isBoss?'14px':'8px') + ' ' + (isBoss?'rgba(224,80,80,.6)':proto.color) + ');">' + proto.svg + '</svg>';
+
+  if (isBoss) {
+    const fc = document.getElementById('dungeonFight').querySelector('.card') || document.getElementById('dungeonFight').firstElementChild;
+    if (fc) fc.classList.add('boss-fight-bg');
+    const dl = document.getElementById('dungLog');
+    if (dl) dl.innerHTML = '<div class="log-e l">👑 ENDBOSS! ' + bossName + ' erwacht! HP: ' + hp.toLocaleString() + '</div>';
+    playSfx('levelup');
+  } else {
+    const dl = document.getElementById('dungLog');
+    if (dl) dl.innerHTML = '<div class="log-e n">⚔️ ' + proto.name + ' erscheint!</div>';
+  }
   updateDungFight();
-  const dl=document.getElementById('dungLog');if(dl)dl.innerHTML=`<div class="log-e n">${isBoss?'👑 BOSS-KAMPF beginnt!':'⚔️ '+proto.name+' erscheint!'}</div>`;
+}
+
+function startDungeonTrap() {
+  const trap = DUNGEON_TRAPS[rng(0, DUNGEON_TRAPS.length - 1)];
+  G._dungeonTrap = trap;
+  document.getElementById('dungeonTrap').style.display = 'block';
+  document.getElementById('dungTrapEmoji').textContent = trap.emoji;
+  document.getElementById('dungTrapName').textContent = '⚡ Falle: ' + trap.name;
+  document.getElementById('dungTrapDesc').textContent = trap.desc;
+  const s = getStats();
+  const canDisarm = s.def >= trap.disarmThreshold;
+  const btn = document.getElementById('dungTrapDisarmBtn');
+  if (btn) {
+    btn.textContent = '🔓 Entschärfen (DEF ' + s.def + '/' + trap.disarmThreshold + ')';
+    btn.style.opacity = canDisarm ? '1' : '.5';
+  }
+  document.getElementById('dungTrapHint').textContent = canDisarm
+    ? '✅ Deine DEF reicht zum Entschärfen!'
+    : '⚠️ DEF zu niedrig — Schaden unvermeidbar (' + Math.round(trap.dmgPct * 100) + '% deines HP)';
+}
+
+function dungeonTrapDisarm() {
+  const trap = G._dungeonTrap;
+  const s = getStats();
+  if (s.def >= trap.disarmThreshold) {
+    log('🔓 Falle entschärft! Kein Schaden.', 'i');
+    dungeonTrapFinish(0);
+  } else {
+    const dmg = Math.floor(G.hero.maxHp * trap.dmgPct * 0.5);
+    G.hero.hp = Math.max(1, G.hero.hp - dmg);
+    log('⚡ Teilweise entschärft! -' + dmg + ' HP', 'c');
+    dungeonTrapFinish(dmg);
+  }
+}
+
+function dungeonTrapEndure() {
+  const trap = G._dungeonTrap;
+  const dmg = Math.floor(G.hero.maxHp * trap.dmgPct);
+  G.hero.hp = Math.max(1, G.hero.hp - dmg);
+  log('💪 Durch die Falle gedrückt! -' + dmg + ' HP', 'c');
+  dungeonTrapFinish(dmg);
+}
+
+function dungeonTrapFinish(dmg) {
+  document.getElementById('dungeonTrap').style.display = 'none';
+  G._dungeonTrap = null;
+  updateAll();
+  // Small XP reward for surviving a trap
+  const xpR = Math.round((10 + G.dungeonFloor * 2) * xpMult());
+  G.hero.xp += xpR;
+  checkLevelUp();
+  if (G.hero.hp <= 0) { G.hero.hp = 0; dungeonDefeat(); return; }
+  showDungeonReward([
+    { label: dmg > 0 ? '⚡ HP-Verlust' : '🔓 Entschärft', val: dmg > 0 ? '-' + dmg + ' HP' : 'Kein Schaden' },
+    { label: '⭐ XP', val: '+' + xpR },
+  ]);
+}
+
+function startDungeonTreasure() {
+  document.getElementById('dungeonTreasure').style.display = 'block';
+  const tier = Math.min(Math.floor((G.dungeonFloor - 1) / 10), 5);
+  const goldAmt = rng(50 + tier * 80, 150 + tier * 200);
+  const xpAmt = Math.round((30 + G.dungeonFloor * 3) * xpMult());
+  const extraItem = Math.random() < 0.5 + tier * 0.08;
+  G._dungeonTreasure = { gold: goldAmt, xp: xpAmt, item: extraItem };
+
+  const tname = document.getElementById('dungTreasureName');
+  const tdesc = document.getElementById('dungTreasureDesc');
+  const tlist = document.getElementById('dungTreasureList');
+  if (tname) tname.textContent = tier >= 4 ? '👑 Legendäre Schatzkammer!' : tier >= 2 ? '💎 Reichhaltige Schatzkammer!' : '🎁 Schatzkammer!';
+  if (tdesc) tdesc.textContent = 'Du entdeckst einen Raum voller Reichtümer!';
+  if (tlist) tlist.innerHTML =
+    '<div class="idle-row"><span>💰 Gold</span><span style="color:var(--gold2);">+' + goldAmt + '</span></div>' +
+    '<div class="idle-row"><span>⭐ XP</span><span style="color:var(--green2);">+' + xpAmt + '</span></div>' +
+    (extraItem ? '<div class="idle-row"><span>🎁 Item</span><span style="color:var(--purple2);">+1 (garantiert)</span></div>' : '');
+}
+
+function dungeonClaimTreasure() {
+  const t = G._dungeonTreasure;
+  if (!t) return;
+  G.hero.gold += t.gold;
+  G.hero.xp += t.xp;
+  const items = [];
+  if (t.item) { const item = dropItem(); items.push(item); }
+  G._dungeonTreasure = null;
+  document.getElementById('dungeonTreasure').style.display = 'none';
+  checkLevelUp(); updateAll();
+  log('💎 Schatzkammer geplündert! +' + t.gold + 'G +' + t.xp + 'XP' + (items.length ? ' +1 Item' : ''), 'i');
+  dungeonAdvance();
+}
+
+function startDungeonRest() {
+  // Immediate heal, then advance
+  const healAmt = Math.floor(G.hero.maxHp * 0.35);
+  G.hero.hp = Math.min(G.hero.maxHp, G.hero.hp + healAmt);
+  updateAll();
+  log('💤 Rast! +' + healAmt + ' HP wiederhergestellt.', 'i');
+  showDungeonReward([{ label: '❤️ Heilung', val: '+' + healAmt + ' HP' }]);
+  playSfx('buy');
+}
+
+function startDungeonShop() {
+  // Mini-shop: auto-give a random buff
+  const buffs = [
+    { label: '⚔️ Angriffs-Trank', desc: '+20 ATK für diesen Dungeon-Run', apply: () => { G._dungTempAtk = (G._dungTempAtk||0)+20; } },
+    { label: '🛡️ Schutz-Trank', desc: '+15 DEF für diesen Dungeon-Run', apply: () => { G._dungTempDef = (G._dungTempDef||0)+15; } },
+    { label: '❤️ Heiltrank', desc: 'Stellt 50% HP wieder her', apply: () => { G.hero.hp = Math.min(G.hero.maxHp, G.hero.hp + Math.floor(G.hero.maxHp*0.5)); } },
+    { label: '🗝️ Extra-Schlüssel', desc: '+1 Dungeon-Schlüssel', apply: () => { G.dungeonKeys++; } },
+  ];
+  const buff = buffs[rng(0, buffs.length-1)];
+  buff.apply();
+  updateAll();
+  log('🛒 Händler: ' + buff.label + ' — ' + buff.desc, 'i');
+  showDungeonReward([{ label: buff.label, val: buff.desc }]);
+  playSfx('buy');
+}
+
+function updateDungFight() {
+  const m = G.dungeonMonster; if (!m) return;
+  const h = G.hero;
+  const _t = (id, v) => { const e = document.getElementById(id); if(e) e.textContent = v; };
+  const _w = (id, pct) => { const e = document.getElementById(id); if(e) e.style.width = pct + '%'; };
+  _t('dungMonHpTxt', Math.ceil(m.hp).toLocaleString() + ' / ' + m.maxHp.toLocaleString());
+  _w('dungMonHpBar', Math.max(0, m.hp / m.maxHp * 100));
+  _t('dungHeroHpTxt', Math.ceil(h.hp) + ' / ' + h.maxHp);
+  _w('dungHeroHpBar', Math.max(0, h.hp / h.maxHp * 100));
+}
+
+function dungeonAttack() {
+  const m = G.dungeonMonster; if (!m) return;
+  const s = getStats();
+  const atkBonus = (G._dungTempAtk || 0);
+  const defBonus = (G._dungTempDef || 0);
+  let dmg = Math.max(1, s.atk + atkBonus + rng(-2, 5));
+  const isCrit = Math.random() * 100 < s.crit;
+  if (isCrit) dmg = Math.floor(dmg * 1.8);
+  m.hp -= dmg;
+  try { playSfx(isCrit ? 'crit' : 'hit'); } catch(e) {}
+  const dl = document.getElementById('dungLog');
+  if (dl) { const e = document.createElement('div'); e.className = 'log-e c'; e.textContent = '⚔️ ' + dmg + (isCrit ? ' (KRIT!)' : ''); dl.prepend(e); }
+  updateDungFight();
+  if (m.hp <= 0) { dungeonVictory(); return; }
+  // Monster counter-attack
+  const mDmg = Math.max(1, m.atk - Math.floor((s.def + defBonus) * 0.55));
+  G.hero.hp = Math.max(0, G.hero.hp - mDmg);
+  if (dl) { const e = document.createElement('div'); e.className = 'log-e'; e.textContent = m.name.replace(/^[^ ]+ /,'') + ' trifft: -' + mDmg; dl.prepend(e); }
+  updateAll(); updateDungFight();
+  if (G.hero.hp <= 0) { G.hero.hp = 0; dungeonDefeat(); }
+}
+
+function dungeonUseSkill() {
+  // Pick best available skill effect
+  const s = getStats();
+  if (G.skills.has('bloodRage') || G.skills.has('god_mode')) {
+    // Power strike: 3x damage once
+    const m = G.dungeonMonster; if (!m) return;
+    const dmg = Math.floor((s.atk + (G._dungTempAtk||0)) * 3);
+    m.hp -= dmg;
+    try { playSfx('crit'); } catch(e) {}
+    const dl = document.getElementById('dungLog');
+    if (dl) { const e = document.createElement('div'); e.className = 'log-e l'; e.textContent = '✨ Skill-Angriff: -' + dmg + ' (3× Schaden)!'; dl.prepend(e); }
+    updateDungFight();
+    if (m.hp <= 0) { dungeonVictory(); return; }
+    document.getElementById('dungSkillBtn').disabled = true;
+    setTimeout(() => { const b = document.getElementById('dungSkillBtn'); if(b) b.disabled = false; }, 5000);
+  } else if (G.skills.has('vampirism')) {
+    // Vampiric heal
+    const healAmt = Math.floor(G.hero.maxHp * 0.2);
+    G.hero.hp = Math.min(G.hero.maxHp, G.hero.hp + healAmt);
+    const dl = document.getElementById('dungLog');
+    if (dl) { const e = document.createElement('div'); e.className = 'log-e l'; e.textContent = '✨ Vampirismus: +' + healAmt + ' HP!'; dl.prepend(e); }
+    updateAll(); updateDungFight();
+    document.getElementById('dungSkillBtn').disabled = true;
+    setTimeout(() => { const b = document.getElementById('dungSkillBtn'); if(b) b.disabled = false; }, 8000);
+  } else {
+    log('❌ Kein aktiver Skill verfügbar!', 'c');
+  }
+}
+
+function dungeonVictory() {
+  const m = G.dungeonMonster; const isBoss = m?.isBoss;
+  const bossData = m?.bossData;
+  const goldR = Math.round((m.gold * 1.6 + G.dungeonFloor * 4) * (isBoss ? (bossData?.reward?.gold/100||3) : 1));
+  const xpR = Math.round((m.xp * 1.3 + G.dungeonFloor * 2.5) * (isBoss ? 2.5 : 1) * xpMult());
+  G.hero.gold += goldR; G.hero.xp += xpR; G.kills++;
+  if (G.dungeonFloor > G.dungeonBestFloor) G.dungeonBestFloor = G.dungeonFloor;
+  const item = dropItem();
+  G.dungeonMonster = null;
+  document.getElementById('dungeonFight').style.display = 'none';
+  // Clear boss glow
+  const fc = document.getElementById('dungeonFight')?.querySelector('.boss-fight-bg');
+  if (fc) fc.classList.remove('boss-fight-bg');
+
+  checkLevelUp(); updateAll();
+
+  const rows = [
+    { label: '💰 Gold', val: '+' + goldR },
+    { label: '⭐ XP', val: '+' + xpR },
+    { label: '🎁 Item', val: item.emoji + ' ' + item.rarityLabel },
+  ];
+  if (isBoss && bossData) {
+    G.dungeonKeys += bossData.reward.keys || 3;
+    for (let i = 1; i < (bossData.reward.items || 2); i++) dropItem();
+    rows.push({ label: '👑 Boss-Bonus', val: '+' + (bossData.reward.keys||3) + ' Schlüssel +' + ((bossData.reward.items||2)-1) + ' Items' });
+    log('👑 ENDBOSS besiegt! Etage ' + G.dungeonFloor + ' abgeschlossen!', 'l');
+    playSfx('levelup');
+  } else {
+    log('⚔️ Dungeon-Etage ' + G.dungeonFloor + ' besiegt!', 'i');
+  }
+  try { trackQuestProgress('dung', 1); checkQuestBadge(); } catch(e) {}
+  showDungeonReward(rows);
+}
+
+function showDungeonReward(rows) {
+  document.getElementById('dungeonReward').style.display = 'block';
+  document.getElementById('dungRewardList').innerHTML = rows.map(r =>
+    '<div class="idle-row"><span>' + r.label + '</span><span>' + r.val + '</span></div>'
+  ).join('');
+}
+
+function dungeonAdvance() {
+  G.dungeonFloor++;
+  G.dungeonActive = false;
+  document.getElementById('dungeonRoom').style.display = 'none';
+  document.getElementById('dungStartBtn').style.display = 'block';
+  // Clear temp buffs on boss floors
+  if (G.dungeonFloor % 10 === 1) { G._dungTempAtk = 0; G._dungTempDef = 0; }
+  renderDungeon();
+  saveToSupabase();
+}
+
+function claimDungeonReward() {
+  G.dungeonFloor++;
+  G.dungeonActive = false;
+  document.getElementById('dungeonReward').style.display = 'none';
+  document.getElementById('dungeonRoom').style.display = 'none';
+  document.getElementById('dungStartBtn').style.display = 'block';
+  // Bonus key every 5 floors
+  if (G.dungeonFloor % 5 === 1 && G.dungeonFloor > 1) {
+    G.dungeonKeys++;
+    log('🗝️ Bonus-Schlüssel für 5 Etagen!', 'i');
+  }
+  // Clear temp buffs when crossing tier boundary
+  if (G.dungeonFloor % 10 === 1) { G._dungTempAtk = 0; G._dungTempDef = 0; }
+  renderDungeon(); saveToSupabase();
+}
+
+function dungeonDefeat() {
+  G.dungeonMonster = null; G.dungeonActive = false;
+  G._dungTempAtk = 0; G._dungTempDef = 0;
+  document.getElementById('dungeonRoom').style.display = 'none';
+  document.getElementById('dungeonFight').style.display = 'none';
+  document.getElementById('dungeonTrap').style.display = 'none';
+  document.getElementById('dungStartBtn').style.display = 'block';
+  log('💔 Im Dungeon besiegt! Zurück zum Eingang.', 'c');
+  renderDungeon(); updateAll();
+}
+
+function dungeonFlee() {
+  G.dungeonMonster = null; G.dungeonActive = false;
+  G.dungeonKeys++;  // Refund key on flee
+  document.getElementById('dungeonRoom').style.display = 'none';
+  document.getElementById('dungeonFight').style.display = 'none';
+  document.getElementById('dungStartBtn').style.display = 'block';
+  log('🏃 Geflohen! Schlüssel zurückerstattet.', 'n');
   renderDungeon();
 }
 
-function updateDungFight(){
-  const m=G.dungeonMonster;if(!m)return;
-  if(document.getElementById('dungMonHpTxt'))document.getElementById('dungMonHpTxt').textContent=Math.ceil(m.hp)+'/'+m.maxHp;
-  if(document.getElementById('dungMonHpBar'))document.getElementById('dungMonHpBar').style.width=Math.max(0,m.hp/m.maxHp*100)+'%';
-}
+// Key regen timer (1 key per 30min, max 5) + countdown display
+let _dungKeyRegenStart = Date.now();
+setInterval(() => {
+  if ((G.dungeonKeys || 0) < 5) {
+    if (!G.dungeonKeys) G.dungeonKeys = 0;
+    G.dungeonKeys++;
+    log('🗝️ Dungeon-Schlüssel aufgeladen! (' + G.dungeonKeys + '/5)', 'n');
+    renderDungeon();
+    _dungKeyRegenStart = Date.now();
+  }
+}, 30 * 60 * 1000);
 
-function dungeonAttack(){
-  const m=G.dungeonMonster;if(!m)return;const s=getStats();
-  let dmg=Math.max(1,s.atk+rng(-2,4));const isCrit=Math.random()*100<s.crit;if(isCrit)dmg=Math.floor(dmg*1.8);
-  m.hp-=dmg;
-  const dl=document.getElementById('dungLog');if(dl){const e=document.createElement('div');e.className='log-e c';e.textContent='⚔️ Treffer: -'+dmg+(isCrit?' (KRIT!)':'');dl.prepend(e);}
-  updateDungFight();
-  if(m.hp<=0){dungeonVictory();return;}
-  // Monster hits back
-  const mDmg=Math.max(1,m.atk-Math.floor(s.def*.5));G.hero.hp=Math.max(0,G.hero.hp-mDmg);
-  if(dl){const e=document.createElement('div');e.className='log-e';e.textContent=m.name+' trifft: -'+mDmg;dl.prepend(e);}
-  updateArenaPanel();updateHeader();
-  if(G.hero.hp<=0){G.hero.hp=0;dungeonDefeat();}
-}
+// Countdown display every second
+setInterval(() => {
+  if ((G.dungeonKeys || 0) < 5) {
+    const pill = document.getElementById('dungNextKeyPill');
+    const timer = document.getElementById('dungNextKeyTimer');
+    if (pill) pill.style.display = 'flex';
+    if (timer) {
+      const elapsed = Date.now() - _dungKeyRegenStart;
+      const remaining = Math.max(0, 30 * 60 * 1000 - elapsed);
+      const m = Math.floor(remaining / 60000);
+      const s = Math.floor((remaining % 60000) / 1000);
+      timer.textContent = m + ':' + String(s).padStart(2, '0');
+    }
+  } else {
+    const pill = document.getElementById('dungNextKeyPill');
+    if (pill) pill.style.display = 'none';
+  }
+}, 1000);
 
-function dungeonVictory(){
-  const m=G.dungeonMonster;const isBoss=m?.isBoss;
-  const goldR=Math.round((m.gold*1.5+G.dungeonFloor*3)*(isBoss?3:1));
-  const xpR=Math.round((m.xp*1.2+G.dungeonFloor*2)*(isBoss?2:1)*xpMult());
-  G.hero.gold+=goldR;G.hero.xp+=xpR;G.kills++;
-  if(G.dungeonFloor>G.dungeonBestFloor)G.dungeonBestFloor=G.dungeonFloor;
-  G.dungeonFloor++;G.dungeonMonster=null;
-  const item=dropItem();// Guaranteed item drop in dungeon!
-  document.getElementById('dungeonFight').style.display='none';
-  const rw=document.getElementById('dungeonReward');rw.style.display='block';
-  document.getElementById('dungRewardList').innerHTML=`<div class="idle-row"><span>💰 Gold</span><span>+${goldR}</span></div><div class="idle-row"><span>⭐ XP</span><span>+${xpR}</span></div><div class="idle-row"><span>🎁 Item</span><span>${item.emoji} [${item.rarityLabel}]</span></div>${isBoss?'<div class="idle-row"><span>👑 Boss-Bonus</span><span>+3 Schlüssel</span></div>':''}`;
-  if(isBoss)G.dungeonKeys+=3;
-  log('🏚️ Dungeon Etage '+(G.dungeonFloor-1)+' besiegt!','i');
-  try { trackQuestProgress('dung', 1); checkQuestBadge(); } catch(e) {}
-  checkLevelUp();updateAll();renderDungeon();
-}
 
-function dungeonDefeat(){
-  G.dungeonMonster=null;
-  document.getElementById('dungeonFight').style.display='none';document.getElementById('dungStartBtn').style.display='block';
-  log('💔 Im Dungeon besiegt!','c');renderDungeon();updateAll();
-}
-
-function dungeonFlee(){
-  G.dungeonMonster=null;G.dungeonKeys++;// Refund key on flee
-  document.getElementById('dungeonFight').style.display='none';document.getElementById('dungStartBtn').style.display='block';
-  log('🏃 Aus dem Dungeon geflohen. Schlüssel zurückerstattet.','n');renderDungeon();
-}
-
-function claimDungeonReward(){
-  document.getElementById('dungeonReward').style.display='none';document.getElementById('dungStartBtn').style.display='block';
-  if(G.dungeonFloor%5===1&&G.dungeonFloor>1){G.dungeonKeys++;log('🗝️ Bonus-Schlüssel für 5 Etagen!','i');}
-  renderDungeon();saveToSupabase();
-}
-
-// Key regen timer (1 key per 30min, max 5)
-setInterval(()=>{
-  if((G.dungeonKeys||0)<5){if(!G.dungeonKeys)G.dungeonKeys=0;G.dungeonKeys++;log('🗝️ Dungeon-Schlüssel aufgeladen!','n');renderDungeon();}
-},30*60*1000);
 
 // ════════════════════════════════════════════
 // ── PVP SYSTEM
