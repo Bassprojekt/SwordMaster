@@ -3375,7 +3375,7 @@ async function loadPVPLeaderboard(){
   if(!data||!data.length){div.innerHTML='<div style="color:var(--text2);font-size:.75rem;padding:8px;font-style:italic;">Noch keine Spieler.</div>';return;}
   div.innerHTML='';
   data.forEach((p,i)=>{
-    const isMe=p.player_id===getPID();const medals=['🥇','🥈','🥉'];
+    const isMe=p.player_id===getPlayerId();const medals=['🥇','🥈','🥉'];
     const d=document.createElement('div');d.className='rank-row';if(isMe)d.style.borderColor='var(--gold)';
     d.innerHTML=`<div style="font-family:'Cinzel',serif;font-size:.78rem;color:${i<3?'var(--gold2)':'var(--text2)'};width:24px;">${medals[i]||'#'+(i+1)}</div><div class="rank-info"><div class="rank-name"${isMe?' style="color:var(--gold2);"':''}>${p.player_name||'Krieger'}${isMe?' 👈':''}</div><div class="rank-req">Lv ${p.hero_level} · ${(p.total_kills||0).toLocaleString()} Kills</div></div><div style="font-family:'Cinzel',serif;font-size:.7rem;color:var(--gold);">💰 ${(p.hero_gold||0).toLocaleString()}</div>`;
     div.appendChild(d);
@@ -3435,7 +3435,7 @@ async function loadGuildMembers(){
     const plv=pdata&&pdata[0]?pdata[0].hero_level:1;
     const roleC={leader:'var(--gold2)',officer:'var(--purple2)',member:'var(--blue2)'};
     const roleL={leader:'👑 Anführer',officer:'⭐ Offizier',member:'⚔️ Mitglied'};
-    const isLeader=G.guildRole==='leader'&&m.player_id!==getPID();
+    const isLeader=G.guildRole==='leader'&&m.player_id!==getPlayerId();
     const row=document.createElement('div');row.className='member-row';
     row.innerHTML=`<div class="mr-name">${pname} <span style="font-size:.6rem;color:var(--text2);">Lv ${plv}</span></div><div class="mr-tag" style="border-color:${roleC[m.role]||roleC.member};color:${roleC[m.role]||roleC.member};">${roleL[m.role]||roleL.member}</div>${isLeader?`<div style="display:flex;gap:4px;"><button class="ctrl-btn" style="font-size:.56rem;padding:2px 6px;" onclick="promoteGuildMember('${m.player_id}','${pname}')">⬆️</button><button class="ctrl-btn" style="font-size:.56rem;padding:2px 6px;border-color:var(--red2);color:var(--red2);" onclick="kickGuildMember('${m.player_id}','${pname}')">🚫</button></div>`:''}`;
     div.appendChild(row);
@@ -3460,7 +3460,7 @@ async function loadGuildChat(){
 async function sendGuildChat(){
   if(!G.guildId){log('❌ Keine Gilde!','c');return;}
   const input=document.getElementById('chatInput');const msg=input.value.trim();if(!msg)return;input.value='';
-  await sbPost('sm_guild_chat',{id:makeUUID(),guild_id:G.guildId,player_id:getPID(),player_name:getPlayerName(),message:msg,role:G.guildRole,created_at:new Date().toISOString()});
+  await sbPost('sm_guild_chat',{id:makeUUID(),guild_id:G.guildId,player_id:getPlayerId(),player_name:getPlayerName(),message:msg,role:G.guildRole,created_at:new Date().toISOString()});
   setTimeout(loadGuildChat,600);
 }
 
@@ -3475,23 +3475,23 @@ async function createGuild(){
   if(!name||name.length<2){log('❌ Name zu kurz!','c');return;}
   if(G.hero.gold<500){log('❌ Zu wenig Gold!','c');return;}
   G.hero.gold-=500;const gid=makeUUID();
-  await sbPost('sm_guilds',{id:gid,name,tagline:document.getElementById('guildTagInput')?.value.trim()||'',emoji:selectedGuildEmoji,level:1,gold:0,leader_id:getPID(),created_at:new Date().toISOString()});
-  await sbPost('sm_guild_members',{id:makeUUID(),guild_id:gid,player_id:getPID(),player_name:getPlayerName(),role:'leader',joined_at:new Date().toISOString()});
+  await sbPost('sm_guilds',{id:gid,name,tagline:document.getElementById('guildTagInput')?.value.trim()||'',emoji:selectedGuildEmoji,level:1,gold:0,leader_id:getPlayerId(),created_at:new Date().toISOString()});
+  await sbPost('sm_guild_members',{id:makeUUID(),guild_id:gid,player_id:getPlayerId(),player_name:getPlayerName(),role:'leader',joined_at:new Date().toISOString()});
   G.guildId=gid;G.guildRole='leader';
   document.getElementById('createGuildOverlay').classList.add('hidden');
   log('🏰 Gilde "'+name+'" gegründet!','l');updateAll();renderGuild();saveToSupabase();
 }
 
 async function joinGuild(gid){
-  const already=await sbGet('sm_guild_members','player_id=eq.'+getPID());
+  const already=await sbGet('sm_guild_members','player_id=eq.'+getPlayerId());
   if(already&&already.length){log('❌ Du bist bereits in einer Gilde!','c');return;}
-  await sbPost('sm_guild_members',{id:makeUUID(),guild_id:gid,player_id:getPID(),player_name:getPlayerName(),role:'member',joined_at:new Date().toISOString()});
+  await sbPost('sm_guild_members',{id:makeUUID(),guild_id:gid,player_id:getPlayerId(),player_name:getPlayerName(),role:'member',joined_at:new Date().toISOString()});
   G.guildId=gid;G.guildRole='member';log('🚪 Gilde beigetreten!','l');updateAll();renderGuild();saveToSupabase();
 }
 
 async function leaveGuild(){
   if(!G.guildId)return;
-  await sbDel('sm_guild_members','guild_id=eq.'+G.guildId+'&player_id=eq.'+getPID());
+  await sbDelete('sm_guild_members','guild_id=eq.'+G.guildId+'&player_id=eq.'+getPlayerId());
   G.guildId=null;G.guildRole='member';log('👋 Gilde verlassen.','n');renderGuild();saveToSupabase();
 }
 
@@ -3501,7 +3501,7 @@ async function promoteGuildMember(pid,name){
 }
 
 async function kickGuildMember(pid,name){
-  await sbDel('sm_guild_members','guild_id=eq.'+G.guildId+'&player_id=eq.'+pid);
+  await sbDelete('sm_guild_members','guild_id=eq.'+G.guildId+'&player_id=eq.'+pid);
   log('🚫 '+name+' aus der Gilde geworfen!','c');setTimeout(loadGuildMembers,600);
 }
 
@@ -3559,7 +3559,7 @@ async function loadWorldLeaderboard(){
   if(!data||!data.length){div.innerHTML='<div style="color:var(--text2);font-size:.73rem;padding:8px;font-style:italic;">Keine Einträge.</div>';return;}
   div.innerHTML='';
   data.forEach((p,i)=>{
-    const isMe=p.player_id===getPID();const medals=['🥇','🥈','🥉'];
+    const isMe=p.player_id===getPlayerId();const medals=['🥇','🥈','🥉'];
     const d=document.createElement('div');d.className='rank-row';if(isMe)d.style.borderColor='var(--gold)';
     d.innerHTML=`<div style="font-family:'Cinzel',serif;font-size:.8rem;color:${i<3?'var(--gold2)':'var(--text2)'};width:26px;">${medals[i]||'#'+(i+1)}</div><div class="rank-info"><div class="rank-name"${isMe?' style="color:var(--gold2);"':''}>${p.player_name||'Krieger'}${isMe?' 👈':''}</div><div class="rank-req">Lv ${p.hero_level} · ${(p.total_kills||0).toLocaleString()} Kills</div></div><div style="font-family:'Cinzel',serif;font-size:.7rem;color:var(--gold);">💰 ${(p.hero_gold||0).toLocaleString()}</div>`;
     div.appendChild(d);
