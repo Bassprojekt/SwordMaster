@@ -4420,6 +4420,7 @@ async function loadPVPLeaderboard(){
 // ── GUILD SYSTEM
 // ════════════════════════════════════════════
 if(!G.guildId)G.guildId=null;if(!G.guildRole)G.guildRole='member';
+if(!G._pendingDonation)G._pendingDonation=0;
 let selectedGuildEmoji='🏰';
 
 function renderGuild(){
@@ -4463,11 +4464,18 @@ async function loadGuildData(){
     const guilds=await sbGet('sm_guilds','id=eq.'+G.guildId);
     if(guilds&&guilds.length){
       const g=guilds[0];
-      G._localGuild=g; // Cache aktualisieren
+      // Lokalen Gold-Stand schützen: nimm immer den höheren Wert
+      const localGold = G._localGuild ? (G._localGuild.gold || 0) : 0;
+      const serverGold = g.gold || 0;
+      const mergedGold = Math.max(localGold, serverGold);
+      g.gold = mergedGold;
+      const { level: mergedLevel } = guildLevelFromTotalGold(mergedGold);
+      g.level = mergedLevel;
+      G._localGuild = { ...G._localGuild, ...g, gold: mergedGold, level: mergedLevel };
       if(document.getElementById('guildEmoji'))document.getElementById('guildEmoji').textContent=g.emoji||'🏰';
       if(document.getElementById('guildNameDisplay'))document.getElementById('guildNameDisplay').textContent=g.name||'Gilde';
       if(document.getElementById('guildTagline'))document.getElementById('guildTagline').textContent=g.tagline||'Keine Beschreibung';
-      updateGuildLevelUI(g.gold||0);
+      updateGuildLevelUI(mergedGold);
     } else if(!local){
       // Weder lokal noch online — Gilde existiert nicht mehr
       log('⚠️ Gilde nicht gefunden. Mitgliedschaft zurückgesetzt.','c');
@@ -4774,60 +4782,86 @@ function setDonate(amount) {
   if (inp) inp.value = Math.max(1, Math.floor(amount));
 }
 
+// Pending-Gold das noch nicht zu Supabase hochgeladen wurde
+if (!G._pendingDonation) G._pendingDonation = 0;
+let _donationSyncTimer = null;
+
 async function donateToGuild() {
   if (!G.guildId) return;
   const amount = parseInt(document.getElementById('donateAmount')?.value) || 0;
   if (amount < 1) { log('❌ Mindestens 1 Gold spenden!', 'c'); return; }
   if (G.hero.gold < amount) { log('❌ Nicht genug Gold! (Hast: ' + G.hero.gold + 'G)', 'c'); return; }
 
-  // Sofort lokal abziehen
+  // 1. Sofort lokal abziehen
   G.hero.gold -= amount;
 
-  // Lokalen Gildengold aktualisieren
+  // 2. Lokalen Gildengold ADDIEREN (niemals ersetzen!)
   if (!G._localGuild) G._localGuild = { id: G.guildId, name: '?', gold: 0, level: 1 };
-  const oldGold = G._localGuild.gold || 0;
-  const newGold = oldGold + amount;
-  G._localGuild.gold = newGold;
+  G._localGuild.gold = (G._localGuild.gold || 0) + amount;
+  G._pendingDonation = (G._pendingDonation || 0) + amount;
 
-  // Level neu berechnen
-  const { level: newLevel } = guildLevelFromTotalGold(newGold);
+  // 3. Level aus dem neuen Gesamtgold berechnen
+  const { level: newLevel } = guildLevelFromTotalGold(G._localGuild.gold);
   const oldLevel = G._localGuild.level || 1;
   G._localGuild.level = newLevel;
 
-  // UI sofort aktualisieren
-  updateGuildLevelUI(newGold);
+  // 4. UI sofort mit lokalem Stand aktualisieren
+  updateGuildLevelUI(G._localGuild.gold);
   updateAll();
 
+  // 5. Log
   if (newLevel > oldLevel) {
     const gbNew = guildBonus();
     log('🎉 GILDE LEVEL UP! Gilde ist jetzt Level ' + newLevel + '! · +' + Math.round(gbNew.xp*100) + '% XP · +' + Math.round(gbNew.gold*100) + '% Gold · +' + Math.round(gbNew.atk*100) + '% ATK', 'l');
   } else {
-    log('💰 ' + amount + ' Gold gespendet! Gilde hat jetzt ' + newGold.toLocaleString() + ' Gold gesamt.', 'i');
+    log('💰 ' + amount.toLocaleString() + 'G gespendet! Gilden-Gold: ' + G._localGuild.gold.toLocaleString() + 'G gesamt.', 'i');
   }
 
-  // Eingabe leeren
+  // 6. Eingabe leeren
   const inp = document.getElementById('donateAmount'); if (inp) inp.value = '';
 
-  // Supabase im Hintergrund aktualisieren
+  // 7. Spielstand sofort lokal sichern (Supabase kennt den lokalen Stand via local_guild)
   saveToSupabase();
+
+  // 8. Debounced Supabase-Sync: wartet 1,5s nach der letzten Spende
+  //    damit schnelle Mehrfach-Spenden zusammengefasst werden
+  if (_donationSyncTimer) clearTimeout(_donationSyncTimer);
+  _donationSyncTimer = setTimeout(() => syncDonationToSupabase(), 1500);
+}
+
+async function syncDonationToSupabase() {
+  if (!G.guildId || !G._localGuild) return;
+  const localGold = G._localGuild.gold || 0;
+  const localLevel = G._localGuild.level || 1;
   try {
-    // Aktuellen Stand aus Supabase holen und addieren (verhindert Race-Conditions)
+    // Supabase-Stand holen und prüfen ob lokal höher ist
     const guilds = await sbGet('sm_guilds', 'id=eq.' + G.guildId);
+    let finalGold = localGold;
     if (guilds && guilds[0]) {
-      const serverGold = (guilds[0].gold || 0) + amount;
-      const { level: serverLevel } = guildLevelFromTotalGold(serverGold);
-      await sbUpsert('sm_guilds', { id: G.guildId, gold: serverGold, level: serverLevel });
-      // Lokalen Cache synchronisieren
-      G._localGuild.gold = serverGold;
-      G._localGuild.level = serverLevel;
-      updateGuildLevelUI(serverGold);
-    } else {
-      // Gilde noch nicht in Supabase — erstmal nur lokalen Wert hochladen
-      await sbUpsert('sm_guilds', { id: G.guildId, gold: newGold, level: newLevel });
+      const serverGold = guilds[0].gold || 0;
+      // Immer den HÖHEREN Wert nehmen — verhindert dass andere Spieler-Spenden verloren gehen
+      finalGold = Math.max(localGold, serverGold);
+      // Wenn der Server höher ist (andere Spieler haben gespendet), lokal nachziehen
+      if (serverGold > localGold) {
+        G._localGuild.gold = serverGold;
+        const { level } = guildLevelFromTotalGold(serverGold);
+        G._localGuild.level = level;
+        updateGuildLevelUI(serverGold);
+        log('🔄 Gilden-Gold synchronisiert: ' + serverGold.toLocaleString() + 'G', 'n');
+      }
     }
+    const { level: finalLevel } = guildLevelFromTotalGold(finalGold);
+    await sbUpsert('sm_guilds', {
+      id: G.guildId,
+      gold: finalGold,
+      level: finalLevel,
+      local_guild: JSON.stringify({ ...G._localGuild, gold: finalGold, level: finalLevel })
+    });
+    G._pendingDonation = 0;
+    _donationSyncTimer = null;
   } catch (e) {
-    // Offline ist ok — lokal gespeichert
-    console.warn('donateToGuild Supabase-Fehler:', e);
+    console.warn('syncDonationToSupabase Fehler — Daten lokal gesichert:', e);
+    // Beim nächsten saveToSupabase wird local_guild mit dem korrekten Stand geschrieben
   }
 }
 
