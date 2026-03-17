@@ -3977,7 +3977,7 @@ function renderDungeon() {
       const d = document.createElement('div');
       d.style.cssText = 'background:rgba(0,0,0,.25);border:1px solid ' + (isCurrent ? 'var(--gold)' : 'var(--border)') + ';border-radius:7px;padding:8px;text-align:center;opacity:' + (unlocked ? '1' : '.4') + ';';
       d.innerHTML = '<div style="font-size:1.2rem;">' + z.emoji + '</div>' +
-        '<div style="font-family:'Cinzel',serif;font-size:.68rem;font-weight:700;color:' + (isCurrent ? 'var(--gold2)' : 'var(--text)') + ';">' + z.name.replace(/^[^ ]+ /,'') + '</div>' +
+        '<div style="font-family:Cinzel,serif;font-size:.68rem;font-weight:700;color:' + (isCurrent ? 'var(--gold2)' : 'var(--text)') + ';">' + z.name.replace(/^[^ ]+ /,'') + '</div>' +
         '<div style="font-size:.58rem;color:var(--text2);">' + z.floors + '</div>' +
         '<div style="font-size:.56rem;color:' + z.color + ';">' + z.diff + '</div>' +
         (unlocked ? '' : '<div style="font-size:.54rem;color:var(--text3);">Etage ' + z.minFloor + '</div>');
