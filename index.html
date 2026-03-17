@@ -1169,6 +1169,118 @@ body {
 }
 .masterwork-flash { animation: masterworkFlash .8s ease-out; }
 
+/* ══ SEASONAL EVENTS ══ */
+.event-banner {
+  position:relative;overflow:hidden;
+}
+.event-banner::before {
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse at 50% 0%,var(--ev-bg,rgba(201,162,39,.06)),transparent 70%);
+}
+.ev-title {
+  font-family:Cinzel,serif;font-size:1.15rem;font-weight:900;
+  color:var(--ev-col,var(--gold2));text-shadow:0 0 18px var(--ev-col,rgba(240,204,85,.4));
+  margin-bottom:3px;
+}
+.ev-subtitle { font-size:.74rem;color:var(--text2);margin-bottom:10px;line-height:1.5; }
+.ev-timer {
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.1);
+  border-radius:20px;padding:4px 12px;
+  font-family:Cinzel,serif;font-size:.7rem;color:var(--text2);
+}
+.ev-timer b { color:var(--ev-col,var(--gold2)); }
+.ev-currency {
+  display:inline-flex;align-items:center;gap:5px;
+  background:rgba(0,0,0,.3);border:1px solid var(--ev-col,var(--gold));
+  border-radius:20px;padding:3px 10px;
+  font-family:Cinzel,serif;font-size:.72rem;font-weight:700;
+  color:var(--ev-col,var(--gold2));margin-top:8px;
+}
+.ev-monsters-row {
+  display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;
+}
+.ev-monster-pill {
+  background:rgba(0,0,0,.3);border:1px solid var(--ev-col,var(--border2));
+  border-radius:6px;padding:3px 8px;font-size:.68rem;color:var(--text2);
+}
+/* Event quest */
+.ev-quest {
+  background:rgba(0,0,0,.22);border:1px solid var(--ev-col,var(--border));
+  border-radius:9px;padding:10px 12px;margin-bottom:6px;transition:border-color .15s;
+}
+.ev-quest.done  { border-color:var(--green);opacity:.6; }
+.ev-quest.claim { border-color:var(--gold);box-shadow:0 0 8px rgba(201,162,39,.2); }
+.ev-q-header { display:flex;align-items:center;gap:8px;margin-bottom:4px; }
+.ev-q-icon   { font-size:1.2rem;flex-shrink:0; }
+.ev-q-name   { font-family:Cinzel,serif;font-size:.76rem;font-weight:700;color:var(--text);flex:1; }
+.ev-q-bar    { height:6px;background:rgba(255,255,255,.05);border-radius:3px;overflow:hidden;margin:4px 0 2px; }
+.ev-q-fill   { height:100%;border-radius:3px;background:var(--ev-col,var(--gold));transition:width .4s; }
+.ev-q-foot   { display:flex;justify-content:space-between;font-size:.62rem;color:var(--text2);font-family:Cinzel,serif; }
+.ev-claim-btn {
+  padding:2px 8px;border-radius:6px;
+  background:rgba(201,162,39,.15);border:1px solid var(--gold);
+  font-family:Cinzel,serif;font-size:.6rem;font-weight:700;
+  color:var(--gold2);cursor:pointer;transition:all .15s;
+}
+.ev-claim-btn:hover { background:rgba(201,162,39,.3); }
+/* Event shop item */
+.ev-shop-item {
+  background:rgba(0,0,0,.28);border:1px solid var(--ev-col,var(--border));
+  border-radius:10px;padding:12px;text-align:center;transition:border-color .15s;
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+}
+.ev-shop-item:hover { border-color:var(--ev-col,var(--gold)); }
+.ev-shop-item.bought { border-color:var(--green);opacity:.6; }
+.ev-shop-icon { font-size:1.8rem; }
+.ev-shop-name { font-family:Cinzel,serif;font-size:.72rem;font-weight:700;color:var(--text); }
+.ev-shop-desc { font-size:.62rem;color:var(--text2);line-height:1.4; }
+.ev-shop-cost { font-family:Cinzel,serif;font-size:.68rem;color:var(--ev-col,var(--gold2)); }
+.ev-shop-btn {
+  width:100%;padding:5px;border-radius:6px;margin-top:4px;
+  background:rgba(0,0,0,.3);border:1px solid var(--ev-col,var(--gold));
+  font-family:Cinzel,serif;font-size:.62rem;font-weight:700;
+  color:var(--ev-col,var(--gold2));cursor:pointer;transition:all .15s;
+}
+.ev-shop-btn:hover:not(:disabled) { background:rgba(255,255,255,.06); }
+.ev-shop-btn:disabled { opacity:.4;cursor:not-allowed; }
+/* Boss fight in event */
+.ev-boss-area {
+  background:rgba(0,0,0,.3);border:1px solid var(--ev-col,var(--red2));
+  border-radius:12px;padding:14px;text-align:center;
+  position:relative;overflow:hidden;margin-bottom:10px;
+}
+.ev-boss-area::before {
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse at 50% 100%,var(--ev-bg2,rgba(100,20,20,.2)),transparent 70%);
+}
+.ev-boss-sprite { font-size:3.5rem;display:block;margin-bottom:6px;animation:raidFloat 2.5s ease-in-out infinite; }
+.ev-boss-name   { font-family:Cinzel,serif;font-size:.95rem;font-weight:700;color:var(--ev-col,var(--red2));margin-bottom:6px; }
+.ev-boss-hp-bar { height:12px;background:rgba(255,255,255,.06);border-radius:6px;overflow:hidden;border:1px solid rgba(255,255,255,.08); }
+.ev-boss-hp-fill{ height:100%;border-radius:6px;transition:width .4s;position:relative; }
+.ev-boss-hp-fill::after { content:'';position:absolute;top:0;left:0;right:0;height:50%;background:rgba(255,255,255,.12);border-radius:6px; }
+.ev-attack-btn {
+  width:100%;padding:9px;margin-top:8px;
+  background:linear-gradient(135deg,rgba(255,80,0,.25),rgba(255,80,0,.06));
+  border:1px solid var(--ev-col,var(--red2));
+  border-radius:8px;font-family:Cinzel,serif;font-size:.78rem;font-weight:700;
+  color:var(--ev-col,var(--red2));cursor:pointer;transition:all .15s;
+}
+.ev-attack-btn:hover:not(:disabled) { background:rgba(255,80,0,.35); }
+.ev-attack-btn:disabled { opacity:.4;cursor:not-allowed; }
+/* Progress bar in event */
+.ev-prog-wrap { margin:10px 0 4px; }
+.ev-prog-bar  { height:8px;background:rgba(255,255,255,.05);border-radius:4px;overflow:hidden; }
+.ev-prog-fill { height:100%;border-radius:4px;background:var(--ev-col,var(--gold));transition:width .5s; }
+.ev-prog-lbl  { display:flex;justify-content:space-between;font-size:.62rem;color:var(--text2);font-family:Cinzel,serif;margin-bottom:3px; }
+/* No-event placeholder */
+.ev-empty {
+  text-align:center;padding:28px 20px;
+}
+.ev-empty-icon { font-size:3rem;margin-bottom:10px;opacity:.5; }
+/* Pulse on tab badge */
+@keyframes evBadgePulse { 0%,100%{opacity:1}50%{opacity:.5} }
+#eventBadge { animation:evBadgePulse 1.5s ease-in-out infinite; }
 /* ══ WHITE MODE ══ */
 body.white-mode {
   --bg:       #f0eee8;
@@ -1413,6 +1525,7 @@ input[type=range].vol-slider::-webkit-slider-thumb:hover { transform:scale(1.2);
   <div class="nav-tab" onclick="switchTab('shop')" id="tab-shop"><div class="tab-icon">🛒</div>Shop</div>
   <div class="nav-tab" onclick="switchTab('forschung')" id="tab-forschung"><div class="tab-icon">🔬</div>Forschung</div>
   <div class="nav-tab" onclick="switchTab('quests')" id="tab-quests"><div class="tab-icon">📜</div>Quests<span id="questBadge" style="display:none;background:var(--red2);color:#fff;font-size:.48rem;border-radius:8px;padding:0 4px;margin-left:2px;">!</span></div>
+  <div class="nav-tab" onclick="switchTab('event')" id="tab-event" style="display:none;"><div class="tab-icon" id="eventTabIcon">🎃</div><span id="eventTabName">Event</span><span id="eventBadge" style="display:none;background:#ff6600;color:#fff;font-size:.48rem;border-radius:8px;padding:0 4px;margin-left:2px;">!</span></div>
 </div>
 
 <!-- ═══ ARENA PAGE ═══ -->
@@ -1949,6 +2062,41 @@ input[type=range].vol-slider::-webkit-slider-thumb:hover { transform:scale(1.2);
       <button class="ctrl-btn" onclick="leaveGuild()" style="border-color:var(--red2);color:var(--red2);width:100%;">🚪 Gilde verlassen</button>
     </div>
   </div>
+</div>
+
+<!-- ═══ EVENT PAGE ═══ -->
+<div class="page" id="page-event">
+
+  <!-- Event Banner -->
+  <div class="card event-banner" id="eventBanner">
+    <div id="eventBannerContent"><!-- rendered by JS --></div>
+  </div>
+
+  <!-- Event Fortschritt -->
+  <div class="card" id="eventProgressCard">
+    <div class="sec-title" id="eventProgressTitle">🎃 Event-Fortschritt</div>
+    <div id="eventProgressContent"></div>
+  </div>
+
+  <!-- Event Quests -->
+  <div class="card">
+    <div class="sec-title">📋 Event-Quests</div>
+    <div id="eventQuestsList"></div>
+  </div>
+
+  <!-- Event Shop -->
+  <div class="card">
+    <div class="sec-title">🛍️ Event-Shop</div>
+    <div style="font-size:.68rem;color:var(--text2);margin-bottom:8px;">Kaufe mit <span id="eventCurrencyDisplay" style="color:#ff8800;font-family:Cinzel,serif;font-weight:700;"></span></div>
+    <div id="eventShopGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:8px;"></div>
+  </div>
+
+  <!-- Event Boss -->
+  <div class="card" id="eventBossCard" style="display:none;">
+    <div class="sec-title" id="eventBossTitle">👹 Event-Boss</div>
+    <div id="eventBossContent"></div>
+  </div>
+
 </div>
 
 <!-- ═══ RANG PAGE ═══ -->
@@ -3157,6 +3305,9 @@ function getStats() {
   const gb = guildBonus();
   if (gb.atk > 0) atk = Math.floor(atk * (1 + gb.atk));
   if (gb.def > 0) def = Math.floor(def * (1 + gb.def));
+  // Event buffs
+  atk = Math.floor(atk * eventAtkMult());
+  def = Math.floor(def * eventDefMult());
 
   spd = Math.max(0.25, parseFloat(spd.toFixed(2)));
   return { atk, def, spd, crit: Math.min(75, crit) };
@@ -4505,14 +4656,15 @@ function getEligibleMonsters() {
 function spawnWave() {
   G._assassinUsed = false; G._ironWillUsed = false;
   const lv = G.hero.level;
-  const eligible = getEligibleMonsters();
+  const eligible = getEligibleMonstersWithEvent();
   const count = Math.min(4, 1 + Math.floor(G.wave / 4));
   G.monsters = [];
   for (let i = 0; i < count; i++) {
-    const pool = eligible.slice(Math.max(0, eligible.length - 4));
+    const pool = eligible.slice(Math.max(0, eligible.length - 5));
     const proto = pool[rng(0, pool.length - 1)];
-    const hp = Math.round((15 + lv * 9) * proto.hpM);
-    const atk = Math.round((2 + lv * 1.3) * proto.atkM);
+    // Event monsters already have hp/atk set; regular ones need scaling
+    const hp  = proto.hp  || Math.round((15 + lv * 9)  * proto.hpM);
+    const atk = proto.atk || Math.round((2  + lv * 1.3) * proto.atkM);
     G.monsters.push({ ...proto, id: makeUUID(), hp, maxHp: hp, atk, atkCd: 1 + Math.random() * 0.8 + i * 0.3 });
   }
   G.monster = G.monsters[0];
@@ -4653,7 +4805,7 @@ function tick() {
 }
 
 function monsterKilled(m) {
-  const lk = luckMult(); const gm = goldMult(); const xm = xpMult();
+  const lk = luckMult(); const gm = goldMult() * eventGoldMult(); const xm = xpMult() * eventXpMult();
   const xp   = Math.round((m.xp + Math.floor(G.wave * 0.3)) * lk * xm);
   const gold  = Math.round((m.gold + rng(0, 3)) * gm * lk);
   let pickpocketBonus = 0;
@@ -4662,6 +4814,7 @@ function monsterKilled(m) {
   log('💀 ' + m.name + ' besiegt! +' + xp + ' XP  +' + (gold+pickpocketBonus) + ' Gold' + (pickpocketBonus?'  (+'+pickpocketBonus+'G Taschendiebstahl!)':''), 'c');
   try { playSfx('kill'); } catch(e) {}
   try { dropMaterials(m); } catch(e) {}
+  try { if(m.isEventMonster) giveEventCurrency(m); } catch(e) {}
   petHealOnKill();
   try { trackQuestProgress('kill', 1); trackQuestProgress('gold', gold); checkQuestBadge(); } catch(e) {}
   G.monsters = G.monsters.filter(x => x.id !== m.id);
@@ -5188,6 +5341,7 @@ let _saveQueued = false;
 function saveToSupabase() {
   // Lokalen Timestamp immer sofort speichern
   localStorage.setItem('sm3_save', Date.now().toString());
+  try { saveEventState(); } catch(e) {}
   try {
     localStorage.setItem('sm3_forge', JSON.stringify({
       materials: G.materials || {},
@@ -5697,6 +5851,7 @@ function switchTab(name) {
   if(name==='shop'){renderShop();}
   if(name==='forschung'){renderUpgrades();renderResearch();}
   if(name==='quests'){renderQuests();}
+  if(name==='event'){renderEventPage();}
   // legacy compat
   if(name==='skills'){renderSkills();}
   if(name==='ages'){renderEraTimeline();}
@@ -7233,6 +7388,8 @@ async function continueInit() {
   await new Promise(r=>setTimeout(r,300));
   removeLoader();
 
+  // Event-State laden
+  try { loadEventState(); } catch(e) {}
   // Materialien aus LocalStorage laden
   try {
     const fd = JSON.parse(localStorage.getItem('sm3_forge') || '{}');
@@ -7243,6 +7400,12 @@ async function continueInit() {
   } catch(e) {}
   try { checkIdle(); }           catch(e) {}
   try { spawnMonster(); startCombat(); } catch(e) {}
+  // Event tab visibility
+  try {
+    const evTab = document.getElementById('tab-event');
+    if (evTab) evTab.style.display = isEventActive() ? 'flex' : 'none';
+    if (isEventActive()) { log('🎃 ' + getActiveEvent().name + ' ist aktiv! Schau im Event-Tab vorbei!', 'l'); }
+  } catch(e) {}
 
   if (loaded) {
     log('✅ Willkommen zuruck! Level ' + G.hero.level + ' geladen.', 'n');
@@ -7577,6 +7740,595 @@ function renderRaid() {
 
 // Raid-Status beim Gilden-Tab-Wechsel aktualisieren
 const _origRenderGuild = typeof renderGuild === 'function' ? renderGuild : null;
+
+// ════════════════════════════════════════════
+// ── SEASONAL EVENTS SYSTEM
+// ════════════════════════════════════════════
+
+// ── Drei Events definiert ─────────────────
+const SEASONAL_EVENTS = {
+
+  halloween: {
+    id: 'halloween',
+    name: '🎃 Halloween-Nacht',
+    subtitle: 'Die Geister sind los! Besiege Untote und sammle Geisteressenz.',
+    icon: '🎃',
+    color: '#ff6600',
+    bg: 'rgba(120,40,0,0.1)',
+    bg2: 'rgba(120,40,0,0.25)',
+    currency: { id:'ghost_essence', name:'Geisteressenz', emoji:'👻' },
+    // Monat 9 (Oktober) → 0-indexiert = 9
+    month: 9, startDay: 1, endDay: 31,
+
+    monsters: [
+      { name:'Kürbiskopf',     emoji:'🎃', hpM:1.2, atkM:1.4, xp:25,  gold:12, color:'#ff6600', type:'untoter',
+        special:'fluch', specialDesc:'Kürbisfluch — DEF-Debuff',
+        drops: { ghost_essence: 2 },
+        svg:`<g><ellipse cx="30" cy="55" rx="16" ry="18" fill="#cc4400"/><path d="M20,44 Q22,36 30,34 Q38,36 40,44Z" fill="#dd5500"/><circle cx="24" cy="48" r="5" fill="#1a0800"/><polygon points="22,46 24,42 26,46" fill="#ff8800"/><circle cx="36" cy="48" r="5" fill="#1a0800"/><polygon points="34,46 36,42 38,46" fill="#ff8800"/><path d="M22,58 Q25,62 28,58 Q30,62 32,58 Q35,62 38,58" stroke="#1a0800" stroke-width="2.5" fill="none"/><rect x="28" y="28" width="4" height="8" rx="2" fill="#228822"/><rect x="26" y="28" width="8" height="3" rx="1" fill="#228822"/><rect x="22" y="68" width="7" height="12" rx="3" fill="#aa3300"/><rect x="31" y="68" width="7" height="12" rx="3" fill="#aa3300"/></g>` },
+      { name:'Geist',          emoji:'👻', hpM:0.8, atkM:1.8, xp:30,  gold:15, color:'#ccccff', type:'geist',
+        special:'phase', specialDesc:'Phasiert — negiert 40% Angriffe',
+        drops: { ghost_essence: 3 },
+        svg:`<g><path d="M20,72 Q16,60 18,48 Q18,32 30,28 Q42,32 42,48 Q44,60 40,72 Q36,68 32,72 Q30,68 28,72 Q24,68 20,72Z" fill="#ddddff" opacity=".9"/><circle cx="24" cy="44" r="5" fill="#223"/><circle cx="25" cy="43" r="2.5" fill="#aaaaff"/><circle cx="36" cy="44" r="5" fill="#223"/><circle cx="37" cy="43" r="2.5" fill="#aaaaff"/><path d="M24,54 Q30,58 36,54" stroke="#8888cc" stroke-width="2" fill="none"/></g>` },
+      { name:'Zombiehorde',    emoji:'🧟', hpM:2.2, atkM:1.2, xp:35,  gold:18, color:'#779955', type:'untoter',
+        special:'stun', specialDesc:'Taumelschlag — betäubt 1 Runde',
+        drops: { ghost_essence: 2 },
+        svg:`<g><rect x="22" y="58" width="7" height="16" rx="2" fill="#2a3a18"/><rect x="31" y="58" width="7" height="16" rx="2" fill="#2a3a18"/><rect x="19" y="28" width="22" height="30" rx="3" fill="#3a4a22"/><rect x="11" y="32" width="8" height="20" rx="2" fill="#2a3a18"/><rect x="41" y="30" width="10" height="8" rx="2" fill="#2a3a18"/><circle cx="30" cy="22" r="10" fill="#4a5a28"/><circle cx="24" cy="20" r="3" fill="#1a2a08"/><circle cx="25" cy="19" r="1.5" fill="#aaffaa"/><circle cx="36" cy="20" r="3" fill="#1a2a08"/><circle cx="37" cy="19" r="1.5" fill="#aaffaa"/><path d="M25,26 Q30,29 35,26" stroke="#779955" stroke-width="1.5" fill="none"/></g>` },
+      { name:'Hexe',           emoji:'🧙', hpM:1.5, atkM:2.0, xp:45,  gold:22, color:'#9b30ff', type:'magisch',
+        special:'gift',  specialDesc:'Hexentrank — vergiftet für 4 Runden',
+        drops: { ghost_essence: 4 },
+        svg:`<g><ellipse cx="30" cy="72" rx="10" ry="3" fill="rgba(100,0,160,.3)"/><path d="M22,52 Q18,60 20,70 Q24,74 26,70 Q24,60 26,52Z" fill="#220033" opacity=".9"/><path d="M38,52 Q42,60 40,70 Q36,74 34,70 Q36,60 34,52Z" fill="#220033" opacity=".9"/><ellipse cx="30" cy="42" rx="13" ry="17" fill="#330044"/><circle cx="30" cy="22" r="11" fill="#440055"/><path d="M17,20 Q12,10 18,8 Q16,14 18,13Z" fill="#220033"/><path d="M30,16 Q28,8 32,6 Q31,12 32,11Z" fill="#220033"/><path d="M43,20 Q48,10 42,8 Q44,14 42,13Z" fill="#220033"/><circle cx="23" cy="20" r="4" fill="#110022"/><circle cx="24" cy="19" r="2" fill="#dd44ff"/><circle cx="37" cy="20" r="4" fill="#110022"/><circle cx="38" cy="19" r="2" fill="#dd44ff"/></g>` },
+      { name:'Sensenmann',     emoji:'💀', hpM:3.0, atkM:2.8, xp:70,  gold:35, color:'#aaaaaa', type:'untoter',
+        special:'urteil', specialDesc:'Sichelhieb — ignoriert DEF',
+        drops: { ghost_essence: 6 },
+        svg:`<g><ellipse cx="30" cy="72" rx="12" ry="3" fill="rgba(0,0,0,.4)"/><path d="M22,52 Q18,58 20,70 Q24,74 26,70 Q24,60 26,52Z" fill="#111" opacity=".95"/><path d="M38,52 Q42,58 40,70 Q36,74 34,70 Q36,60 34,52Z" fill="#111" opacity=".95"/><ellipse cx="30" cy="40" rx="14" ry="18" fill="#111"/><circle cx="30" cy="20" r="12" fill="#111"/><path d="M18,22 Q18,12 22,10 Q20,16 22,15Z" fill="#1a1a1a"/><path d="M42,22 Q42,12 38,10 Q40,16 38,15Z" fill="#1a1a1a"/><circle cx="23" cy="19" r="4.5" fill="#050505"/><circle cx="24" cy="18" r="2.5" fill="#00ffaa"/><circle cx="37" cy="19" r="4.5" fill="#050505"/><circle cx="38" cy="18" r="2.5" fill="#00ffaa"/><path d="M23,27 Q30,31 37,27" stroke="#aaaaaa" stroke-width="1.5" fill="none"/><line x1="42" y1="14" x2="48" y2="2" stroke="#888" stroke-width="2"/><path d="M42,10 Q52,0 56,8 Q52,10 48,6Z" fill="#777"/></g>` },
+    ],
+
+    boss: {
+      id: 'hw_boss', name:'Kürbiskönig', emoji:'👑', hp:50000, maxHp:50000,
+      color:'#ff4400',
+      reward: { gold:5000, xp:3000, ghost_essence:50, items:3 },
+      svg:`<g><ellipse cx="30" cy="74" rx="14" ry="4" fill="rgba(200,60,0,.3)"/><rect x="20" y="52" width="9" height="22" rx="3" fill="#991100"/><rect x="31" y="52" width="9" height="22" rx="3" fill="#991100"/><ellipse cx="30" cy="42" rx="18" ry="22" fill="#cc2200"/><path d="M14,24 Q10,12 14,6 Q16,16 18,12Z" fill="#dd4400"/><path d="M24,18 Q22,8 26,4 Q25,14 27,11Z" fill="#dd4400"/><path d="M36,18 Q38,8 34,4 Q35,14 33,11Z" fill="#dd4400"/><path d="M46,24 Q50,12 46,6 Q44,16 42,12Z" fill="#dd4400"/><circle cx="30" cy="24" r="14" fill="#bb2200"/><circle cx="22" cy="22" r="5" fill="#1a0000"/><polygon points="20,20 22,16 24,20" fill="#ff6600"/><circle cx="38" cy="22" r="5" fill="#1a0000"/><polygon points="36,20 38,16 40,20" fill="#ff6600"/><path d="M20,30 Q24,35 27,30 Q30,35 33,30 Q36,35 40,30" stroke="#1a0000" stroke-width="3" fill="none"/></g>`
+    },
+
+    quests: [
+      { id:'hw_q1', icon:'👻', name:'Geisterjäger',      desc:'Besiege 20 Halloween-Monster',   type:'hw_kill',   target:20,  reward:{ ghost_essence:15, gold:300 } },
+      { id:'hw_q2', icon:'🎃', name:'Kürbissammler',     desc:'Besiege 10 Kürbisköpfe',         type:'hw_pumpkin',target:10,  reward:{ ghost_essence:20, gold:500 } },
+      { id:'hw_q3', icon:'🧙', name:'Hexenjäger',        desc:'Besiege 5 Hexen',                type:'hw_witch',  target:5,   reward:{ ghost_essence:25, gold:800 } },
+      { id:'hw_q4', icon:'💀', name:'Dunkel-Taucher',    desc:'Betritt 5 Dungeon-Räume',        type:'dung',      target:5,   reward:{ ghost_essence:10, gold:400 } },
+      { id:'hw_q5', icon:'🔨', name:'Halloween-Schmied', desc:'Schmied 30 Items',               type:'forge_total',target:30, reward:{ ghost_essence:12, gold:350 } },
+      { id:'hw_q6', icon:'👑', name:'Kürbiskönig',       desc:'Besiege den Kürbiskönig',        type:'hw_boss',   target:1,   reward:{ ghost_essence:100, gold:5000, items:2 } },
+    ],
+
+    shop: [
+      { id:'hw_costume', name:'Vampir-Kostüm',    emoji:'🧛', desc:'+15% ATK & DEF im Event', cost:30,  type:'costume',  buff:{atk:0.15,def:0.15} },
+      { id:'hw_amulet',  name:'Kürbis-Amulett',  emoji:'🎃', desc:'+25% Gold von Monstern',   cost:25,  type:'item_buff',buff:{gold:0.25} },
+      { id:'hw_potion',  name:'Geistertrank',     emoji:'🫧', desc:'HP auf MAX sofort',        cost:10,  type:'heal',     buff:{heal:1.0} },
+      { id:'hw_staff',   name:'Hexenstab',        emoji:'🪄', desc:'+20% Krit-Chance',         cost:40,  type:'item_buff',buff:{crit:0.20} },
+      { id:'hw_lantern', name:'Jack-o-Laterne',   emoji:'🪔', desc:'+30% Dungeon-XP',          cost:20,  type:'item_buff',buff:{dungXp:0.30} },
+      { id:'hw_title',   name:'Titel: Dämonenjäger',emoji:'🏆',desc:'Exklusiver Event-Titel',  cost:80,  type:'title',    buff:{} },
+    ],
+  },
+
+  // ── WEIHNACHTEN ─────────────────────────────
+  christmas: {
+    id: 'christmas',
+    name: '🎄 Weihnachts-Mysterium',
+    subtitle: 'Eisige Winde und Geschenke! Besiege Schneegeister und sammle Schneeflocken.',
+    icon: '🎄',
+    color: '#44cc44',
+    bg: 'rgba(0,80,0,0.08)',
+    bg2: 'rgba(0,40,40,0.2)',
+    currency: { id:'snowflake', name:'Schneeflocke', emoji:'❄️' },
+    month: 11, startDay: 1, endDay: 31, // Dezember
+
+    monsters: [
+      { name:'Schneemann',      emoji:'☃️', hpM:1.8, atkM:0.8, xp:20,  gold:10, color:'#aaddff', type:'magisch',
+        special:'stein', specialDesc:'Einfrieren — 1 Runde unverwundbar',
+        drops: { snowflake: 2 },
+        svg:`<g><circle cx="30" cy="62" r="16" fill="#ddeeff"/><circle cx="30" cy="38" r="11" fill="#eef8ff"/><circle cx="30" cy="20" r="8" fill="#ffffff"/><circle cx="26" cy="18" r="2.5" fill="#223"/><circle cx="34" cy="18" r="2.5" fill="#223"/><path d="M26,23 Q30,26 34,23" stroke="#223" stroke-width="1.5" fill="none"/><circle cx="30" cy="38" r="2" fill="#ff6600"/><circle cx="28" cy="60" r="2" fill="#223"/><circle cx="30" cy="65" r="2" fill="#223"/><circle cx="32" cy="70" r="2" fill="#223"/><path d="M14,40 Q8,36 10,30Z" fill="#cc8800"/><path d="M46,40 Q52,36 50,30Z" fill="#cc8800"/><rect x="24" y="12" width="12" height="4" rx="2" fill="#cc0000"/><ellipse cx="30" cy="12" rx="10" ry="4" fill="#cc0000" opacity=".7"/></g>` },
+      { name:'Eiself',          emoji:'🧝', hpM:1.0, atkM:1.5, xp:28,  gold:14, color:'#88ffcc', type:'magisch',
+        special:'dodge', specialDesc:'Flink — weicht 25% Angriffen aus',
+        drops: { snowflake: 3 },
+        svg:`<g><rect x="23" y="58" width="7" height="16" rx="2" fill="#006622"/><rect x="30" y="58" width="7" height="16" rx="2" fill="#006622"/><rect x="19" y="28" width="22" height="30" rx="3" fill="#008833"/><rect x="11" y="32" width="8" height="18" rx="2" fill="#007722"/><rect x="41" y="32" width="8" height="18" rx="2" fill="#007722"/><ellipse cx="30" cy="24" rx="11" ry="10" fill="#ffccaa"/><path d="M20,20 Q16,10 22,8 Q20,16 22,14Z" fill="#cc0000"/><path d="M40,20 Q44,10 38,8 Q40,16 38,14Z" fill="#cc0000"/><circle cx="25" cy="22" r="3" fill="#221100"/><circle cx="26" cy="21" r="1.5" fill="#88ffcc"/><circle cx="35" cy="22" r="3" fill="#221100"/><circle cx="36" cy="21" r="1.5" fill="#88ffcc"/><polygon points="30,6 32,14 28,14" fill="#cc0000"/></g>` },
+      { name:'Frostriese',      emoji:'❄️', hpM:3.5, atkM:1.5, xp:50,  gold:25, color:'#55aaff', type:'tier',
+        special:'wickeln', specialDesc:'Eissturm — 2 Runden eingefroren',
+        drops: { snowflake: 4 },
+        svg:`<g><rect x="18" y="56" width="10" height="20" rx="4" fill="#2244aa"/><rect x="32" y="56" width="10" height="20" rx="4" fill="#2244aa"/><ellipse cx="30" cy="44" rx="20" ry="24" fill="#3355cc"/><rect x="6" y="32" width="14" height="26" rx="4" fill="#2244aa"/><rect x="40" y="32" width="14" height="26" rx="4" fill="#2244aa"/><ellipse cx="30" cy="22" rx="16" ry="14" fill="#4466dd"/><circle cx="22" cy="20" r="5" fill="#112233"/><circle cx="23" cy="19" r="2.5" fill="#88ddff"/><circle cx="38" cy="20" r="5" fill="#112233"/><circle cx="39" cy="19" r="2.5" fill="#88ddff"/><path d="M22,30 Q30,35 38,30" stroke="#2244aa" stroke-width="2.5" fill="none"/></g>` },
+      { name:'Rentier-Geist',   emoji:'🦌', hpM:1.4, atkM:2.2, xp:40,  gold:20, color:'#cc8833', type:'tier',
+        special:'erdbeben', specialDesc:'Hufstampfen — Flächenschaden',
+        drops: { snowflake: 3 },
+        svg:`<g><ellipse cx="30" cy="56" rx="16" ry="10" fill="#8b5a2b"/><ellipse cx="44" cy="48" rx="10" ry="7" fill="#a0692e"/><circle cx="50" cy="44" r="4" fill="#ff2222"/><circle cx="51" cy="43" r="2" fill="#ff6666"/><path d="M40,40 Q38,32 34,30 Q30,28 28,32Z" fill="#8b5a2b"/><path d="M44,38 Q44,30 48,28 Q44,32 42,30Z" fill="#8b5a2b"/><path d="M40,40 Q42,32 46,30 Q44,36 42,34Z" fill="#a0692e"/><rect x="18" y="60" width="5" height="12" rx="2" fill="#7a4a20"/><rect x="27" y="60" width="5" height="12" rx="2" fill="#7a4a20"/><rect x="34" y="62" width="5" height="10" rx="2" fill="#7a4a20"/><rect x="43" y="62" width="5" height="10" rx="2" fill="#7a4a20"/></g>` },
+      { name:'Krampus',         emoji:'😈', hpM:2.8, atkM:2.5, xp:65,  gold:32, color:'#cc3333', type:'damon',
+        special:'teilen', specialDesc:'Krampus-Fluch — teilt Schaden mit Held',
+        drops: { snowflake: 6 },
+        svg:`<g><ellipse cx="30" cy="72" rx="12" ry="3" fill="rgba(150,20,20,.3)"/><rect x="22" y="52" width="7" height="20" rx="3" fill="#550000"/><rect x="31" y="52" width="7" height="20" rx="3" fill="#550000"/><ellipse cx="30" cy="42" rx="15" ry="18" fill="#770000"/><path d="M18,28 Q14,16 18,10 Q18,20 20,18Z" fill="#880000"/><path d="M42,28 Q46,16 42,10 Q42,20 40,18Z" fill="#880000"/><circle cx="30" cy="24" r="13" fill="#660000"/><circle cx="22" cy="21" r="4" fill="#110000"/><circle cx="23" cy="20" r="2" fill="#ff3333"/><circle cx="38" cy="21" r="4" fill="#110000"/><circle cx="39" cy="20" r="2" fill="#ff3333"/><path d="M24,30 Q30,34 36,30" stroke="#cc0000" stroke-width="2" fill="none"/><line x1="24" y1="30" x2="22" y2="34" stroke="#ff0000" stroke-width="1.5"/><line x1="36" y1="30" x2="38" y2="34" stroke="#ff0000" stroke-width="1.5"/></g>` },
+    ],
+
+    boss: {
+      id: 'xmas_boss', name:'Eiskönigin', emoji:'👸', hp:60000, maxHp:60000,
+      color:'#55aaff',
+      reward: { gold:6000, xp:4000, snowflake:60, items:3 },
+      svg:`<g><ellipse cx="30" cy="74" rx="14" ry="4" fill="rgba(50,100,200,.3)"/><rect x="22" y="52" width="8" height="22" rx="3" fill="#2255cc"/><rect x="30" y="52" width="8" height="22" rx="3" fill="#2255cc"/><rect x="16" y="20" width="28" height="32" rx="3" fill="#3366dd"/><rect x="8" y="24" width="8" height="24" rx="3" fill="#2255cc"/><rect x="44" y="24" width="8" height="24" rx="3" fill="#2255cc"/><path d="M12,24 Q6,12 10,6 Q12,16 14,13Z" fill="#55aaff"/><path d="M48,24 Q54,12 50,6 Q48,16 46,13Z" fill="#55aaff"/><ellipse cx="30" cy="16" rx="14" ry="12" fill="#3366dd"/><circle cx="22" cy="14" r="4" fill="#112244"/><circle cx="23" cy="13" r="2" fill="#aaddff"/><circle cx="38" cy="14" r="4" fill="#112244"/><circle cx="39" cy="13" r="2" fill="#aaddff"/><path d="M24,22 Q30,26 36,22" stroke="#55aaff" stroke-width="2" fill="none"/><polygon points="30,2 32,8 28,8" fill="#aaddff"/><polygon points="30,2 34,6 26,6" fill="#aaddff"/></g>`
+    },
+
+    quests: [
+      { id:'xm_q1', icon:'☃️', name:'Schneemann-Jäger',   desc:'Besiege 20 Weihnachts-Monster', type:'xm_kill',  target:20, reward:{ snowflake:15, gold:300 } },
+      { id:'xm_q2', icon:'🎁', name:'Geschenk-Finder',    desc:'Öffne 5 Schatzkammern',         type:'treasure', target:5,  reward:{ snowflake:20, gold:600 } },
+      { id:'xm_q3', icon:'🎄', name:'Winter-Schmied',     desc:'Schmied 25 Items',               type:'forge_total',target:25,reward:{ snowflake:12, gold:400 } },
+      { id:'xm_q4', icon:'❄️', name:'Frost-Krieger',      desc:'Erreiche Welle 50',              type:'wave',     target:50, reward:{ snowflake:25, gold:800 } },
+      { id:'xm_q5', icon:'👸', name:'Eiskönigin',         desc:'Besiege die Eiskönigin',         type:'xm_boss',  target:1,  reward:{ snowflake:120, gold:6000, items:2 } },
+    ],
+
+    shop: [
+      { id:'xm_santa',   name:'Weihnachtsmann-Hut',emoji:'🎅', desc:'+20% Gold & XP',           cost:25, type:'item_buff',buff:{gold:0.20,xp:0.20} },
+      { id:'xm_snowball', name:'Schneeball-Trank',  emoji:'⛄', desc:'Sofort +40% Max-HP heilen', cost:10, type:'heal',     buff:{heal:0.4} },
+      { id:'xm_gift',    name:'Geschenk-Pack',      emoji:'🎁', desc:'3 garantierte Rare-Items',  cost:40, type:'forge_batch',buff:{} },
+      { id:'xm_wreath',  name:'Immergrün-Kranz',    emoji:'🌿', desc:'+15% DEF permanent',        cost:35, type:'item_buff',buff:{def:0.15} },
+      { id:'xm_star',    name:'Weihnachtsstern',    emoji:'⭐', desc:'+25% Krit-Schaden',         cost:45, type:'item_buff',buff:{critDmg:0.25} },
+      { id:'xm_title',   name:'Titel: Weihnachtsheld',emoji:'🏆',desc:'Exklusiver Event-Titel',  cost:80, type:'title',    buff:{} },
+    ],
+  },
+
+  // ── OSTERN ──────────────────────────────────
+  easter: {
+    id: 'easter',
+    name: '🐣 Oster-Offensive',
+    subtitle: 'Frühlingsboten greifen an! Sammle Ostereier und besiege den Oster-Golem.',
+    icon: '🐣',
+    color: '#ffaa00',
+    bg: 'rgba(100,180,0,0.07)',
+    bg2: 'rgba(80,160,0,0.15)',
+    currency: { id:'easter_egg', name:'Osterei', emoji:'🥚' },
+    month: 2, startDay: 15, endDay: 31, // März (kann per Jahr variieren — fix auf März 15-31)
+
+    monsters: [
+      { name:'Böser Hase',      emoji:'🐰', hpM:0.9, atkM:1.6, xp:22,  gold:11, color:'#ffccdd', type:'tier',
+        special:'swarm', specialDesc:'Häschensprint — greift doppelt an',
+        drops: { easter_egg: 2 },
+        svg:`<g><ellipse cx="30" cy="55" rx="15" ry="17" fill="#ffddee"/><ellipse cx="30" cy="38" rx="10" ry="9" fill="#ffeef5"/><path d="M22,32 Q20,18 24,14 Q22,24 24,22Z" fill="#ffccdd"/><path d="M38,32 Q40,18 36,14 Q38,24 36,22Z" fill="#ffccdd"/><circle cx="24" cy="36" r="3.5" fill="#221100"/><circle cx="25" cy="35" r="1.8" fill="#ff6699"/><circle cx="36" cy="36" r="3.5" fill="#221100"/><circle cx="37" cy="35" r="1.8" fill="#ff6699"/><ellipse cx="30" cy="41" rx="4" ry="2.5" fill="#ff9999"/><path d="M26,44 Q30,47 34,44" stroke="#ffaacc" stroke-width="1.5" fill="none"/><rect x="18" y="64" width="7" height="12" rx="4" fill="#ffbbcc"/><rect x="35" y="64" width="7" height="12" rx="4" fill="#ffbbcc"/></g>` },
+      { name:'Ei-Elemental',    emoji:'🥚', hpM:2.0, atkM:1.0, xp:30,  gold:15, color:'#ffee88', type:'magisch',
+        special:'stein', specialDesc:'Eierschale — 1 Runde unverwundbar',
+        drops: { easter_egg: 3 },
+        svg:`<g><ellipse cx="30" cy="50" rx="18" ry="24" fill="#ffe866"/><ellipse cx="30" cy="52" rx="16" ry="12" fill="#ff8844"/><path d="M12,50 Q14,38 18,36 Q12,44 16,44Z" fill="#ffcc44"/><path d="M48,50 Q46,38 42,36 Q48,44 44,44Z" fill="#ffcc44"/><circle cx="24" cy="42" r="4.5" fill="#222"/><circle cx="25" cy="41" r="2.5" fill="#ffff88"/><circle cx="36" cy="42" r="4.5" fill="#222"/><circle cx="37" cy="41" r="2.5" fill="#ffff88"/><path d="M24,52 Q30,56 36,52" stroke="#cc6600" stroke-width="2" fill="none"/></g>` },
+      { name:'Frühlings-Hexe',  emoji:'🌸', hpM:1.3, atkM:2.0, xp:40,  gold:20, color:'#ff88aa', type:'magisch',
+        special:'fluch', specialDesc:'Blütenfluch — DEF debuff',
+        drops: { easter_egg: 4 },
+        svg:`<g><ellipse cx="30" cy="72" rx="10" ry="3" fill="rgba(255,100,150,.3)"/><path d="M22,52 Q18,60 20,70 Q24,74 26,70 Q24,60 26,52Z" fill="#881133"/><path d="M38,52 Q42,60 40,70 Q36,74 34,70 Q36,60 34,52Z" fill="#881133"/><ellipse cx="30" cy="42" rx="13" ry="17" fill="#aa2244"/><circle cx="30" cy="22" r="11" fill="#cc3366"/><circle cx="24" cy="20" r="4" fill="#110011"/><circle cx="25" cy="19" r="2" fill="#ffaacc"/><circle cx="36" cy="20" r="4" fill="#110011"/><circle cx="37" cy="19" r="2" fill="#ffaacc"/><path d="M22,12 Q18,6 22,4 Q20,10 22,9Z" fill="#ff88aa"/><path d="M38,12 Q42,6 38,4 Q40,10 38,9Z" fill="#ff88aa"/></g>` },
+      { name:'Giftiges Küken',  emoji:'🐥', hpM:1.0, atkM:1.8, xp:28,  gold:14, color:'#ffff44', type:'tier',
+        special:'biss', specialDesc:'Schnabelstich — vergiftet',
+        drops: { easter_egg: 3 },
+        svg:`<g><ellipse cx="30" cy="56" rx="16" ry="14" fill="#ffee44"/><ellipse cx="30" cy="42" rx="12" ry="10" fill="#ffff66"/><circle cx="24" cy="40" r="3.5" fill="#111"/><circle cx="25" cy="39" r="1.8" fill="#ff6600"/><circle cx="36" cy="40" r="3.5" fill="#111"/><circle cx="37" cy="39" r="1.8" fill="#ff6600"/><path d="M27,46 L30,50 L33,46Z" fill="#ff8800"/><rect x="14" y="62" width="7" height="10" rx="3" fill="#ddcc33"/><rect x="39" y="62" width="7" height="10" rx="3" fill="#ddcc33"/><path d="M10,48 Q6,44 10,40 Q10,46 12,44Z" fill="#ffee44"/><path d="M50,48 Q54,44 50,40 Q50,46 48,44Z" fill="#ffee44"/></g>` },
+      { name:'Oster-Ritter',    emoji:'🛡️', hpM:2.5, atkM:2.3, xp:58,  gold:29, color:'#88ddaa', type:'mensch',
+        special:'schild', specialDesc:'Osterschild — absorbiert 50% Schaden',
+        drops: { easter_egg: 5 },
+        svg:`<g><rect x="22" y="58" width="7" height="18" rx="2" fill="#224422"/><rect x="31" y="58" width="7" height="18" rx="2" fill="#224422"/><rect x="18" y="26" width="24" height="32" rx="3" fill="#336633"/><rect x="10" y="30" width="8" height="22" rx="2" fill="#224422"/><rect x="42" y="30" width="8" height="22" rx="2" fill="#224422"/><rect x="16" y="16" width="28" height="16" rx="3" fill="#224422"/><circle cx="24" cy="22" r="4" fill="#112211"/><circle cx="25" cy="21" r="2" fill="#88ffaa"/><circle cx="36" cy="22" r="4" fill="#112211"/><circle cx="37" cy="21" r="2" fill="#88ffaa"/><rect x="3" y="32" width="10" height="16" rx="2" fill="#446644"/><ellipse cx="8" cy="32" rx="5" ry="4" fill="#558855"/><path d="M8,26 L8,20" stroke="#446644" stroke-width="2"/></g>` },
+    ],
+
+    boss: {
+      id: 'easter_boss', name:'Oster-Golem', emoji:'🐣', hp:45000, maxHp:45000,
+      color:'#ffcc00',
+      reward: { gold:4500, xp:2800, easter_egg:50, items:3 },
+      svg:`<g><ellipse cx="30" cy="74" rx="14" ry="4" fill="rgba(200,180,0,.3)"/><rect x="20" y="52" width="9" height="22" rx="4" fill="#cc9900"/><rect x="31" y="52" width="9" height="22" rx="4" fill="#cc9900"/><ellipse cx="30" cy="44" rx="20" ry="24" fill="#eecc00"/><ellipse cx="30" cy="30" rx="20" ry="8" fill="#ff8800" opacity=".6"/><ellipse cx="30" cy="22" fill="#eecc00" rx="20" ry="8"/><rect x="6" y="32" width="14" height="26" rx="4" fill="#cc9900"/><rect x="40" y="32" width="14" height="26" rx="4" fill="#cc9900"/><ellipse cx="30" cy="20" rx="16" ry="14" fill="#ffdd44"/><circle cx="22" cy="18" r="5" fill="#221100"/><circle cx="23" cy="17" r="2.5" fill="#ff8800"/><circle cx="38" cy="18" r="5" fill="#221100"/><circle cx="39" cy="17" r="2.5" fill="#ff8800"/><path d="M22,28 Q30,32 38,28" stroke="#cc8800" stroke-width="2.5" fill="none"/></g>`
+    },
+
+    quests: [
+      { id:'ea_q1', icon:'🐰', name:'Häschenjäger',      desc:'Besiege 20 Oster-Monster',      type:'ea_kill',   target:20, reward:{ easter_egg:15, gold:300 } },
+      { id:'ea_q2', icon:'🥚', name:'Eiersuche',         desc:'Besiege 10 Ei-Elementale',      type:'ea_egg',    target:10, reward:{ easter_egg:20, gold:500 } },
+      { id:'ea_q3', icon:'🌸', name:'Frühlingsschmied',  desc:'Schmied 20 Items',               type:'forge_total',target:20,reward:{ easter_egg:10, gold:350 } },
+      { id:'ea_q4', icon:'🏚️', name:'Frühlingstaucher',  desc:'Abschluss 3 Dungeon-Bossetagen',type:'dung',      target:3,  reward:{ easter_egg:18, gold:600 } },
+      { id:'ea_q5', icon:'🐣', name:'Oster-Golem',       desc:'Besiege den Oster-Golem',       type:'ea_boss',   target:1,  reward:{ easter_egg:100, gold:4500, items:2 } },
+    ],
+
+    shop: [
+      { id:'ea_bunny',  name:'Hasen-Ohrmuscheln', emoji:'🐰', desc:'+15% Bewegungsgeschw.',       cost:20, type:'item_buff',buff:{spd:0.15} },
+      { id:'ea_basket', name:'Oster-Korb',         emoji:'🧺', desc:'+35% Item-Dropchance',        cost:30, type:'item_buff',buff:{drop:0.35} },
+      { id:'ea_egg_x',  name:'Goldenes Osterei',   emoji:'🥇', desc:'+40% Gold aus Monstern',      cost:25, type:'item_buff',buff:{gold:0.40} },
+      { id:'ea_chick',  name:'Küken-Potion',        emoji:'🐥', desc:'3× XP für 5 Minuten',        cost:35, type:'item_buff',buff:{xp:2.0} },
+      { id:'ea_title',  name:'Titel: Osterkrieger', emoji:'🏆', desc:'Exklusiver Event-Titel',      cost:70, type:'title',    buff:{} },
+    ],
+  },
+};
+
+// ── Event State ──────────────────────────────
+if (!G.eventProgress)  G.eventProgress  = {};
+if (!G.eventClaimed)   G.eventClaimed   = new Set();
+if (!G.eventCurrency)  G.eventCurrency  = {};
+if (!G.eventPurchased) G.eventPurchased = new Set();
+if (!G.eventBoss)      G.eventBoss      = {};
+if (!G.eventBuffs)     G.eventBuffs     = {};
+
+// ── Aktives Event ermitteln ──────────────────
+function getActiveEvent() {
+  const now = new Date();
+  const m = now.getMonth(); // 0-11
+  const d = now.getDate();
+  for (const ev of Object.values(SEASONAL_EVENTS)) {
+    if (m === ev.month && d >= ev.startDay && d <= ev.endDay) return ev;
+  }
+  // DEV: uncomment to force test an event:
+  // return SEASONAL_EVENTS.halloween;
+  // return SEASONAL_EVENTS.christmas;
+  // return SEASONAL_EVENTS.easter;
+  return null;
+}
+
+function isEventActive() { return !!getActiveEvent(); }
+
+// ── Event-Monster in spawnWave einmischen ────
+function getEventMonsters() {
+  const ev = getActiveEvent();
+  if (!ev) return [];
+  const lv = G.hero.level;
+  // Skale HP/ATK mit Level
+  return ev.monsters.map(m => ({
+    ...m,
+    id: makeUUID(),
+    minLv: 1,
+    hp: Math.round((20 + lv * 10) * m.hpM),
+    maxHp: Math.round((20 + lv * 10) * m.hpM),
+    atk: Math.round((3 + lv * 1.4) * m.atkM),
+    atkCd: 1 + Math.random() * 0.8,
+    isEventMonster: true,
+    eventId: ev.id,
+  }));
+}
+
+// ── Spawn-Hook: 40% Chance auf Event-Monster ─
+function getEligibleMonstersWithEvent() {
+  const base = getEligibleMonsters();
+  const ev = getActiveEvent();
+  if (!ev) return base;
+  const evMs = getEventMonsters();
+  if (!evMs.length) return base;
+  // Mische Event-Monster ein: 40% Chance pro Spawn
+  const combined = [];
+  for (const m of base) {
+    combined.push(m);
+    if (Math.random() < 0.40) combined.push(evMs[rng(0, evMs.length - 1)]);
+  }
+  return combined;
+}
+
+// ── Event-Währung bei Kill ────────────────────
+function giveEventCurrency(monster) {
+  const ev = getActiveEvent();
+  if (!ev || !monster.isEventMonster || !monster.drops) return;
+  for (const [cur, amt] of Object.entries(monster.drops)) {
+    G.eventCurrency[cur] = (G.eventCurrency[cur] || 0) + amt;
+  }
+  trackEventQuest(monster);
+  renderEventCurrencyDisplay();
+}
+
+function getEventCurrencyCount() {
+  const ev = getActiveEvent();
+  if (!ev) return 0;
+  return G.eventCurrency[ev.currency.id] || 0;
+}
+
+// ── Event-Quest Fortschritt ──────────────────
+function trackEventQuest(monster) {
+  const ev = getActiveEvent();
+  if (!ev) return;
+  // Generic kill counter
+  const killKey = ev.id + '_kills';
+  G.eventProgress[killKey] = (G.eventProgress[killKey] || 0) + 1;
+  // Specific monster type tracking
+  if (monster.isEventMonster) {
+    const typeKey = ev.id + '_' + monster.name.toLowerCase().replace(/[^a-z]/g,'');
+    G.eventProgress[typeKey] = (G.eventProgress[typeKey] || 0) + 1;
+  }
+  checkEventQuestBadge();
+}
+
+function getEventQuestProgress(q) {
+  const ev = getActiveEvent();
+  if (!ev) return 0;
+  // Map quest type to progress counter
+  const t = q.type;
+  if (t.endsWith('_kill'))  return G.eventProgress[ev.id + '_kills'] || 0;
+  if (t.endsWith('_boss'))  return G.eventBoss[ev.id + '_defeated'] ? 1 : 0;
+  if (t === 'dung')         return G.questProgress?.dung_total || 0;
+  if (t === 'forge_total')  return G.forgeCount || 0;
+  if (t === 'treasure')     return G.questProgress?.treasure_total || 0;
+  if (t === 'wave')         return G.wave || 0;
+  // Specific monster-name quests (e.g. hw_pumpkin)
+  const monName = t.replace(/^[a-z]+_/,'');
+  const key = ev.id + '_' + monName;
+  return G.eventProgress[key] || 0;
+}
+
+function claimEventQuest(questId) {
+  const ev = getActiveEvent();
+  if (!ev) return;
+  const q = ev.quests.find(x => x.id === questId);
+  if (!q || G.eventClaimed.has(questId)) return;
+  const prog = getEventQuestProgress(q);
+  if (prog < q.target) return;
+  // Give reward
+  if (q.reward.gold)    G.hero.gold += q.reward.gold;
+  if (q.reward.xp)      { G.hero.xp += q.reward.xp; checkLevelUp(); }
+  if (q.reward.items)   for(let i=0;i<q.reward.items;i++) dropItem();
+  const cur = ev.currency.id;
+  if (q.reward[cur]) G.eventCurrency[cur] = (G.eventCurrency[cur]||0) + q.reward[cur];
+  G.eventClaimed.add(questId);
+  log('🎉 Event-Quest: ' + q.name + ' abgeschlossen! +' + (q.reward[cur]||0) + ev.currency.emoji, 'l');
+  try { playSfx('levelup'); } catch(e) {}
+  updateAll();
+  renderEventPage();
+  saveEventState();
+}
+
+function checkEventQuestBadge() {
+  const ev = getActiveEvent();
+  if (!ev) return;
+  const hasClaim = ev.quests.some(q =>
+    !G.eventClaimed.has(q.id) && getEventQuestProgress(q) >= q.target
+  );
+  const badge = document.getElementById('eventBadge');
+  if (badge) badge.style.display = hasClaim ? 'inline-block' : 'none';
+}
+
+// ── Event-Boss ───────────────────────────────
+function attackEventBoss(amount) {
+  const ev = getActiveEvent();
+  if (!ev || !ev.boss) return;
+  const bid = ev.boss.id;
+  if (!G.eventBoss[bid]) G.eventBoss[bid] = { hp: ev.boss.maxHp, maxHp: ev.boss.maxHp };
+  const boss = G.eventBoss[bid];
+  if (boss.hp <= 0) { log('👹 Boss bereits besiegt!','n'); return; }
+  const cur = ev.currency.id;
+  const cost = amount || 10;
+  if ((G.eventCurrency[cur]||0) < cost) { log('❌ Nicht genug ' + ev.currency.emoji + '!','c'); return; }
+  G.eventCurrency[cur] -= cost;
+  const s = getStats();
+  const dmg = Math.floor(s.atk * cost * 0.5 * (1 + guildBonus().atk));
+  boss.hp = Math.max(0, boss.hp - dmg);
+  log('⚔️ Boss-Treffer: ' + dmg.toLocaleString() + ' Schaden! HP: ' + boss.hp.toLocaleString(), 'c');
+  try { playSfx('crit'); } catch(e) {}
+  if (boss.hp <= 0) {
+    G.eventBoss[ev.id + '_defeated'] = true;
+    const r = ev.boss.reward;
+    G.hero.gold += r.gold; G.hero.xp += r.xp * xpMult();
+    if (r[cur]) G.eventCurrency[cur] = (G.eventCurrency[cur]||0) + r[cur];
+    if (r.items) for(let i=0;i<r.items;i++) dropItem();
+    checkLevelUp(); updateAll();
+    log('🏆 EVENT-BOSS BESIEGT! +' + r.gold.toLocaleString() + 'G +' + r[cur] + ev.currency.emoji, 'l');
+    try { playSfx('levelup'); } catch(e) {}
+    trackEventQuest({isEventMonster:true, eventId:ev.id, name:ev.boss.id, drops:{}});
+  }
+  renderEventPage();
+  saveEventState();
+}
+
+// ── Event-Shop ───────────────────────────────
+function buyEventItem(itemId) {
+  const ev = getActiveEvent();
+  if (!ev) return;
+  const item = ev.shop.find(x => x.id === itemId);
+  if (!item || G.eventPurchased.has(itemId)) return;
+  const cur = ev.currency.id;
+  if ((G.eventCurrency[cur]||0) < item.cost) { log('❌ Nicht genug ' + ev.currency.emoji + '!','c'); return; }
+  G.eventCurrency[cur] -= item.cost;
+  G.eventPurchased.add(itemId);
+  // Apply buff
+  if (item.type === 'heal') {
+    G.hero.hp = Math.min(G.hero.maxHp, G.hero.hp + Math.floor(G.hero.maxHp * (item.buff.heal||1)));
+  } else if (item.type === 'forge_batch') {
+    for(let i=0;i<3;i++) { const it=dropItem(); if(it){ const ri=RARITIES.findIndex(r=>r.id===it.rarity); if(ri<2){G.inventory.shift();const rit={...ITEM_DEFS[rng(0,ITEM_DEFS.length-1)],rarity:'rare',rarityLabel:'Selten',rarityColor:'#50a0e0',isNew:true,equipped:false,id:makeUUID()};G.inventory.unshift(rit);G.recentForged.unshift(rit);} } }
+  } else if (item.type === 'costume' || item.type === 'item_buff') {
+    // Store buff in G.eventBuffs
+    for (const [k,v] of Object.entries(item.buff)) {
+      G.eventBuffs[k] = (G.eventBuffs[k]||0) + v;
+    }
+  }
+  log('🛍️ Event-Shop: ' + item.emoji + ' ' + item.name + ' gekauft!', 'i');
+  try { playSfx('buy'); } catch(e) {}
+  updateAll();
+  renderEventPage();
+  saveEventState();
+}
+
+// ── Event-Buff Multiplikatoren ───────────────
+function eventGoldMult()  { return 1 + (G.eventBuffs?.gold  || 0); }
+function eventXpMult()    { return 1 + (G.eventBuffs?.xp    || 0); }
+function eventDropMult()  { return     (G.eventBuffs?.drop  || 0); }
+function eventAtkMult()   { return 1 + (G.eventBuffs?.atk   || 0); }
+function eventDefMult()   { return 1 + (G.eventBuffs?.def   || 0); }
+
+// ── Render ───────────────────────────────────
+function renderEventCurrencyDisplay() {
+  const ev = getActiveEvent();
+  const el = document.getElementById('eventCurrencyDisplay');
+  if (!el) return;
+  if (!ev) { el.textContent = ''; return; }
+  el.textContent = ev.currency.emoji + ' ' + getEventCurrencyCount().toLocaleString() + ' ' + ev.currency.name;
+}
+
+function renderEventPage() {
+  const ev = getActiveEvent();
+  const tab = document.getElementById('tab-event');
+  if (tab) tab.style.display = ev ? 'flex' : 'none';
+
+  if (!ev) {
+    // No active event
+    const banner = document.getElementById('eventBannerContent');
+    if (banner) banner.innerHTML = '<div class="ev-empty"><div class="ev-empty-icon">🗓️</div><div style="font-family:Cinzel,serif;font-size:.85rem;color:var(--text2);">Kein Event aktiv</div><div style="font-size:.7rem;color:var(--text3);margin-top:6px;">Halloween: Oktober · Weihnachten: Dezember · Ostern: März</div></div>';
+    const prog = document.getElementById('eventProgressCard');
+    if (prog) prog.style.display = 'none';
+    const qList = document.getElementById('eventQuestsList');
+    if (qList) qList.innerHTML = '<div style="color:var(--text2);font-size:.75rem;font-style:italic;padding:8px;">Kein Event aktiv.</div>';
+    const shop = document.getElementById('eventShopGrid');
+    if (shop) shop.innerHTML = '';
+    const boss = document.getElementById('eventBossCard');
+    if (boss) boss.style.display = 'none';
+    return;
+  }
+
+  // Set CSS color variable
+  document.documentElement.style.setProperty('--ev-col', ev.color);
+  document.documentElement.style.setProperty('--ev-bg', ev.bg);
+  document.documentElement.style.setProperty('--ev-bg2', ev.bg2);
+
+  // Update tab
+  const tabIcon = document.getElementById('eventTabIcon');
+  const tabName = document.getElementById('eventTabName');
+  if (tabIcon) tabIcon.textContent = ev.icon;
+  if (tabName) tabName.textContent = 'Event';
+
+  // ── Banner ──
+  const now = new Date();
+  const endDate = new Date(now.getFullYear(), ev.month, ev.endDay);
+  const daysLeft = Math.max(0, Math.ceil((endDate - now) / 86400000));
+  const banner = document.getElementById('eventBannerContent');
+  if (banner) {
+    const monstersPreview = ev.monsters.slice(0,4).map(m =>
+      '<span class="ev-monster-pill">' + m.emoji + ' ' + m.name + '</span>'
+    ).join('');
+    banner.innerHTML =
+      '<div class="ev-title">' + ev.name + '</div>' +
+      '<div class="ev-subtitle">' + ev.subtitle + '</div>' +
+      '<div class="ev-monsters-row">' + monstersPreview + '</div>' +
+      '<div style="display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap;">' +
+        '<div class="ev-timer">⏳ <b>' + daysLeft + ' Tage</b> verbleibend</div>' +
+        '<div class="ev-currency">' + ev.currency.emoji + ' <b id="evCurBanner">' + getEventCurrencyCount() + '</b> ' + ev.currency.name + '</div>' +
+      '</div>';
+  }
+
+  // ── Fortschritt ──
+  const progCard = document.getElementById('eventProgressCard');
+  if (progCard) progCard.style.display = 'block';
+  const progTitle = document.getElementById('eventProgressTitle');
+  if (progTitle) progTitle.textContent = ev.icon + ' Event-Fortschritt';
+  const progContent = document.getElementById('eventProgressContent');
+  if (progContent) {
+    const totalQ = ev.quests.length;
+    const doneQ  = ev.quests.filter(q => G.eventClaimed.has(q.id)).length;
+    const pct = Math.round(doneQ / totalQ * 100);
+    progContent.innerHTML =
+      '<div class="ev-prog-lbl"><span>Quest-Abschlüsse</span><span>' + doneQ + '/' + totalQ + '</span></div>' +
+      '<div class="ev-prog-bar"><div class="ev-prog-fill" style="width:' + pct + '%;"></div></div>' +
+      '<div style="margin-top:6px;font-size:.68rem;color:var(--text2);">' +
+        ev.currency.emoji + ' Gesammelt: <b style="color:var(--ev-col);">' + getEventCurrencyCount() + '</b>' +
+        (G.eventBuffs && Object.keys(G.eventBuffs).length > 0 ?
+          ' &nbsp;·&nbsp; ⚡ Aktive Buffs: ' + Object.entries(G.eventBuffs).map(([k,v]) => k + ' +' + Math.round(v*100) + '%').join(', ')
+          : '') +
+      '</div>';
+  }
+
+  // ── Quests ──
+  const qList = document.getElementById('eventQuestsList');
+  if (qList) {
+    qList.innerHTML = '';
+    ev.quests.forEach(q => {
+      const prog = Math.min(getEventQuestProgress(q), q.target);
+      const claimed = G.eventClaimed.has(q.id);
+      const canClaim = prog >= q.target && !claimed;
+      const pct = prog / q.target * 100;
+      const rewardStr = Object.entries(q.reward)
+        .map(([k,v]) => k === ev.currency.id ? ev.currency.emoji + ' ' + v : (k==='gold'?'💰 '+v : k==='xp'?'⭐ '+v+'XP' : k==='items'?'🎁×'+v:''))
+        .filter(Boolean).join('  ');
+      const d = document.createElement('div');
+      d.className = 'ev-quest' + (claimed?' done':canClaim?' claim':'');
+      d.innerHTML =
+        '<div class="ev-q-header">' +
+          '<span class="ev-q-icon">' + q.icon + '</span>' +
+          '<span class="ev-q-name">' + q.name + '</span>' +
+          (claimed ? '<span style="color:var(--green2);font-size:.62rem;font-family:Cinzel,serif;">✅ Fertig</span>' :
+           canClaim ? '<button class="ev-claim-btn" data-qid="' + q.id + '" onclick="claimEventQuest(this.dataset.qid)">🎁 Abholen</button>' : '') +
+        '</div>' +
+        '<div style="font-size:.66rem;color:var(--text2);margin-bottom:3px;">' + q.desc + '</div>' +
+        '<div class="ev-q-bar"><div class="ev-q-fill" style="width:' + pct + '%;' + (pct>=100?'background:var(--green2);':'') + '"></div></div>' +
+        '<div class="ev-q-foot"><span>' + prog.toLocaleString() + ' / ' + q.target.toLocaleString() + '</span><span>' + rewardStr + '</span></div>';
+      qList.appendChild(d);
+    });
+  }
+
+  // ── Shop ──
+  const shopGrid = document.getElementById('eventShopGrid');
+  const curDisp  = document.getElementById('eventCurrencyDisplay');
+  if (curDisp) curDisp.textContent = ev.currency.emoji + ' ' + getEventCurrencyCount() + ' ' + ev.currency.name;
+  if (shopGrid) {
+    shopGrid.innerHTML = '';
+    ev.shop.forEach(item => {
+      const bought = G.eventPurchased.has(item.id);
+      const canBuy = !bought && getEventCurrencyCount() >= item.cost;
+      const d = document.createElement('div');
+      d.className = 'ev-shop-item' + (bought?' bought':'');
+      d.innerHTML =
+        '<div class="ev-shop-icon">' + item.emoji + '</div>' +
+        '<div class="ev-shop-name">' + item.name + '</div>' +
+        '<div class="ev-shop-desc">' + item.desc + '</div>' +
+        '<div class="ev-shop-cost">' + ev.currency.emoji + ' ' + item.cost + '</div>' +
+        '<button class="ev-shop-btn" data-iid="' + item.id + '" onclick="buyEventItem(this.dataset.iid)" ' + (bought || !canBuy ? 'disabled' : '') + '>' +
+          (bought ? '✅ Gekauft' : canBuy ? '🛍️ Kaufen' : '❌ Zu wenig') +
+        '</button>';
+      shopGrid.appendChild(d);
+    });
+  }
+
+  // ── Boss ──
+  const bossCard = document.getElementById('eventBossCard');
+  const bossContent = document.getElementById('eventBossContent');
+  const bossTitle = document.getElementById('eventBossTitle');
+  if (ev.boss && bossCard && bossContent) {
+    bossCard.style.display = 'block';
+    if (bossTitle) bossTitle.textContent = '👹 ' + ev.boss.name;
+    const bid = ev.boss.id;
+    const bossState = G.eventBoss[bid] || { hp: ev.boss.maxHp, maxHp: ev.boss.maxHp };
+    const defeated  = !!G.eventBoss[ev.id + '_defeated'];
+    const bossHpPct = Math.max(0, bossState.hp / bossState.maxHp * 100);
+    const hpColor   = bossHpPct > 60 ? 'linear-gradient(to right,#6b0000,var(--red2))' :
+                      bossHpPct > 30 ? 'linear-gradient(to right,#5a3000,var(--orange2))' :
+                                       'linear-gradient(to right,#0b3d20,var(--green2))';
+    bossContent.innerHTML =
+      '<div class="ev-boss-area">' +
+        '<span class="ev-boss-sprite">' + ev.boss.emoji + '</span>' +
+        '<div class="ev-boss-name">' + ev.boss.name + (defeated?' — BESIEGT!':'') + '</div>' +
+        '<div style="font-size:.64rem;color:var(--text2);margin-bottom:4px;">' +
+          bossState.hp.toLocaleString() + ' / ' + bossState.maxHp.toLocaleString() + ' HP' +
+        '</div>' +
+        '<div class="ev-boss-hp-bar"><div class="ev-boss-hp-fill" style="width:' + bossHpPct.toFixed(1) + '%;background:' + hpColor + ';"></div></div>' +
+      '</div>' +
+      (defeated ?
+        '<div style="text-align:center;padding:10px;color:var(--green2);font-family:Cinzel,serif;font-size:.82rem;">🏆 Sieg! Belohnungen erhalten.</div>' :
+        '<div style="font-size:.7rem;color:var(--text2);margin-bottom:6px;">Setze <b style="color:var(--ev-col);">' + ev.currency.emoji + '</b> ein um dem Boss Schaden zuzufügen. 10' + ev.currency.emoji + ' = ' + Math.floor(getStats().atk * 5) + ' Schaden</div>' +
+        '<div style="display:flex;gap:6px;flex-wrap:wrap;">' +
+          [10,25,50].map(n =>
+            '<button class="ev-attack-btn" style="flex:1;" onclick="attackEventBoss(' + n + ')" ' +
+            (getEventCurrencyCount()<n?'disabled':'') + '>⚔️ ' + n + ev.currency.emoji + '</button>'
+          ).join('') +
+        '</div>'
+      );
+  }
+  checkEventQuestBadge();
+}
+
+// ── Save/Load Event State ────────────────────
+function saveEventState() {
+  try {
+    localStorage.setItem('sm3_event', JSON.stringify({
+      eventProgress:  G.eventProgress,
+      eventClaimed:   [...G.eventClaimed],
+      eventCurrency:  G.eventCurrency,
+      eventPurchased: [...G.eventPurchased],
+      eventBoss:      G.eventBoss,
+      eventBuffs:     G.eventBuffs,
+    }));
+  } catch(e) {}
+}
+
+function loadEventState() {
+  try {
+    const d = JSON.parse(localStorage.getItem('sm3_event') || '{}');
+    if (d.eventProgress)  G.eventProgress  = d.eventProgress;
+    if (d.eventClaimed)   G.eventClaimed   = new Set(d.eventClaimed);
+    if (d.eventCurrency)  G.eventCurrency  = d.eventCurrency;
+    if (d.eventPurchased) G.eventPurchased = new Set(d.eventPurchased);
+    if (d.eventBoss)      G.eventBoss      = d.eventBoss;
+    if (d.eventBuffs)     G.eventBuffs     = d.eventBuffs;
+  } catch(e) {}
+}
 
 // ════════════════════════════════════════════
 // ── SETTINGS & AUDIO
