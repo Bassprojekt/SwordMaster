@@ -902,6 +902,47 @@ body {
 .dung-stat-row:last-child{border-bottom:none;}
 .dung-stat-row b{color:var(--text);}
 
+/* ══ SKILL TREE ══ */
+.skill-branch-tab {
+  padding:7px 14px;
+  background:var(--panel2);
+  border:1px solid var(--border);
+  border-radius:8px;
+  font-family:'Cinzel',serif;
+  font-size:.7rem;font-weight:700;
+  color:var(--text2);
+  cursor:pointer;transition:all .18s;
+  letter-spacing:.04em;
+}
+.skill-branch-tab:hover { border-color:var(--gold);color:var(--gold); }
+.skill-branch-tab.active {
+  border-color:var(--gold2);
+  color:var(--gold2);
+  background:rgba(201,162,39,.1);
+  box-shadow:0 0 10px rgba(201,162,39,.2);
+}
+
+/* SVG skill node styles (inline SVG, no external) */
+.st-node {
+  cursor:pointer;
+  transition:opacity .15s;
+}
+.st-node:hover rect, .st-node:hover circle {
+  filter:brightness(1.3);
+}
+
+#sdBuyBtn {
+  padding:7px 18px;
+  border-radius:8px;
+  background:linear-gradient(135deg,rgba(201,162,39,.2),rgba(201,162,39,.05));
+  border:1px solid var(--gold);
+  font-family:'Cinzel',serif;font-size:.72rem;font-weight:700;
+  color:var(--gold2);cursor:pointer;transition:all .18s;
+  letter-spacing:.04em;
+}
+#sdBuyBtn:hover:not(:disabled) { background:rgba(201,162,39,.3); }
+#sdBuyBtn:disabled { opacity:.4;cursor:not-allowed; }
+
 /* ══ WHITE MODE ══ */
 body.white-mode {
   --bg:       #f0eee8;
@@ -1354,11 +1395,37 @@ input[type=range].vol-slider::-webkit-slider-thumb:hover { transform:scale(1.2);
     </div>
     <div class="inv-grid" id="invGrid"><div style="color:var(--text2);font-size:.78rem;font-style:italic;grid-column:1/-1;padding:10px;text-align:center;">Noch leer — geh schmieden!</div></div>
   </div>
-  <!-- Fähigkeiten -->
-  <div class="card">
-    <div class="sec-title">✨ Fähigkeiten</div>
-    <div style="font-size:.72rem;color:var(--text2);font-style:italic;margin-bottom:10px;">Erforsche mit Gold. Manche brauchen Vorgänger.</div>
-    <div class="skills-grid" id="skillsGrid"></div>
+  <!-- Skill-Tree -->
+  <div class="card" style="padding:12px 14px;">
+    <div class="sec-title">✨ Fähigkeiten-Baum</div>
+    <!-- Branch tabs -->
+    <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;" id="skillTreeTabs">
+      <button class="skill-branch-tab active" id="stab-krieger" onclick="setSkillBranch('krieger')">⚔️ Krieger</button>
+      <button class="skill-branch-tab" id="stab-magier" onclick="setSkillBranch('magier')">🔮 Magier</button>
+      <button class="skill-branch-tab" id="stab-schatten" onclick="setSkillBranch('schatten')">🗡️ Schatten</button>
+      <button class="skill-branch-tab" id="stab-allgemein" onclick="setSkillBranch('allgemein')">🌟 Allgemein</button>
+    </div>
+    <div style="font-size:.68rem;color:var(--text2);font-style:italic;margin-bottom:8px;" id="skillBranchDesc">Krieger: Hoher Schaden, maximale Überlebensfähigkeit</div>
+    <!-- SVG Tree Canvas -->
+    <div style="position:relative;width:100%;overflow-x:auto;">
+      <svg id="skillTreeSvg" width="100%" style="display:block;" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
+    <!-- Skill Detail Popup -->
+    <div id="skillDetailBox" style="display:none;margin-top:10px;background:rgba(0,0,0,.35);border:1px solid var(--border2);border-radius:10px;padding:12px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+        <div style="font-size:1.8rem;" id="sdIcon"></div>
+        <div>
+          <div style="font-family:'Cinzel',serif;font-size:.9rem;font-weight:700;" id="sdName"></div>
+          <div style="font-size:.68rem;" id="sdBranch"></div>
+        </div>
+      </div>
+      <div style="font-size:.76rem;color:var(--text2);margin-bottom:8px;" id="sdDesc"></div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <div style="font-family:'Cinzel',serif;font-size:.75rem;" id="sdCost"></div>
+        <div style="font-size:.7rem;color:var(--text3);" id="sdReq"></div>
+        <button id="sdBuyBtn" style="margin-left:auto;" onclick="buySkillFromDetail()"></button>
+      </div>
+    </div>
   </div>
   <!-- Zeitalter -->
   <div class="card">
@@ -2447,20 +2514,108 @@ const UPGRADES = [
   { id:'idle_mul',   icon:'⏳', name:'Fleißige Werkstatt',desc:'+60% Offline-Belohnungen', maxLv:3,  baseCost:200, cm:4,   eff:'idleMul' },
 ];
 
-const SKILLS = [
-  { id:'double_strike', icon:'⚔️', name:'Doppelschlag',      desc:'5% Chance: greife zweimal an.',           cost:150,  req:null,           eff:'doubleStrike' },
-  { id:'blood_rage',    icon:'🩸', name:'Blutraserei',        desc:'+20% ATK wenn HP < 40%.',                cost:250,  req:'double_strike', eff:'bloodRage'    },
-  { id:'iron_skin',     icon:'🪨', name:'Eisenhaut',          desc:'Nimm 15% weniger Schaden.',               cost:200,  req:null,           eff:'ironSkin'     },
-  { id:'fortress',      icon:'🏰', name:'Festung',            desc:'+30% DEF permanent.',                    cost:400,  req:'iron_skin',     eff:'fortress'     },
-  { id:'gold_sense',    icon:'👁️', name:'Goldgespür',         desc:'+35% Gold von Monstern.',                cost:180,  req:null,           eff:'goldSense'    },
-  { id:'treasure_hunt', icon:'🗺️', name:'Schatzsuche',        desc:'Items droppen 20% öfter.',               cost:300,  req:'gold_sense',    eff:'treasureHunt' },
-  { id:'forge_mastery', icon:'🔨', name:'Schmiedemeisterschaft',desc:'Jedes 10. Item ist mindestens Selten.',cost:350,  req:null,           eff:'forgeMastery' },
-  { id:'arcane_power',  icon:'🔮', name:'Arkane Macht',       desc:'+10% Crit-Chance permanent.',            cost:500,  req:'double_strike', eff:'arcanePower'  },
-  { id:'vampirism',     icon:'🧛', name:'Vampirismus',        desc:'Heile 8% deines Schadens als HP.',       cost:600,  req:'blood_rage',    eff:'vampirism'    },
-  { id:'war_cry',       icon:'📯', name:'Kriegsruf',          desc:'Pets machen +40% Schaden.',              cost:450,  req:null,           eff:'warCry'       },
-  { id:'time_warp',     icon:'⌛', name:'Zeitverzerrung',     desc:'Angriffsgeschwindigkeit +20%.',          cost:700,  req:'arcane_power',  eff:'timeWarp'     },
-  { id:'god_mode',      icon:'⚡', name:'Gottesmodus',        desc:'Alle Stats +15% permanent.',             cost:2000, req:'time_warp',     eff:'godMode'      },
-];
+// ════════════════════════════════════════════
+// ── SKILL TREE SYSTEM
+// ════════════════════════════════════════════
+// 4 Zweige: Krieger, Magier, Schatten, Allgemein
+// Jeder Knoten hat: id, branch, tier (row), col (column), req[]
+
+const SKILL_TREE = {
+  krieger: {
+    label: '⚔️ Krieger',
+    desc: 'Krieger: Hoher Schaden, maximale Überlebensfähigkeit',
+    color: '#e05050',
+    nodes: [
+      // Tier 0 — Einstieg
+      { id:'double_strike', icon:'⚔️', name:'Doppelschlag',    desc:'5% Chance: greife zweimal an.',           cost:150,  req:[],                tier:0, col:1, eff:'doubleStrike' },
+      { id:'iron_skin',     icon:'🪨', name:'Eisenhaut',        desc:'Nimm 15% weniger Schaden.',               cost:200,  req:[],                tier:0, col:3, eff:'ironSkin'     },
+      // Tier 1
+      { id:'blood_rage',    icon:'🩸', name:'Blutraserei',      desc:'+20% ATK wenn HP < 40%.',                 cost:350,  req:['double_strike'], tier:1, col:0, eff:'bloodRage'    },
+      { id:'war_stomp',     icon:'👊', name:'Kriegsstoß',       desc:'10% Chance: betäubt Monster 1 Runde.',    cost:300,  req:['double_strike'], tier:1, col:2, eff:'warStomp'     },
+      { id:'fortress',      icon:'🏰', name:'Festung',          desc:'+30% DEF permanent.',                     cost:500,  req:['iron_skin'],     tier:1, col:4, eff:'fortress'     },
+      // Tier 2
+      { id:'vampirism',     icon:'🧛', name:'Vampirismus',      desc:'Heile 8% deines Schadens als HP.',        cost:700,  req:['blood_rage'],    tier:2, col:0, eff:'vampirism'    },
+      { id:'berserker',     icon:'🪓', name:'Berserker',        desc:'+25% ATK, aber -10% DEF.',                cost:600,  req:['war_stomp'],     tier:2, col:2, eff:'berserker'    },
+      { id:'iron_will',     icon:'💪', name:'Eisenwille',       desc:'Einmal pro Kampf auf 1 HP überleben.',    cost:900,  req:['fortress'],      tier:2, col:4, eff:'ironWill'     },
+      // Tier 3 — Meisterschaft
+      { id:'warlord',       icon:'👑', name:'Kriegsherr',       desc:'ATK +20% und DEF +20% permanent.',        cost:1800, req:['vampirism','berserker'], tier:3, col:2, eff:'warlord' },
+    ]
+  },
+  magier: {
+    label: '🔮 Magier',
+    desc: 'Magier: Magie und Crit, Zeitmanipulation, Schadensmaximierung',
+    color: '#8844ee',
+    nodes: [
+      // Tier 0
+      { id:'arcane_sight',  icon:'👁️', name:'Arkaner Blick',   desc:'Sieh Monster-Schwächen im Kampf.',        cost:120,  req:[],                tier:0, col:0, eff:'arcaneSight'  },
+      { id:'arcane_power',  icon:'🔮', name:'Arkane Macht',     desc:'+10% Crit-Chance permanent.',             cost:300,  req:[],                tier:0, col:2, eff:'arcanePower'  },
+      { id:'mana_shield',   icon:'🔵', name:'Manaschutz',       desc:'Mana schützt vor 15% Schaden.',           cost:250,  req:[],                tier:0, col:4, eff:'manaShield'   },
+      // Tier 1
+      { id:'chain_lightning',icon:'⚡',name:'Kettenblitz',      desc:'15% Chance: trifft alle Monster.',        cost:450,  req:['arcane_power'],  tier:1, col:1, eff:'chainLightning'},
+      { id:'time_warp',     icon:'⌛', name:'Zeitverzerrung',   desc:'Angriffsgeschwindigkeit +20%.',           cost:550,  req:['arcane_power'],  tier:1, col:3, eff:'timeWarp'     },
+      { id:'mana_surge',    icon:'💎', name:'Mana-Ansturm',     desc:'Voll Mana gibt +15% Schaden.',            cost:400,  req:['mana_shield'],   tier:1, col:4, eff:'manaSurge'    },
+      // Tier 2
+      { id:'overload',      icon:'💥', name:'Überlastung',      desc:'Crit-Treffer machen +50% Schaden.',       cost:800,  req:['chain_lightning'],tier:2,col:1, eff:'overload'     },
+      { id:'chrono_strike', icon:'🕰️', name:'Chronoschlag',     desc:'Jeder 5. Angriff macht 3× Schaden.',     cost:900,  req:['time_warp'],     tier:2, col:3, eff:'chronoStrike' },
+      // Tier 3 — Meisterschaft
+      { id:'god_mode',      icon:'⚡', name:'Gottesmodus',      desc:'Alle Stats +15% permanent.',              cost:2000, req:['overload','chrono_strike'], tier:3, col:2, eff:'godMode' },
+    ]
+  },
+  schatten: {
+    label: '🗡️ Schatten',
+    desc: 'Schatten: Gold, Glück, Ausweichen, Tödliche Präzision',
+    color: '#44bbaa',
+    nodes: [
+      // Tier 0
+      { id:'gold_sense',    icon:'👁️', name:'Goldgespür',       desc:'+35% Gold von Monstern.',                cost:180,  req:[],                tier:0, col:0, eff:'goldSense'    },
+      { id:'shadow_step',   icon:'👣', name:'Schattenschritt',   desc:'10% Chance Angriff vollständig ausweichen.',cost:200,req:[],               tier:0, col:2, eff:'shadowStep'   },
+      { id:'lucky_find',    icon:'🍀', name:'Glücksfund',        desc:'+20% Chance auf seltene Items.',          cost:220,  req:[],                tier:0, col:4, eff:'luckyFind'    },
+      // Tier 1
+      { id:'treasure_hunt', icon:'🗺️', name:'Schatzsuche',       desc:'Items droppen 20% öfter.',               cost:350,  req:['gold_sense'],    tier:1, col:0, eff:'treasureHunt' },
+      { id:'assassinate',   icon:'🗡️', name:'Meucheln',          desc:'Erster Treffer im Kampf macht 2× Schaden.',cost:400,req:['shadow_step'],  tier:1, col:2, eff:'assassinate'  },
+      { id:'pickpocket',    icon:'💰', name:'Taschendiebstahl',  desc:'5% Chance: stiehl Monster-Gold extra.',   cost:300,  req:['lucky_find'],    tier:1, col:4, eff:'pickpocket'   },
+      // Tier 2
+      { id:'golden_touch',  icon:'🥇', name:'Goldener Griff',    desc:'+50% Gold in Schatzkammern.',             cost:700,  req:['treasure_hunt'], tier:2, col:0, eff:'goldenTouch'  },
+      { id:'death_mark',    icon:'💀', name:'Todeszeichen',       desc:'Geschwächte Monster nehmen +40% Schaden.',cost:850, req:['assassinate'],   tier:2, col:2, eff:'deathMark'    },
+      { id:'master_thief',  icon:'🎭', name:'Meisterdieb',        desc:'Keine Schlüssel für Dungeon-Räume.',      cost:950,  req:['pickpocket'],    tier:2, col:4, eff:'masterThief'  },
+      // Tier 3 — Meisterschaft
+      { id:'phantom',       icon:'👻', name:'Phantom',            desc:'30% Ausweichen, +50% Gold, +20% Crit.',  cost:2500, req:['death_mark','golden_touch'], tier:3, col:2, eff:'phantom' },
+    ]
+  },
+  allgemein: {
+    label: '🌟 Allgemein',
+    desc: 'Allgemein: Schmiedekunst, Pets, Erkundung — branchen-unabhängig',
+    color: '#cc9933',
+    nodes: [
+      // Tier 0 — immer verfügbar
+      { id:'forge_mastery', icon:'🔨', name:'Schmiedemeisterschaft',desc:'Jedes 10. Item ist mindestens Selten.',cost:350, req:[],               tier:0, col:0, eff:'forgeMastery' },
+      { id:'war_cry',       icon:'📯', name:'Kriegsruf',            desc:'Pets machen +40% Schaden.',            cost:450, req:[],               tier:0, col:2, eff:'warCry'       },
+      { id:'dungeon_lore',  icon:'🏚️', name:'Kerkerwissen',         desc:'+1 Startschlüssel + 15% mehr Dungeon-XP.',cost:280,req:[],            tier:0, col:4, eff:'dungeonLore'  },
+      // Tier 1
+      { id:'master_smith',  icon:'⚒️', name:'Meisterschmied',       desc:'Schmiede-Speed +30%, bessere Qualität.',cost:600,req:['forge_mastery'],tier:1,col:0, eff:'masterSmith'  },
+      { id:'beast_bond',    icon:'🐉', name:'Tierverbund',           desc:'Bis zu 3 aktive Pets gleichzeitig.',    cost:700,req:['war_cry'],      tier:1, col:2, eff:'beastBond'    },
+      { id:'explorer',      icon:'🧭', name:'Entdecker',             desc:'Dungeon-Räume zeigen Typ vorab.',       cost:400,req:['dungeon_lore'], tier:1, col:4, eff:'explorer'     },
+      // Tier 2
+      { id:'legendary_forge',icon:'⚡',name:'Legendenschmied',      desc:'Mythische Items können erscheinen.',    cost:1200,req:['master_smith'],tier:2, col:1, eff:'legendaryForge'},
+      { id:'alpha_pack',    icon:'🐺', name:'Alpha-Rudel',           desc:'Jeder Pet-Typ gibt +10% ATK Bonus.',   cost:1000,req:['beast_bond'],  tier:2, col:3, eff:'alphaPack'    },
+    ]
+  }
+};
+
+// Flatten for legacy compatibility
+const SKILLS = Object.values(SKILL_TREE).flatMap(b => b.nodes);
+
+let _activeSkillBranch = 'krieger';
+let _selectedSkillId = null;
+
+const BRANCH_DESCS = {
+  krieger:  'Krieger: Hoher Schaden, maximale Überlebensfähigkeit',
+  magier:   'Magier: Magie und Crit, Zeitmanipulation, Schadensmaximierung',
+  schatten: 'Schatten: Gold, Glück, Ausweichen, Tödliche Präzision',
+  allgemein:'Allgemein: Schmiedekunst, Pets, Erkundung — branchen-unabhängig'
+};
+
+
 
 const PETS = [
   { id:'wolf',    name:'Eiswolf',       emoji:'🐺', skill:'Beißt für 30% ATK',     desc:'Greift alle 1.5s an.',                    atkPct:0.30, special:'',      cost:100,  color:'#88ccff' },
@@ -2680,6 +2835,16 @@ function getStats() {
     if (p && p.special==='spd') spd = Math.max(0.25, spd*0.85);
   });
 
+  // New Skill Tree effects
+  if (G.skills.has('berserker'))     { atk = Math.floor(atk*1.25); def = Math.floor(def*0.9); }
+  if (G.skills.has('warlord'))       { atk = Math.floor(atk*1.20); def = Math.floor(def*1.20); }
+  if (G.skills.has('overload'))      crit = Math.min(75, crit + 5);
+  if (G.skills.has('chrono_strike')) spd = Math.max(0.25, spd * 0.88);
+  if (G.skills.has('shadow_step'))   {} // handled in combat
+  if (G.skills.has('phantom'))       { crit = Math.min(75, crit + 20); }
+  if (G.skills.has('manaSurge') && G.hero.mana >= G.hero.maxMana * 0.95) atk = Math.floor(atk * 1.15);
+  if (G.skills.has('alphaPack'))     {} // handled in petATKBonus
+
   // Guild ATK/DEF bonus
   const gb = guildBonus();
   if (gb.atk > 0) atk = Math.floor(atk * (1 + gb.atk));
@@ -2701,7 +2866,7 @@ function guildBonus() {
   };
 }
 function xpMult()     { return 1 + ((G.shopBoosts&&G.shopBoosts.xpBoost||0)>Date.now()?0.5:0) + guildBonus().xp; }
-function goldMult()   { return 1 + (G.upgrades.gold_mult||0)*0.12 + (G.skills.has('goldSense')?0.15:0) + ((G.shopBoosts&&G.shopBoosts.goldBoost||0)>Date.now()?0.5:0) + guildBonus().gold; }
+function goldMult()   { return 1 + (G.upgrades.gold_mult||0)*0.12 + (G.skills.has('goldSense')?0.15:0) + ((G.shopBoosts&&G.shopBoosts.goldBoost||0)>Date.now()?0.5:0) + guildBonus().gold + (G.skills.has('golden_touch')?0.20:0) + (G.skills.has('phantom')?0.50:0); }
 function dropBonus()  { return (G.upgrades.drop_rate||0)*0.08 + (G.skills.has('treasureHunt')?0.2:0); }
 function idleMult()   { return 1 + (G.upgrades.idle_mul||0)*0.6; }
 function rarBonus()   { return (G.upgrades.item_qual||0)*0.15; }
@@ -3076,46 +3241,240 @@ function buyUpgrade(id) {
 // ── SKILLS ──────────────────────────────────
 // ════════════════════════════════════════════
 
+// ── Skill Tree Rendering ─────────────────────
+function setSkillBranch(branch) {
+  _activeSkillBranch = branch;
+  _selectedSkillId = null;
+  document.querySelectorAll('.skill-branch-tab').forEach(b => b.classList.remove('active'));
+  const tab = document.getElementById('stab-' + branch);
+  if (tab) tab.classList.add('active');
+  const desc = document.getElementById('skillBranchDesc');
+  if (desc) desc.textContent = BRANCH_DESCS[branch] || '';
+  document.getElementById('skillDetailBox').style.display = 'none';
+  renderSkills();
+}
+
 function renderSkills() {
-  const grid=document.getElementById('skillsGrid');
-  if(!grid) return;
-  grid.innerHTML='';
-  SKILLS.forEach(sk=>{
-    const unlocked=G.skills.has(sk.id);
-    const reqOk=!sk.req||G.skills.has(sk.req);
-    const canAfford=G.hero.gold>=sk.cost;
-    const locked=!reqOk;
-    const card=document.createElement('div');
-    card.className='skill-card'+(unlocked?' unlocked':locked?' locked':'');
-    const reqName=sk.req?SKILLS.find(s=>s.id===sk.req)?.name:'';
-    card.innerHTML=`
-      <div class="sk-icon">${sk.icon}</div>
-      <div class="sk-name">${sk.name}</div>
-      <div class="sk-desc">${sk.desc}</div>
-      ${unlocked
-        ?`<div class="sk-cost done">✅ Erforscht</div>`
-        :locked
-          ?`<div class="sk-cost cannot">🔒 Braucht: ${reqName}</div>`
-          :`<div class="sk-cost ${canAfford?'can':'cannot'}">💰 ${sk.cost} Gold</div>`
-      }
-      ${sk.req&&!locked&&!unlocked?`<div class="sk-req">Vorgänger: ${reqName}</div>`:''}
-    `;
-    if(!unlocked&&!locked&&canAfford) card.onclick=()=>buySkill(sk.id);
-    grid.appendChild(card);
+  const svg = document.getElementById('skillTreeSvg');
+  if (!svg) return;
+
+  const branch = SKILL_TREE[_activeSkillBranch];
+  if (!branch) return;
+
+  const nodes = branch.nodes;
+  const branchColor = branch.color || '#c9a227';
+
+  // Layout constants
+  const COL_W = 100;   // px per column
+  const ROW_H = 110;   // px per row
+  const NODE_W = 82;
+  const NODE_H = 68;
+  const PAD_X = 10;
+  const PAD_Y = 18;
+
+  // Find grid dimensions
+  const maxCol = Math.max(...nodes.map(n => n.col));
+  const maxTier = Math.max(...nodes.map(n => n.tier));
+  const svgW = (maxCol + 1) * COL_W + PAD_X * 2;
+  const svgH = (maxTier + 1) * ROW_H + PAD_Y * 2 + 10;
+
+  svg.setAttribute('viewBox', `0 0 ${svgW} ${svgH}`);
+  svg.setAttribute('height', svgH);
+  svg.innerHTML = '';
+
+  const nodeById = {};
+  nodes.forEach(n => nodeById[n.id] = n);
+
+  const nodeX = n => PAD_X + n.col * COL_W + (COL_W - NODE_W) / 2;
+  const nodeY = n => PAD_Y + n.tier * ROW_H;
+  const nodeCX = n => nodeX(n) + NODE_W / 2;
+  const nodeCY = n => nodeY(n) + NODE_H / 2;
+
+  // ── Draw connector lines first (behind nodes) ──
+  nodes.forEach(n => {
+    n.req.forEach(reqId => {
+      const parent = nodeById[reqId];
+      if (!parent) return;
+      const x1 = nodeCX(parent), y1 = nodeY(parent) + NODE_H;
+      const x2 = nodeCX(n),      y2 = nodeY(n);
+      const bothUnlocked = G.skills.has(n.id) && G.skills.has(reqId);
+      const parentUnlocked = G.skills.has(reqId);
+      const midY = (y1 + y2) / 2;
+
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      line.setAttribute('d', `M${x1},${y1} C${x1},${midY} ${x2},${midY} ${x2},${y2}`);
+      line.setAttribute('fill', 'none');
+      line.setAttribute('stroke', bothUnlocked ? branchColor : parentUnlocked ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.08)');
+      line.setAttribute('stroke-width', bothUnlocked ? '2.5' : '1.5');
+      if (!parentUnlocked) line.setAttribute('stroke-dasharray', '4 4');
+      svg.appendChild(line);
+    });
+  });
+
+  // ── Draw nodes ──
+  nodes.forEach(n => {
+    const unlocked = G.skills.has(n.id);
+    const reqOk = n.req.length === 0 || n.req.some(r => G.skills.has(r));
+    const canAfford = G.hero.gold >= n.cost;
+    const isSelected = _selectedSkillId === n.id;
+
+    const x = nodeX(n), y = nodeY(n);
+
+    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    g.setAttribute('class', 'st-node');
+    g.setAttribute('transform', `translate(${x},${y})`);
+    g.style.cursor = 'pointer';
+
+    // Background rect
+    const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    rect.setAttribute('width', NODE_W);
+    rect.setAttribute('height', NODE_H);
+    rect.setAttribute('rx', '8');
+
+    let fillColor, strokeColor, opacity;
+    if (unlocked) {
+      fillColor = 'rgba(46,139,87,0.2)'; strokeColor = '#40c070'; opacity = '1';
+    } else if (!reqOk) {
+      fillColor = 'rgba(0,0,0,0.3)'; strokeColor = 'rgba(255,255,255,0.08)'; opacity = '0.4';
+    } else if (canAfford) {
+      fillColor = isSelected ? 'rgba(201,162,39,0.2)' : 'rgba(0,0,0,0.35)';
+      strokeColor = isSelected ? '#f0cc55' : branchColor;
+      opacity = '1';
+    } else {
+      fillColor = 'rgba(0,0,0,0.3)'; strokeColor = 'rgba(255,255,255,0.15)'; opacity = '0.7';
+    }
+    rect.setAttribute('fill', fillColor);
+    rect.setAttribute('stroke', strokeColor);
+    rect.setAttribute('stroke-width', isSelected ? '2' : '1');
+    g.style.opacity = opacity;
+
+    // Glow for unlocked
+    if (unlocked) {
+      const glow = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      glow.setAttribute('width', NODE_W); glow.setAttribute('height', NODE_H); glow.setAttribute('rx', '8');
+      glow.setAttribute('fill', 'none'); glow.setAttribute('stroke', '#40c070');
+      glow.setAttribute('stroke-width', '3'); glow.setAttribute('opacity', '0.25');
+      g.appendChild(glow);
+    }
+
+    g.appendChild(rect);
+
+    // Icon
+    const iconT = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    iconT.setAttribute('x', NODE_W / 2); iconT.setAttribute('y', '26');
+    iconT.setAttribute('text-anchor', 'middle'); iconT.setAttribute('dominant-baseline', 'central');
+    iconT.setAttribute('font-size', '18'); iconT.textContent = n.icon;
+    g.appendChild(iconT);
+
+    // Name (truncate if long)
+    const nameT = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    nameT.setAttribute('x', NODE_W / 2); nameT.setAttribute('y', '42');
+    nameT.setAttribute('text-anchor', 'middle'); nameT.setAttribute('dominant-baseline', 'central');
+    nameT.setAttribute('font-size', '8.5');
+    nameT.setAttribute('fill', unlocked ? '#40c070' : 'rgba(255,255,255,0.85)');
+    nameT.setAttribute('font-family', 'Cinzel,serif'); nameT.setAttribute('font-weight', '700');
+    const shortName = n.name.length > 14 ? n.name.slice(0, 13) + '…' : n.name;
+    nameT.textContent = shortName;
+    g.appendChild(nameT);
+
+    // Cost or checkmark
+    const costT = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    costT.setAttribute('x', NODE_W / 2); costT.setAttribute('y', '57');
+    costT.setAttribute('text-anchor', 'middle'); costT.setAttribute('dominant-baseline', 'central');
+    costT.setAttribute('font-size', '8'); costT.setAttribute('font-family', 'Cinzel,serif');
+    if (unlocked) {
+      costT.setAttribute('fill', '#40c070'); costT.textContent = '✅ Erforscht';
+    } else if (!reqOk) {
+      costT.setAttribute('fill', 'rgba(255,255,255,0.3)'); costT.textContent = '🔒 Gesperrt';
+    } else {
+      costT.setAttribute('fill', canAfford ? '#f0cc55' : 'rgba(255,255,255,0.35)');
+      costT.textContent = '💰 ' + n.cost.toLocaleString() + 'G';
+    }
+    g.appendChild(costT);
+
+    // Click handler
+    g.addEventListener('click', () => selectSkillNode(n.id));
+    svg.appendChild(g);
   });
 }
 
+function selectSkillNode(id) {
+  _selectedSkillId = id;
+  renderSkills();
+
+  const sk = SKILLS.find(s => s.id === id);
+  if (!sk) return;
+
+  const box = document.getElementById('skillDetailBox');
+  if (!box) return;
+  box.style.display = 'block';
+
+  document.getElementById('sdIcon').textContent = sk.icon;
+  document.getElementById('sdName').textContent = sk.name;
+
+  // Find branch
+  let branchName = '';
+  for (const [key, b] of Object.entries(SKILL_TREE)) {
+    if (b.nodes.find(n => n.id === id)) { branchName = b.label; break; }
+  }
+  const branchEl = document.getElementById('sdBranch');
+  if (branchEl) branchEl.textContent = branchName;
+  branchEl.style.color = 'var(--text3)';
+  branchEl.style.fontSize = '.68rem';
+
+  document.getElementById('sdDesc').textContent = sk.desc;
+
+  const unlocked = G.skills.has(id);
+  const reqOk = sk.req.length === 0 || sk.req.some(r => G.skills.has(r));
+  const canAfford = G.hero.gold >= sk.cost;
+
+  const costEl = document.getElementById('sdCost');
+  const reqEl = document.getElementById('sdReq');
+  const buyBtn = document.getElementById('sdBuyBtn');
+
+  if (unlocked) {
+    costEl.textContent = '✅ Bereits erforscht';
+    costEl.style.color = 'var(--green2)';
+    reqEl.textContent = '';
+    buyBtn.textContent = 'Erforscht';
+    buyBtn.disabled = true;
+  } else if (!reqOk) {
+    const reqNames = sk.req.map(r => SKILLS.find(s => s.id === r)?.name || r).join(' oder ');
+    reqEl.textContent = '🔒 Benötigt: ' + reqNames;
+    reqEl.style.color = 'var(--text3)';
+    costEl.textContent = '💰 ' + sk.cost.toLocaleString() + ' Gold';
+    costEl.style.color = 'var(--text2)';
+    buyBtn.textContent = 'Gesperrt';
+    buyBtn.disabled = true;
+  } else {
+    reqEl.textContent = sk.req.length > 0 ? ('Vorgänger: ' + sk.req.map(r => SKILLS.find(s=>s.id===r)?.name||r).join(', ')) : '';
+    reqEl.style.color = 'var(--text3)';
+    costEl.textContent = '💰 ' + sk.cost.toLocaleString() + ' Gold';
+    costEl.style.color = canAfford ? 'var(--gold2)' : 'var(--red2)';
+    buyBtn.textContent = canAfford ? '✨ Erforschen' : '❌ Zu wenig Gold';
+    buyBtn.disabled = !canAfford;
+  }
+}
+
+function buySkillFromDetail() {
+  if (_selectedSkillId) buySkill(_selectedSkillId);
+}
+
 function buySkill(id) {
-  const sk=SKILLS.find(s=>s.id===id);
-  if(!sk||G.skills.has(sk.id))return;
-  if(sk.req&&!G.skills.has(sk.req)){log('❌ Vorgänger-Fähigkeit fehlt!','c');return;}
-  if(G.hero.gold<sk.cost){log('❌ Zu wenig Gold!','c');return;}
-  G.hero.gold-=sk.cost;
+  const sk = SKILLS.find(s => s.id === id);
+  if (!sk || G.skills.has(sk.id)) return;
+  const reqOk = sk.req.length === 0 || sk.req.some(r => G.skills.has(r));
+  if (!reqOk) { log('❌ Vorgänger-Fähigkeit fehlt!', 'c'); return; }
+  if (G.hero.gold < sk.cost) { log('❌ Zu wenig Gold!', 'c'); return; }
+  G.hero.gold -= sk.cost;
   G.skills.add(sk.id);
-  log(`✨ Fähigkeit erforscht: ${sk.icon} ${sk.name}!`,'s');
+  log('✨ Fähigkeit erforscht: ' + sk.icon + ' ' + sk.name + '!', 's');
+  try { playSfx('buy'); } catch(e) {}
   updateAll();
   renderSkills();
   renderUpgrades();
+  // Refresh detail box
+  if (_selectedSkillId === id) selectSkillNode(id);
 }
 
 // ════════════════════════════════════════════
@@ -3237,6 +3596,7 @@ function getEligibleMonsters() {
 }
 
 function spawnWave() {
+  G._assassinUsed = false; G._ironWillUsed = false;
   const lv = G.hero.level;
   const eligible = getEligibleMonsters();
   const count = Math.min(4, 1 + Math.floor(G.wave / 4));
@@ -3285,7 +3645,17 @@ function tick() {
       // Debuff: stun check
       const ds = getDebuffedStats(s);
       if (ds.stun) { tickMonsterDebuffs(); updateArenaHpBar(); return; }
-      let dmg = Math.max(1, ds.atk + rng(-1, 3) - Math.floor(target.atk * 0.08));
+      // Chrono Strike: every 5th attack does 3x
+      if (!G._chronoCount) G._chronoCount = 0;
+      G._chronoCount++;
+      const _chronoMult = G.skills.has('chronoStrike') && G._chronoCount % 5 === 0 ? 3.0 : 1.0;
+      if (_chronoMult > 1) log('🕰️ Chronoschlag!','s');
+      // Assassinate: first hit in combat does 2x
+      if (G.skills.has('assassinate') && !G._assassinUsed) { G._assassinUsed = true; }
+      const _assassinMult = (G.skills.has('assassinate') && G._assassinUsed && target.hp >= target.maxHp * 0.99) ? 2.0 : 1.0;
+      // Death mark: monster below 30% HP takes +40%
+      const _deathMult = (G.skills.has('deathMark') && target.hp < target.maxHp * 0.3) ? 1.4 : 1.0;
+      let dmg = Math.max(1, Math.floor((ds.atk + rng(-1, 3) - Math.floor(target.atk * 0.08)) * _assassinMult * _deathMult * _chronoMult));
       const isCrit = Math.random() * 100 < ds.crit;
       if (isCrit) dmg = Math.floor(dmg * 1.8);
       // Weakness multiplier
@@ -3315,6 +3685,12 @@ function tick() {
       const el = document.getElementById('mon_' + target.id);
       if (el) { el.style.filter = 'brightness(3) saturate(0)'; setTimeout(() => { if(el) el.style.filter = ''; }, 200); }
       // Wiedergeburt check
+      // Chain lightning: 15% hit all
+      if (G.skills.has('chainLightning') && Math.random() < 0.15 && G.monsters.length > 1) {
+        const chainDmg = Math.floor(dmg * 0.4);
+        G.monsters.forEach(m2 => { if (m2.id !== target.id) m2.hp -= chainDmg; });
+        log('⚡ Kettenblitz! ' + chainDmg + ' Schaden an alle Monster!','s');
+      }
       if (target.hp <= 0) {
         const rebornSignal = applyMonsterSpecial(target, h, ds);
         if (rebornSignal === -1) { updateArenaHpBar(); return; } // reborn!
@@ -3344,6 +3720,8 @@ function tick() {
       m.atkCd = (1.1 + Math.random() * 0.7) * (sDebuffed.slow ? 1.5 : 1);
       let mDmg = Math.max(1, m.atk - Math.floor(sDebuffed.def * 0.6));
       if (G.skills.has('ironSkin')) mDmg = Math.floor(mDmg * 0.85);
+      // Shadow step: 10% dodge
+      if (G.skills.has('shadowStep') && Math.random() < 0.10) { log('👣 Schattenschritt! Ausgewichen!','n'); return; }
       // Phase special: 30% chance to negate
       if (m.special === 'phase' && Math.random() < 0.3) { floatDmg(document.getElementById('heroSprite'), 0, '#00DDFF'); log('👻 ' + m.name + ' phasiert! Angriff negiert.', 'n'); return; }
       const extraDmg = applyMonsterSpecial(m, h, sDebuffed);
@@ -3352,7 +3730,14 @@ function tick() {
       applyDebuffTick(h);
       const heroEl = document.getElementById('heroSprite');
       if (heroEl) floatDmg(heroEl, mDmg, '#ff9040');
-      if (h.hp <= 0) { h.hp = 0; updateAll(); heroDied(); return; }
+      if (h.hp <= 0) {
+        if (G.skills.has('ironWill') && !G._ironWillUsed) {
+          G._ironWillUsed = true; h.hp = 1;
+          log('💪 Eisenwille! Überlebt auf 1 HP!', 'l');
+        } else {
+          h.hp = 0; updateAll(); heroDied(); return;
+        }
+      }
     }
   });
 
@@ -3364,8 +3749,10 @@ function monsterKilled(m) {
   const lk = luckMult(); const gm = goldMult(); const xm = xpMult();
   const xp   = Math.round((m.xp + Math.floor(G.wave * 0.3)) * lk * xm);
   const gold  = Math.round((m.gold + rng(0, 3)) * gm * lk);
-  G.hero.xp += xp; G.hero.gold += gold; G.kills++;
-  log('💀 ' + m.name + ' besiegt! +' + xp + ' XP  +' + gold + ' Gold', 'c');
+  let pickpocketBonus = 0;
+  if (G.skills.has('pickpocket') && Math.random() < 0.05) { pickpocketBonus = Math.floor(gold * 0.5 + rng(5,20)); }
+  G.hero.xp += xp; G.hero.gold += gold + pickpocketBonus; G.kills++;
+  log('💀 ' + m.name + ' besiegt! +' + xp + ' XP  +' + (gold+pickpocketBonus) + ' Gold' + (pickpocketBonus?'  (+'+pickpocketBonus+'G Taschendiebstahl!)':''), 'c');
   try { playSfx('kill'); } catch(e) {}
   petHealOnKill();
   try { trackQuestProgress('kill', 1); trackQuestProgress('gold', gold); checkQuestBadge(); } catch(e) {}
@@ -4567,12 +4954,13 @@ function renderDungeon() {
 }
 
 function startDungeon() {
-  if (G.dungeonKeys <= 0) { log('❌ Keine Dungeon-Schlüssel! Warte auf Aufladen.', 'c'); return; }
+  const roomType = getDungeonRoomType(G.dungeonFloor);
+  const freeEntry = G.skills.has('masterThief') && roomType !== 'boss';
+  if (!freeEntry && G.dungeonKeys <= 0) { log('❌ Keine Dungeon-Schlüssel! Warte auf Aufladen.', 'c'); return; }
   if (G.dungeonActive) { log('❌ Du bist bereits im Dungeon!', 'c'); return; }
-  G.dungeonKeys--;
+  if (!freeEntry) G.dungeonKeys--;
   G.dungeonActive = true;
 
-  const roomType = getDungeonRoomType(G.dungeonFloor);
   document.getElementById('dungStartBtn').style.display = 'none';
   document.getElementById('dungeonRoom').style.display = 'block';
   document.getElementById('dungeonFight').style.display = 'none';
