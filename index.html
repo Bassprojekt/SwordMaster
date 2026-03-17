@@ -1765,7 +1765,7 @@ const ZONES = [
 
 const MONSTERS = [
   // Steinzeit
-  { name:'Steinzeit-Wolf',   minLv:1,  hpM:1.0, atkM:1.0, xp:8,   gold:3,  color:'#8B6914',
+  { name:'Steinzeit-Wolf',   minLv:1,  hpM:1.0, atkM:1.0, xp:8,   gold:3,  color:'#8B6914', type:'tier', weak:'atk', special:'swarm', specialDesc:'Rudel — greift mit Verstärkung an',
     svg:`<g>
       <ellipse cx="30" cy="55" rx="18" ry="12" fill="#6B4C1E"/>
       <ellipse cx="44" cy="48" rx="10" ry="8" fill="#7A5828"/>
@@ -1782,7 +1782,7 @@ const MONSTERS = [
       <rect x="30" y="60" width="6" height="14" rx="3" fill="#5A3E10"/>
       <rect x="38" y="60" width="6" height="14" rx="3" fill="#5A3E10"/>
     </g>` },
-  { name:'Urzeit-Bär',       minLv:1,  hpM:1.8, atkM:0.8, xp:12,  gold:5,  color:'#5C3A1E',
+  { name:'Urzeit-Bär',       minLv:1,  hpM:1.8, atkM:0.8, xp:12,  gold:5,  color:'#5C3A1E', type:'tier', weak:'feuer', special:'erdbeben', specialDesc:'Tatzensprung — Flächenangriff',
     svg:`<g>
       <ellipse cx="30" cy="58" rx="20" ry="16" fill="#5C3A1E"/>
       <ellipse cx="30" cy="40" rx="13" ry="12" fill="#6B4426"/>
@@ -1798,7 +1798,7 @@ const MONSTERS = [
     </g>` },
 
   // Mittelalter
-  { name:'Steingolem',       minLv:5,  hpM:2.5, atkM:0.7, xp:15,  gold:8,  color:'#707070',
+  { name:'Steingolem',       minLv:5,  hpM:2.5, atkM:0.7, xp:15,  gold:8,  color:'#707070', type:'magisch', weak:'blitz', special:'stein', specialDesc:'Steinform — wird kurzfristig unverwundbar',
     svg:`<g>
       <rect x="16" y="30" width="28" height="38" rx="4" fill="#707070"/>
       <rect x="18" y="32" width="24" height="34" rx="3" fill="#888"/>
@@ -1816,7 +1816,7 @@ const MONSTERS = [
       <line x1="22" y1="50" x2="38" y2="50" stroke="#555" stroke-width="1"/>
       <line x1="22" y1="58" x2="38" y2="58" stroke="#555" stroke-width="1"/>
     </g>` },
-  { name:'Skelettkrieger',   minLv:8,  hpM:1.5, atkM:1.5, xp:20,  gold:10, color:'#E8E0C8',
+  { name:'Skelettkrieger',   minLv:8,  hpM:1.5, atkM:1.5, xp:20,  gold:10, color:'#E8E0C8', type:'untoter', weak:'feuer', special:'biss', specialDesc:'Knochenstich — verursacht Vergiftung',
     svg:`<g>
       <circle cx="30" cy="22" r="11" fill="#E8E0C8"/>
       <circle cx="25" cy="20" r="3.5" fill="#1A1A2E"/>
@@ -1841,7 +1841,7 @@ const MONSTERS = [
     </g>` },
 
   // Feuerdämon
-  { name:'Feuerdämon',       minLv:12, hpM:1.4, atkM:1.8, xp:28,  gold:14, color:'#FF4400',
+  { name:'Feuerdämon',       minLv:12, hpM:1.4, atkM:1.8, xp:28,  gold:14, color:'#FF4400', type:'damon', weak:'eis', special:'lavaspucker', specialDesc:'Feuerstoß — Brandschaden über mehrere Runden',
     svg:`<g>
       <ellipse cx="30" cy="75" rx="12" ry="4" fill="rgba(255,100,0,0.3)"/>
       <rect x="22" y="52" width="8" height="22" rx="3" fill="#CC2200"/>
@@ -1861,7 +1861,7 @@ const MONSTERS = [
     </g>` },
 
   // Eistroll
-  { name:'Eistroll',         minLv:18, hpM:3.0, atkM:1.0, xp:35,  gold:18, color:'#88CCFF',
+  { name:'Eistroll',         minLv:18, hpM:3.0, atkM:1.0, xp:35,  gold:18, color:'#88CCFF', type:'tier', weak:'feuer', special:'wickeln', specialDesc:'Frostgriff — eingefroren für 2 Runden',
     svg:`<g>
       <rect x="20" y="56" width="8" height="18" rx="4" fill="#4488CC"/>
       <rect x="32" y="56" width="8" height="18" rx="4" fill="#4488CC"/>
@@ -1885,7 +1885,7 @@ const MONSTERS = [
     </g>` },
 
   // Todesritter
-  { name:'Todesritter',      minLv:28, hpM:2.2, atkM:2.2, xp:55,  gold:28, color:'#8800CC',
+  { name:'Todesritter',      minLv:28, hpM:2.2, atkM:2.2, xp:55,  gold:28, color:'#8800CC', type:'untoter', weak:'heilig', special:'fluch', specialDesc:'Todesfluch — DEF drastisch reduziert',
     svg:`<g>
       <rect x="22" y="58" width="7" height="16" rx="2" fill="#220033"/>
       <rect x="31" y="58" width="7" height="16" rx="2" fill="#220033"/>
@@ -1910,7 +1910,7 @@ const MONSTERS = [
     </g>` },
 
   // Schattenwyrm (Drache)
-  { name:'Schattenwyrm',     minLv:40, hpM:3.5, atkM:2.5, xp:90,  gold:45, color:'#440088',
+  { name:'Schattenwyrm',     minLv:40, hpM:3.5, atkM:2.5, xp:90,  gold:45, color:'#440088', type:'magisch', weak:'heilig', special:'schatten', specialDesc:'Schattenbiss — Krit ignoriert DEF',
     svg:`<g>
       <path d="M10,65 Q16,58 22,62 Q28,66 30,60 Q32,54 38,52 Q44,50 48,44 Q52,38 48,32 Q44,26 38,28 Q32,30 30,36 Q28,42 22,44 Q16,46 12,52 Q8,58 10,65Z" fill="#2A0044"/>
       <path d="M30,36 Q34,28 42,26 Q50,24 54,30 Q58,36 54,44 Q50,52 42,54 Q36,56 32,52Z" fill="#3A0055"/>
@@ -1926,7 +1926,7 @@ const MONSTERS = [
     </g>` },
 
   // Höllenfürst
-  { name:'Höllenfürst',      minLv:55, hpM:4.5, atkM:3.0, xp:140, gold:70, color:'#FF2200',
+  { name:'Höllenfürst',      minLv:55, hpM:4.5, atkM:3.0, xp:140, gold:70, color:'#FF2200', type:'damon', weak:'heilig', special:'teilen', specialDesc:'Seelenspaltung — teilt Schaden mit Held',
     svg:`<g>
       <ellipse cx="30" cy="75" rx="16" ry="5" fill="rgba(255,50,0,0.4)"/>
       <rect x="21" y="54" width="8" height="20" rx="3" fill="#880000"/>
@@ -1949,7 +1949,7 @@ const MONSTERS = [
     </g>` },
 
   // Uralter Lich
-  { name:'Uralter Lich',     minLv:70, hpM:5.5, atkM:3.5, xp:200, gold:100, color:'#00FFAA',
+  { name:'Uralter Lich',     minLv:70, hpM:5.5, atkM:3.5, xp:200, gold:100, color:'#00FFAA', type:'untoter', weak:'feuer', special:'urteil', specialDesc:'Todesurteil — ignoriert alle Verteidigung',
     svg:`<g>
       <ellipse cx="30" cy="76" rx="10" ry="3" fill="rgba(0,255,170,0.2)"/>
       <path d="M22,54 Q18,62 20,74 Q24,76 26,72 Q24,62 26,54Z" fill="#0A0A1E" opacity="0.9"/>
@@ -1979,6 +1979,7 @@ const MONSTERS = [
 
   // Quantengeist
   { name:'Quantengeist',     minLv:85, hpM:7.0, atkM:4.0, xp:300, gold:150, color:'#00DDFF',
+    type:'geist',   weak:'crit',  special:'phase',   specialDesc:'Phasiert sich — 30% Chance Angriff zu negieren',
     svg:`<g>
       <ellipse cx="30" cy="76" rx="14" ry="4" fill="rgba(0,200,255,0.2)"/>
       <path d="M20,50 Q14,58 16,72 Q20,76 24,72 Q22,60 24,50Z" fill="#001830" opacity="0.85"/>
@@ -2002,6 +2003,400 @@ const MONSTERS = [
       <line x1="10" y1="43" x2="6" y2="44" stroke="#00DDFF" stroke-width="1" opacity="0.6"/>
       <line x1="50" y1="43" x2="52" y2="38" stroke="#00DDFF" stroke-width="1" opacity="0.6"/>
       <line x1="50" y1="43" x2="54" y2="44" stroke="#00DDFF" stroke-width="1" opacity="0.6"/>
+    </g>` },
+
+  // ── ZONE 1: KATAKOMBEN (Lv 1-10) ─────────────
+  { name:'Riesige Ratte',    minLv:2,  hpM:0.8, atkM:0.9, xp:6,   gold:2,  color:'#886644',
+    type:'tier',    weak:'atk',   special:'swarm',   specialDesc:'Schwarm — greift zweimal pro Runde an',
+    svg:`<g>
+      <ellipse cx="30" cy="58" rx="16" ry="10" fill="#886644"/>
+      <ellipse cx="44" cy="52" rx="10" ry="7"  fill="#997755"/>
+      <circle  cx="50" cy="48" r="3"            fill="#FF3333"/>
+      <circle  cx="51" cy="47" r="1.2"          fill="#000"/>
+      <path d="M54,50 Q62,46 60,50 Q58,54 54,52Z" fill="#AA7755"/>
+      <path d="M44,44 L46,36 L48,44Z"           fill="#997755"/>
+      <path d="M48,44 L50,36 L52,44Z"           fill="#997755"/>
+      <path d="M40,64 Q36,72 32,70 Q36,68 38,64Z" fill="#775533"/>
+      <rect x="18" y="60" width="5" height="10" rx="2" fill="#775533"/>
+      <rect x="26" y="60" width="5" height="10" rx="2" fill="#775533"/>
+      <rect x="34" y="60" width="5" height="10" rx="2" fill="#775533"/>
+    </g>` },
+
+  { name:'Modergeist',       minLv:3,  hpM:1.0, atkM:1.1, xp:9,   gold:4,  color:'#88AA66',
+    type:'geist',   weak:'crit',  special:'fluch',   specialDesc:'Fluch — reduziert deine DEF für 2 Runden',
+    svg:`<g>
+      <ellipse cx="30" cy="72" rx="10" ry="3" fill="rgba(100,180,80,0.3)"/>
+      <path d="M20,48 Q16,56 18,70 Q22,74 26,70 Q24,58 26,48Z" fill="#2A3A20" opacity="0.9"/>
+      <path d="M40,48 Q44,56 42,70 Q38,74 34,70 Q36,58 34,48Z" fill="#2A3A20" opacity="0.9"/>
+      <path d="M26,50 Q24,60 26,70 Q30,72 34,70 Q36,60 34,50Z" fill="#2A3A20" opacity="0.9"/>
+      <ellipse cx="30" cy="36" rx="14" ry="18" fill="#3A4A28"/>
+      <circle  cx="30" cy="22" r="11"           fill="#3A4A28"/>
+      <circle  cx="24" cy="20" r="4"            fill="#1A2A10"/>
+      <circle  cx="25" cy="19" r="2"            fill="#AAFFAA"/>
+      <circle  cx="36" cy="20" r="4"            fill="#1A2A10"/>
+      <circle  cx="37" cy="19" r="2"            fill="#AAFFAA"/>
+      <path d="M25,26 Q30,30 35,26" stroke="#88AA66" stroke-width="1.5" fill="none"/>
+    </g>` },
+
+  { name:'Knochenhund',      minLv:6,  hpM:1.3, atkM:1.3, xp:14,  gold:7,  color:'#CCBBAA',
+    type:'untoter', weak:'atk',   special:'biss',    specialDesc:'Giftbiss — vergiftet für 3 Runden',
+    svg:`<g>
+      <ellipse cx="30" cy="58" rx="17" ry="9"  fill="#BBAA99"/>
+      <ellipse cx="44" cy="50" rx="9"  rx2="7" ry="7" fill="#CCBBAA"/>
+      <circle  cx="49" cy="45" r="3"            fill="#1A1A2E"/>
+      <circle  cx="50" cy="44" r="1.5"          fill="#00FF88" opacity="0.9"/>
+      <path d="M44,42 L46,34 L48,42Z"           fill="#CCBBAA"/>
+      <path d="M48,42 L50,34 L52,42Z"           fill="#CCBBAA"/>
+      <path d="M51,48 Q57,44 55,49 Q53,53 51,51Z" fill="#BBAA99"/>
+      <line x1="51" y1="49" x2="57" y2="47"    stroke="#FFFFFF" stroke-width="0.8"/>
+      <line x1="51" y1="50" x2="57" y2="49"    stroke="#FFFFFF" stroke-width="0.8"/>
+      <rect x="16" y="62" width="5" height="12" rx="2" fill="#AA9988"/>
+      <rect x="24" y="62" width="5" height="12" rx="2" fill="#AA9988"/>
+      <rect x="32" y="62" width="5" height="12" rx="2" fill="#AA9988"/>
+      <rect x="40" y="62" width="5" height="12" rx="2" fill="#AA9988"/>
+      <path d="M26,62 Q30,58 34,62" stroke="#FFFFFF" stroke-width="1" fill="none"/>
+    </g>` },
+
+  { name:'Zombiekrieger',    minLv:9,  hpM:2.0, atkM:1.2, xp:22,  gold:11, color:'#779955',
+    type:'untoter', weak:'feuer', special:'stun',    specialDesc:'Taumelschlag — betäubt dich 1 Runde',
+    svg:`<g>
+      <rect x="22" y="60" width="7"  height="16" rx="2" fill="#2A3A18"/>
+      <rect x="31" y="60" width="7"  height="16" rx="2" fill="#2A3A18"/>
+      <rect x="21" y="28" width="18" height="32" rx="3" fill="#3A4A22"/>
+      <rect x="13" y="34" width="7"  height="20" rx="2" fill="#2A3A18"/>
+      <rect x="40" y="34" width="7"  height="20" rx="2" fill="#2A3A18"/>
+      <circle cx="30" cy="22" r="10"             fill="#4A5A28"/>
+      <circle cx="24" cy="20" r="3"              fill="#1A2A08"/>
+      <circle cx="25" cy="19" r="1.5"            fill="#AAFFAA"/>
+      <circle cx="36" cy="20" r="3"              fill="#1A2A08"/>
+      <circle cx="37" cy="19" r="1.5"            fill="#AAFFAA"/>
+      <path d="M25,26 Q30,29 35,26" stroke="#779955" stroke-width="1.5" fill="none"/>
+      <line x1="21" y1="38" x2="39" y2="38"     stroke="#3A4A22" stroke-width="1"/>
+      <rect x="8"  y="30" width="3" height="22" rx="1" fill="#777"/>
+      <rect x="6"  y="30" width="7" height="2"  rx="1" fill="#777"/>
+    </g>` },
+
+  // ── ZONE 2: KERKER (Lv 11-20) ─────────────────
+  { name:'Giftspinne',       minLv:11, hpM:1.1, atkM:1.6, xp:26,  gold:13, color:'#AA44AA',
+    type:'tier',    weak:'feuer', special:'gift',    specialDesc:'Giftnetz — vergiftet und verlangsamt',
+    svg:`<g>
+      <ellipse cx="30" cy="50" rx="14" ry="10" fill="#660066"/>
+      <ellipse cx="30" cy="44" rx="8"  ry="7"  fill="#880088"/>
+      <circle  cx="25" cy="42" r="3"            fill="#1A001A"/>
+      <circle  cx="26" cy="41" r="1.5"          fill="#FF44FF"/>
+      <circle  cx="35" cy="42" r="3"            fill="#1A001A"/>
+      <circle  cx="36" cy="41" r="1.5"          fill="#FF44FF"/>
+      <line x1="16" y1="48" x2="6"  y2="38"    stroke="#AA44AA" stroke-width="2"/>
+      <line x1="16" y1="50" x2="4"  y2="46"    stroke="#AA44AA" stroke-width="2"/>
+      <line x1="16" y1="52" x2="6"  y2="58"    stroke="#AA44AA" stroke-width="2"/>
+      <line x1="16" y1="54" x2="8"  y2="62"    stroke="#AA44AA" stroke-width="2"/>
+      <line x1="44" y1="48" x2="54" y2="38"    stroke="#AA44AA" stroke-width="2"/>
+      <line x1="44" y1="50" x2="56" y2="46"    stroke="#AA44AA" stroke-width="2"/>
+      <line x1="44" y1="52" x2="54" y2="58"    stroke="#AA44AA" stroke-width="2"/>
+      <line x1="44" y1="54" x2="52" y2="62"    stroke="#AA44AA" stroke-width="2"/>
+      <ellipse cx="30" cy="56" rx="5" ry="3"   fill="#440044"/>
+    </g>` },
+
+  { name:'Kerkermeister',    minLv:14, hpM:2.4, atkM:1.8, xp:38,  gold:19, color:'#AA8833',
+    type:'mensch',  weak:'crit',  special:'kette',   specialDesc:'Kettengeißel — trifft zweimal mit reduziertem Schaden',
+    svg:`<g>
+      <rect x="22" y="58" width="7"  height="18" rx="2" fill="#332200"/>
+      <rect x="31" y="58" width="7"  height="18" rx="2" fill="#332200"/>
+      <rect x="19" y="26" width="22" height="32" rx="3" fill="#443300"/>
+      <rect x="21" y="28" width="18" height="28" rx="2" fill="#554400"/>
+      <line x1="30" y1="28" x2="30" y2="56"     stroke="#AA8833" stroke-width="1.2"/>
+      <rect x="11" y="30" width="8"  height="22" rx="2" fill="#332200"/>
+      <rect x="41" y="30" width="8"  height="22" rx="2" fill="#332200"/>
+      <rect x="16" y="16" width="28" height="16" rx="3" fill="#332200"/>
+      <circle cx="24" cy="22" r="4"              fill="#221100"/>
+      <circle cx="25" cy="21" r="2"              fill="#FFCC44"/>
+      <circle cx="36" cy="22" r="4"              fill="#221100"/>
+      <circle cx="37" cy="21" r="2"              fill="#FFCC44"/>
+      <path d="M8,40 Q4,36 6,30 Q8,36 10,34Z"   fill="#554400"/>
+      <path d="M6,34 Q2,30 4,24 Q6,30 8,28Z"    fill="#443300"/>
+      <ellipse cx="7" cy="46" rx="3" ry="5"     fill="#443300"/>
+    </g>` },
+
+  { name:'Rattenmann',       minLv:17, hpM:1.6, atkM:2.0, xp:44,  gold:22, color:'#997744',
+    type:'mensch',  weak:'atk',   special:'dodge',   specialDesc:'Ausweichen — 25% Chance Schaden zu halbieren',
+    svg:`<g>
+      <rect x="23" y="58" width="7"  height="16" rx="2" fill="#664422"/>
+      <rect x="30" y="58" width="7"  height="16" rx="2" fill="#664422"/>
+      <rect x="20" y="28" width="20" height="30" rx="3" fill="#886633"/>
+      <rect x="12" y="32" width="8"  height="18" rx="2" fill="#775522"/>
+      <rect x="40" y="32" width="8"  height="18" rx="2" fill="#775522"/>
+      <ellipse cx="30" cy="24" rx="11" ry="10"   fill="#997744"/>
+      <path d="M20,18 Q18,10 22,8 Q20,14 22,13Z" fill="#886633"/>
+      <path d="M38,18 Q42,10 40,8 Q38,14 36,13Z" fill="#886633"/>
+      <circle cx="25" cy="22" r="3.5"            fill="#221100"/>
+      <circle cx="26" cy="21" r="1.8"            fill="#FF2222"/>
+      <circle cx="35" cy="22" r="3.5"            fill="#221100"/>
+      <circle cx="36" cy="21" r="1.8"            fill="#FF2222"/>
+      <path d="M42,34 Q50,30 48,40 Q44,44 42,40Z" fill="#886633"/>
+      <path d="M42,38 Q52,36 50,44" stroke="#664422" stroke-width="1" fill="none"/>
+    </g>` },
+
+  { name:'Gargoyle',         minLv:20, hpM:3.2, atkM:1.5, xp:52,  gold:26, color:'#7788AA',
+    type:'magisch', weak:'blitz', special:'stein',   specialDesc:'Steinform — 1 Runde unverwundbar',
+    svg:`<g>
+      <rect x="22" y="58" width="8"  height="16" rx="2" fill="#445566"/>
+      <rect x="30" y="58" width="8"  height="16" rx="2" fill="#445566"/>
+      <rect x="18" y="26" width="24" height="32" rx="3" fill="#556677"/>
+      <rect x="10" y="30" width="8"  height="20" rx="2" fill="#445566"/>
+      <rect x="42" y="30" width="8"  height="20" rx="2" fill="#445566"/>
+      <path d="M14,30 Q8,20 12,14 Q14,22 16,20Z" fill="#667788"/>
+      <path d="M46,30 Q52,20 48,14 Q46,22 44,20Z" fill="#667788"/>
+      <path d="M20,28 Q16,18 20,10 Q20,20 22,18Z" fill="#667788"/>
+      <path d="M40,28 Q44,18 40,10 Q40,20 38,18Z" fill="#667788"/>
+      <ellipse cx="30" cy="22" rx="12" ry="11"   fill="#556677"/>
+      <circle cx="24" cy="20" r="4"              fill="#223344"/>
+      <circle cx="25" cy="19" r="2"              fill="#88AACC"/>
+      <circle cx="36" cy="20" r="4"              fill="#223344"/>
+      <circle cx="37" cy="19" r="2"              fill="#88AACC"/>
+      <path d="M24,28 Q30,31 36,28" stroke="#7788AA" stroke-width="2" fill="none"/>
+    </g>` },
+
+  // ── ZONE 3: KRYPTA (Lv 21-30) ─────────────────
+  { name:'Vampir',           minLv:22, hpM:1.8, atkM:2.2, xp:60,  gold:30, color:'#880022',
+    type:'untoter', weak:'feuer', special:'saugen',  specialDesc:'Lebensraub — heilt sich um 30% des Schadens',
+    svg:`<g>
+      <ellipse cx="30" cy="72" rx="10" ry="3" fill="rgba(120,0,30,0.3)"/>
+      <path d="M22,52 Q18,60 20,72 Q24,75 26,72 Q24,62 26,52Z" fill="#1A0008"/>
+      <path d="M38,52 Q42,60 40,72 Q36,75 34,72 Q36,62 34,52Z" fill="#1A0008"/>
+      <path d="M22,30 Q16,20 18,12 Q20,22 22,20Z" fill="#220011"/>
+      <path d="M38,30 Q44,20 42,12 Q40,22 38,20Z" fill="#220011"/>
+      <ellipse cx="30" cy="44" rx="14" ry="18" fill="#220011"/>
+      <circle cx="30" cy="22" r="12"             fill="#2A0014"/>
+      <circle cx="23" cy="19" r="4"              fill="#110008"/>
+      <circle cx="24" cy="18" r="2"              fill="#FF0033"/>
+      <circle cx="37" cy="19" r="4"              fill="#110008"/>
+      <circle cx="38" cy="18" r="2"              fill="#FF0033"/>
+      <path d="M24,28 Q30,32 36,28"              stroke="#880022" stroke-width="1.5" fill="none"/>
+      <line x1="27" y1="28" x2="26" y2="31"     stroke="#FFFFFF" stroke-width="1"/>
+      <line x1="33" y1="28" x2="34" y2="31"     stroke="#FFFFFF" stroke-width="1"/>
+    </g>` },
+
+  { name:'Mumie',            minLv:25, hpM:2.8, atkM:1.7, xp:70,  gold:35, color:'#CCAA77',
+    type:'untoter', weak:'feuer', special:'fluch',   specialDesc:'Mumienfluch — -20% deiner Stats für 3 Runden',
+    svg:`<g>
+      <rect x="22" y="58" width="7"  height="18" rx="1" fill="#AA8844"/>
+      <rect x="31" y="58" width="7"  height="18" rx="1" fill="#AA8844"/>
+      <rect x="20" y="26" width="20" height="32" rx="2" fill="#BBAA66"/>
+      <rect x="12" y="30" width="8"  height="22" rx="1" fill="#AA9955"/>
+      <rect x="40" y="30" width="8"  height="22" rx="1" fill="#AA9955"/>
+      <line x1="20" y1="32" x2="40" y2="32"     stroke="#997744" stroke-width="1.5"/>
+      <line x1="20" y1="38" x2="40" y2="38"     stroke="#997744" stroke-width="1.5"/>
+      <line x1="20" y1="44" x2="40" y2="44"     stroke="#997744" stroke-width="1.5"/>
+      <line x1="20" y1="50" x2="40" y2="50"     stroke="#997744" stroke-width="1.5"/>
+      <circle cx="30" cy="20" r="11"             fill="#CCBB77"/>
+      <line x1="20" y1="16" x2="40" y2="16"     stroke="#AA9955" stroke-width="1.5"/>
+      <line x1="20" y1="20" x2="40" y2="20"     stroke="#AA9955" stroke-width="1.5"/>
+      <line x1="20" y1="24" x2="40" y2="24"     stroke="#AA9955" stroke-width="1.5"/>
+      <circle cx="25" cy="18" r="3"              fill="#221100"/>
+      <circle cx="26" cy="17" r="1.5"            fill="#FFBB44"/>
+      <circle cx="35" cy="18" r="3"              fill="#221100"/>
+      <circle cx="36" cy="17" r="1.5"            fill="#FFBB44"/>
+    </g>` },
+
+  { name:'Kryptenwächter',   minLv:28, hpM:3.5, atkM:2.0, xp:80,  gold:40, color:'#778899',
+    type:'untoter', weak:'blitz', special:'schild',  specialDesc:'Kryptenschild — absorbiert 50% Schaden einmalig',
+    svg:`<g>
+      <rect x="22" y="58" width="7"  height="16" rx="2" fill="#334455"/>
+      <rect x="31" y="58" width="7"  height="16" rx="2" fill="#334455"/>
+      <rect x="18" y="24" width="24" height="34" rx="3" fill="#445566"/>
+      <rect x="10" y="28" width="8"  height="24" rx="2" fill="#334455"/>
+      <rect x="42" y="28" width="8"  height="24" rx="2" fill="#334455"/>
+      <rect x="16" y="14" width="28" height="16" rx="3" fill="#334455"/>
+      <circle cx="24" cy="20" r="4"              fill="#1A2233"/>
+      <circle cx="25" cy="19" r="2"              fill="#AABBCC"/>
+      <circle cx="36" cy="20" r="4"              fill="#1A2233"/>
+      <circle cx="37" cy="19" r="2"              fill="#AABBCC"/>
+      <rect x="4"  y="32" width="8"  height="14" rx="2" fill="#223344"/>
+      <rect x="4"  y="30" width="8"  height="4"  rx="1" fill="#334455"/>
+      <path d="M4,28 L8,24 L12,28Z"              fill="#445566"/>
+    </g>` },
+
+  // ── ZONE 4: HÖHLEN (Lv 31-40) ─────────────────
+  { name:'Steinschlange',    minLv:32, hpM:2.5, atkM:2.4, xp:95,  gold:48, color:'#888855',
+    type:'tier',    weak:'blitz', special:'wickeln', specialDesc:'Einwickeln — kein Angriff für 1 Runde',
+    svg:`<g>
+      <path d="M10,70 Q14,58 20,54 Q26,50 30,46 Q34,42 38,36 Q42,30 40,22 Q38,14 34,12 Q30,10 28,14 Q26,18 30,22 Q34,26 36,32 Q38,38 34,44 Q30,50 24,54 Q18,58 14,64 Q10,68 10,72Z" fill="#777744"/>
+      <path d="M12,68 Q16,58 22,54 Q28,50 32,46 Q36,42 38,36 Q40,30 38,24" stroke="#999966" stroke-width="3" fill="none"/>
+      <ellipse cx="34" cy="12" rx="6" ry="5"    fill="#888855"/>
+      <circle cx="32" cy="10" r="2.5"            fill="#1A1A00"/>
+      <circle cx="32" cy="10" r="1.2"            fill="#FFFF00"/>
+      <circle cx="37" cy="10" r="2.5"            fill="#1A1A00"/>
+      <circle cx="37" cy="10" r="1.2"            fill="#FFFF00"/>
+      <path d="M33,15 L31,18 L35,18Z"            fill="#FF3333"/>
+      <path d="M35,15 L37,18 L33,18Z"            fill="#FF3333"/>
+    </g>` },
+
+  { name:'Felstroll',        minLv:35, hpM:4.5, atkM:1.8, xp:110, gold:55, color:'#996644',
+    type:'tier',    weak:'magisch',special:'erdbeben',specialDesc:'Erdbeben — trifft alle Ziele, Flächenschaden',
+    svg:`<g>
+      <rect x="20" y="58" width="9"  height="18" rx="4" fill="#7A5533"/>
+      <rect x="31" y="58" width="9"  height="18" rx="4" fill="#7A5533"/>
+      <ellipse cx="30" cy="48" rx="20" ry="24"   fill="#8B6644"/>
+      <rect x="8"  y="32" width="12" height="26" rx="4" fill="#7A5533"/>
+      <rect x="40" y="32" width="12" height="26" rx="4" fill="#7A5533"/>
+      <ellipse cx="30" cy="24" rx="16" ry="15"   fill="#996655"/>
+      <circle cx="22" cy="22" r="5"              fill="#221100"/>
+      <circle cx="23" cy="21" r="2.5"            fill="#FF6600"/>
+      <circle cx="38" cy="22" r="5"              fill="#221100"/>
+      <circle cx="39" cy="21" r="2.5"            fill="#FF6600"/>
+      <path d="M22,32 Q30,37 38,32" stroke="#664433" stroke-width="2.5" fill="none"/>
+      <line x1="24" y1="32" x2="22" y2="36"     stroke="#553322" stroke-width="2"/>
+      <line x1="36" y1="32" x2="38" y2="36"     stroke="#553322" stroke-width="2"/>
+    </g>` },
+
+  { name:'Schattenläufer',   minLv:38, hpM:2.0, atkM:3.0, xp:125, gold:63, color:'#554477',
+    type:'magisch', weak:'feuer', special:'schatten', specialDesc:'Schattenklinge — kritischer Treffer ignoriert DEF',
+    svg:`<g>
+      <ellipse cx="30" cy="74" rx="10" ry="3" fill="rgba(80,40,110,0.3)"/>
+      <rect x="24" y="56" width="6"  height="18" rx="2" fill="#221133"/>
+      <rect x="30" y="56" width="6"  height="18" rx="2" fill="#221133"/>
+      <rect x="20" y="26" width="20" height="30" rx="3" fill="#332244"/>
+      <rect x="12" y="30" width="8"  height="18" rx="2" fill="#221133"/>
+      <rect x="40" y="30" width="8"  height="18" rx="2" fill="#221133"/>
+      <circle cx="30" cy="20" r="11"             fill="#332244"/>
+      <circle cx="24" cy="18" r="3.5"            fill="#110022"/>
+      <circle cx="25" cy="17" r="1.8"            fill="#BB88FF"/>
+      <circle cx="36" cy="18" r="3.5"            fill="#110022"/>
+      <circle cx="37" cy="17" r="1.8"            fill="#BB88FF"/>
+      <rect x="8"  y="28" width="2" height="24" rx="1" fill="#666"/>
+      <rect x="6"  y="28" width="6" height="2"  rx="1" fill="#666"/>
+      <rect x="46" y="28" width="2" height="24" rx="1" fill="#666"/>
+      <rect x="44" y="28" width="6" height="2"  rx="1" fill="#666"/>
+    </g>` },
+
+  // ── ZONE 5: HÖLLEN-EBENE (Lv 41-50) ───────────
+  { name:'Lavakröte',        minLv:42, hpM:3.8, atkM:2.6, xp:145, gold:72, color:'#FF5500',
+    type:'tier',    weak:'eis',   special:'lavaspucker',specialDesc:'Lavastrahl — verursacht Brandschaden über 3 Runden',
+    svg:`<g>
+      <ellipse cx="30" cy="58" rx="20" ry="14"   fill="#883300"/>
+      <ellipse cx="30" cy="52" rx="16" ry="10"   fill="#AA4400"/>
+      <circle cx="20" cy="46" r="6"              fill="#882200"/>
+      <circle cx="40" cy="46" r="6"              fill="#882200"/>
+      <circle cx="20" cy="44" r="2.5"            fill="#1A0800"/>
+      <circle cx="20" cy="44" r="1.2"            fill="#FF8800"/>
+      <circle cx="40" cy="44" r="2.5"            fill="#1A0800"/>
+      <circle cx="40" cy="44" r="1.2"            fill="#FF8800"/>
+      <path d="M22,58 Q30,65 38,58" stroke="#661100" stroke-width="2" fill="none"/>
+      <rect x="14" y="64" width="6" height="8"   rx="3" fill="#772200"/>
+      <rect x="22" y="66" width="6" height="6"   rx="3" fill="#772200"/>
+      <rect x="32" y="66" width="6" height="6"   rx="3" fill="#772200"/>
+      <rect x="40" y="64" width="6" height="8"   rx="3" fill="#772200"/>
+      <ellipse cx="30" cy="48" rx="4" ry="2"     fill="#FF6600" opacity="0.6"/>
+    </g>` },
+
+  { name:'Dämonenfürst',     minLv:46, hpM:4.0, atkM:3.2, xp:170, gold:85, color:'#CC2244',
+    type:'damon',   weak:'heilig',special:'teilen',  specialDesc:'Seelenspaltung — teilt sich HP-Verlust mit dir',
+    svg:`<g>
+      <ellipse cx="30" cy="74" rx="14" ry="4" fill="rgba(180,20,40,0.3)"/>
+      <rect x="22" y="54" width="7"  height="20" rx="3" fill="#770011"/>
+      <rect x="31" y="54" width="7"  height="20" rx="3" fill="#770011"/>
+      <ellipse cx="30" cy="44" rx="15" ry="18"   fill="#990022"/>
+      <path d="M15,30 Q10,18 14,10 Q16,20 18,17 Q14,10 20,7 Q18,17 22,14Z" fill="#CC2244"/>
+      <path d="M45,30 Q50,18 46,10 Q44,20 42,17 Q46,10 40,7 Q42,17 38,14Z" fill="#CC2244"/>
+      <path d="M20,26 Q18,17 21,15 Q19,21 22,20Z" fill="#FF4466"/>
+      <path d="M40,26 Q42,17 39,15 Q41,21 38,20Z" fill="#FF4466"/>
+      <circle cx="30" cy="26" r="12"             fill="#880022"/>
+      <circle cx="23" cy="23" r="4"              fill="#330008"/>
+      <circle cx="24" cy="22" r="2"              fill="#FF2244"/>
+      <circle cx="37" cy="23" r="4"              fill="#330008"/>
+      <circle cx="38" cy="22" r="2"              fill="#FF2244"/>
+      <path d="M24,30 Q30,35 36,30" stroke="#CC2244" stroke-width="2" fill="none"/>
+      <line x1="26" y1="30" x2="24" y2="34"     stroke="#FF0033" stroke-width="1.5"/>
+      <line x1="34" y1="30" x2="36" y2="34"     stroke="#FF0033" stroke-width="1.5"/>
+    </g>` },
+
+  { name:'Phönixgeist',      minLv:49, hpM:3.0, atkM:3.5, xp:195, gold:98, color:'#FFAA00',
+    type:'magisch', weak:'eis',   special:'wiedergeburt',specialDesc:'Wiedergeburt — steht einmal mit 30% HP auf',
+    svg:`<g>
+      <ellipse cx="30" cy="72" rx="12" ry="4" fill="rgba(255,160,0,0.3)"/>
+      <path d="M24,52 Q20,58 22,68 Q26,72 28,68 Q26,60 28,52Z" fill="#993300"/>
+      <path d="M36,52 Q40,58 38,68 Q34,72 32,68 Q34,60 32,52Z" fill="#993300"/>
+      <path d="M16,40 Q8,30 10,18 Q14,28 14,22 Q10,14 16,10 Q16,22 18,18 Q16,12 22,12 Q20,22 22,18Z" fill="#FF6600"/>
+      <path d="M44,40 Q52,30 50,18 Q46,28 46,22 Q50,14 44,10 Q44,22 42,18 Q44,12 38,12 Q40,22 38,18Z" fill="#FF6600"/>
+      <ellipse cx="30" cy="40" rx="14" ry="18"   fill="#CC4400"/>
+      <circle cx="30" cy="22" r="11"             fill="#DD5500"/>
+      <circle cx="23" cy="20" r="4"              fill="#661100"/>
+      <circle cx="24" cy="19" r="2"              fill="#FFCC00"/>
+      <circle cx="37" cy="20" r="4"              fill="#661100"/>
+      <circle cx="38" cy="19" r="2"              fill="#FFCC00"/>
+      <path d="M24,28 Q30,32 36,28" stroke="#FF8800" stroke-width="2" fill="none"/>
+    </g>` },
+
+  // ── ZONE 6: GÖTTLICHE PRÜFUNG (Lv 51-60) ──────
+  { name:'Himmelsrichter',   minLv:52, hpM:5.0, atkM:3.8, xp:250, gold:125,color:'#EEDD88',
+    type:'heilig',  weak:'damon', special:'urteil',  specialDesc:'Göttliches Urteil — ignoriert alle DEF-Boni',
+    svg:`<g>
+      <ellipse cx="30" cy="74" rx="14" ry="4" fill="rgba(220,200,100,0.3)"/>
+      <rect x="22" y="54" width="8"  height="20" rx="3" fill="#AA9922"/>
+      <rect x="30" y="54" width="8"  height="20" rx="3" fill="#AA9922"/>
+      <rect x="18" y="22" width="24" height="32" rx="3" fill="#CCBB33"/>
+      <rect x="10" y="26" width="8"  height="22" rx="2" fill="#BBAA22"/>
+      <rect x="42" y="26" width="8"  height="22" rx="2" fill="#BBAA22"/>
+      <path d="M16,22 Q10,12 14,6 Q16,14 18,12Z" fill="#EEDD66"/>
+      <path d="M44,22 Q50,12 46,6 Q44,14 42,12Z" fill="#EEDD66"/>
+      <path d="M22,20 Q18,10 22,4 Q22,12 24,10Z" fill="#EEDD66"/>
+      <path d="M38,20 Q42,10 38,4 Q38,12 36,10Z" fill="#EEDD66"/>
+      <ellipse cx="30" cy="18" rx="13" ry="12"   fill="#CCBB33"/>
+      <circle cx="23" cy="16" r="4"              fill="#665500"/>
+      <circle cx="24" cy="15" r="2"              fill="#FFFF88"/>
+      <circle cx="37" cy="16" r="4"              fill="#665500"/>
+      <circle cx="38" cy="15" r="2"              fill="#FFFF88"/>
+      <rect x="6"  y="24" width="2" height="28" rx="1" fill="#DDCC44"/>
+      <rect x="4"  y="24" width="6" height="2"  rx="1" fill="#DDCC44"/>
+      <path d="M6,24 L4,20 L8,20 Z"              fill="#EEDD88"/>
+    </g>` },
+
+  { name:'Sternenverschlinger',minLv:56, hpM:6.5, atkM:4.5, xp:330, gold:165,color:'#AA88FF',
+    type:'kosmisch', weak:'heilig',special:'verschlingen',specialDesc:'Kosmischer Schlund — stiehlt 20% deines Goldes',
+    svg:`<g>
+      <ellipse cx="30" cy="72" rx="18" ry="5" fill="rgba(140,100,220,0.3)"/>
+      <path d="M22,50 Q16,58 18,70 Q22,74 26,70 Q24,60 26,50Z" fill="#220044"/>
+      <path d="M38,50 Q44,58 42,70 Q38,74 34,70 Q36,60 34,50Z" fill="#220044"/>
+      <ellipse cx="30" cy="38" rx="18" ry="22"   fill="#330055"/>
+      <circle cx="30" cy="18" r="14"             fill="#220044"/>
+      <circle cx="22" cy="14" r="5"              fill="#110022"/>
+      <circle cx="23" cy="13" r="3"              fill="#CC88FF"/>
+      <circle cx="23" cy="13" r="1.5"            fill="#FFFFFF"/>
+      <circle cx="38" cy="14" r="5"              fill="#110022"/>
+      <circle cx="39" cy="13" r="3"              fill="#CC88FF"/>
+      <circle cx="39" cy="13" r="1.5"            fill="#FFFFFF"/>
+      <path d="M22,24 Q30,30 38,24" stroke="#AA88FF" stroke-width="2" fill="none"/>
+      <circle cx="30" cy="16" r="10" fill="none" stroke="#8866CC" stroke-width="0.8" opacity="0.6"/>
+      <circle cx="30" cy="16" r="14" fill="none" stroke="#6644AA" stroke-width="0.5" opacity="0.4"/>
+      <line x1="18" y1="40" x2="10" y2="34"     stroke="#AA88FF" stroke-width="1.5" opacity="0.7"/>
+      <line x1="18" y1="44" x2="8"  y2="44"     stroke="#AA88FF" stroke-width="1.5" opacity="0.7"/>
+      <line x1="42" y1="40" x2="50" y2="34"     stroke="#AA88FF" stroke-width="1.5" opacity="0.7"/>
+      <line x1="42" y1="44" x2="52" y2="44"     stroke="#AA88FF" stroke-width="1.5" opacity="0.7"/>
+    </g>` },
+
+  { name:'Weltenwächter',    minLv:59, hpM:8.0, atkM:5.0, xp:420, gold:210,color:'#FFFFFF',
+    type:'kosmisch', weak:'alle',  special:'weltgericht',specialDesc:'Weltgericht — massiver Flächenschaden alle 3 Runden',
+    svg:`<g>
+      <ellipse cx="30" cy="76" rx="18" ry="5" fill="rgba(255,255,255,0.2)"/>
+      <rect x="22" y="54" width="8"  height="22" rx="3" fill="#AAAACC"/>
+      <rect x="30" y="54" width="8"  height="22" rx="3" fill="#AAAACC"/>
+      <rect x="16" y="20" width="28" height="34" rx="4" fill="#CCCCEE"/>
+      <rect x="8"  y="24" width="8"  height="24" rx="3" fill="#BBBBDD"/>
+      <rect x="44" y="24" width="8"  height="24" rx="3" fill="#BBBBDD"/>
+      <path d="M12,24 Q6,12 10,4 Q12,14 14,11Z"  fill="#DDDDF8"/>
+      <path d="M48,24 Q54,12 50,4 Q48,14 46,11Z"  fill="#DDDDF8"/>
+      <path d="M20,20 Q14,8 18,2 Q20,12 22,9Z"   fill="#DDDDF8"/>
+      <path d="M40,20 Q46,8 42,2 Q40,12 38,9Z"   fill="#DDDDF8"/>
+      <ellipse cx="30" cy="14" rx="15" ry="12"   fill="#CCCCEE"/>
+      <circle cx="22" cy="12" r="5"              fill="#555566"/>
+      <circle cx="23" cy="11" r="2.5"            fill="#FFFFFF"/>
+      <circle cx="23" cy="11" r="1.2"            fill="#AAAAFF"/>
+      <circle cx="38" cy="12" r="5"              fill="#555566"/>
+      <circle cx="39" cy="11" r="2.5"            fill="#FFFFFF"/>
+      <circle cx="39" cy="11" r="1.2"            fill="#AAAAFF"/>
+      <path d="M22,20 Q30,24 38,20" stroke="#FFFFFF" stroke-width="2" fill="none"/>
+      <circle cx="30" cy="12" r="12" fill="none" stroke="#FFFFFF" stroke-width="0.8" opacity="0.5"/>
+      <circle cx="30" cy="12" r="18" fill="none" stroke="#BBBBFF" stroke-width="0.5" opacity="0.3"/>
     </g>` },
 ];
 
@@ -2105,6 +2500,161 @@ const G = {
 };
 
 // Computed stats (base + equipment + upgrades + skills)
+// ── MONSTER TYPE SYSTEM ──────────────────────
+// Typen und ihre Schwächen
+const TYPE_COLORS = {
+  tier:'#AA6633', untoter:'#7799AA', magisch:'#9955CC',
+  mensch:'#AAAA55', geist:'#55AA88', damon:'#CC2244',
+  heilig:'#DDCC44', kosmisch:'#9977FF'
+};
+const TYPE_LABELS = {
+  tier:'🐾 Tier', untoter:'💀 Untoter', magisch:'✨ Magisch',
+  mensch:'⚔️ Mensch', geist:'👻 Geist', damon:'😈 Dämon',
+  heilig:'🌟 Heilig', kosmisch:'🌌 Kosmisch'
+};
+
+// Schwäche gibt +40% Schaden
+function getWeaknessMult(monster) {
+  if (!monster || !monster.weak) return 1;
+  const s = getStats();
+  const w = monster.weak;
+  // Prüfe ob Held-Stats die Schwäche treffen
+  if (w === 'crit'   && s.crit > 20)  return 1.4;
+  if (w === 'atk'    && s.atk > 30)   return 1.4;
+  if (w === 'blitz'  && G.skills.has('arcane_power')) return 1.4;
+  if (w === 'feuer'  && G.skills.has('god_mode'))     return 1.4;
+  if (w === 'eis'    && G.skills.has('time_warp'))    return 1.4;
+  if (w === 'magisch'&& G.skills.has('arcane_power')) return 1.4;
+  if (w === 'heilig' && G.skills.has('god_mode'))     return 1.4;
+  if (w === 'damon'  && G.skills.has('bloodRage'))    return 1.4;
+  if (w === 'alle')  return 1.3; // kosmisch — immer leicht schwach
+  return 1;
+}
+
+// Monster-Spezialangriff: gibt Zusatz-Effekt zurück
+// Wird in arena und dungeon combat aufgerufen
+if (!G.monsterDebuffs) G.monsterDebuffs = {};  // { effect, turnsLeft, value }
+
+function tickMonsterDebuffs() {
+  if (!G.monsterDebuffs || !G.monsterDebuffs.turnsLeft) return;
+  G.monsterDebuffs.turnsLeft--;
+  if (G.monsterDebuffs.turnsLeft <= 0) {
+    if (G.monsterDebuffs.effect) {
+      log('✅ ' + (G.monsterDebuffs.effectName||'Debuff') + ' aufgehoben.', 'n');
+    }
+    G.monsterDebuffs = {};
+  }
+}
+
+function applyMonsterSpecial(m, h, s) {
+  if (!m || !m.special) return 0;
+  // 20% Chance pro Monster-Angriff den Spezial auszulösen
+  if (Math.random() > 0.20) return 0;
+
+  const sp = m.special;
+  let extraDmg = 0;
+
+  if (sp === 'swarm') {
+    // Zweimal angreifen
+    extraDmg = Math.max(1, Math.floor(m.atk * 0.6 - s.def * 0.3));
+    log('🐀 ' + m.name + ': Schwarm! Trifft nochmal: -' + extraDmg + ' HP', 'c');
+  } else if (sp === 'fluch') {
+    G.monsterDebuffs = { effect:'def', effectName:'Fluch', turnsLeft:3, value:0.6 };
+    log('🟢 ' + m.name + ': Fluch! DEF -40% für 3 Runden', 'c');
+  } else if (sp === 'biss') {
+    // Gift: extra Schaden über 3 Runden
+    G.monsterDebuffs = { effect:'poison', effectName:'Gift', turnsLeft:3, value: Math.floor(h.maxHp * 0.04) };
+    log('☠️ ' + m.name + ': Giftbiss! 3 Runden Vergiftung', 'c');
+  } else if (sp === 'stun') {
+    G.monsterDebuffs = { effect:'stun', effectName:'Betäubung', turnsLeft:1, value:1 };
+    log('💫 ' + m.name + ': Taumelschlag! 1 Runde betäubt', 'c');
+  } else if (sp === 'gift') {
+    G.monsterDebuffs = { effect:'slow', effectName:'Verlangsamung', turnsLeft:4, value:1.5 };
+    log('🕷️ ' + m.name + ': Giftnetz! Angriffstempo halbiert', 'c');
+  } else if (sp === 'kette') {
+    extraDmg = Math.max(1, Math.floor(m.atk * 0.5 - s.def * 0.3));
+    log('⛓️ ' + m.name + ': Kettengeißel! +' + extraDmg + ' Zusatzschaden', 'c');
+  } else if (sp === 'dodge') {
+    // Nächster Angriff gegen ihn halbiert
+    m._dodge = true;
+    log('🐀 ' + m.name + ': Ausweichen! Nächster Treffer halbiert', 'c');
+  } else if (sp === 'stein') {
+    m._stoneForm = 2;
+    log('🗿 ' + m.name + ': Steinform! 2 Runden unverwundbar', 'c');
+  } else if (sp === 'saugen') {
+    const heal = Math.floor(m.atk * 0.5);
+    m.hp = Math.min(m.maxHp, (m.hp||0) + heal);
+    log('🧛 ' + m.name + ': Lebensraub! +' + heal + ' HP', 'c');
+  } else if (sp === 'schild') {
+    if (!m._shield) { m._shield = Math.floor(m.maxHp * 0.3); log('🛡️ ' + m.name + ': Kryptenschild! Absorbiert ' + m._shield + ' Schaden', 'c'); }
+  } else if (sp === 'wickeln') {
+    G.monsterDebuffs = { effect:'stun', effectName:'Eingewickelt', turnsLeft:2, value:1 };
+    log('🐍 ' + m.name + ': Eingewickelt! 2 Runden kein Angriff', 'c');
+  } else if (sp === 'erdbeben') {
+    extraDmg = Math.max(1, Math.floor(m.atk * 0.4));
+    log('🌍 ' + m.name + ': Erdbeben! Flächenschaden: -' + extraDmg + ' HP', 'c');
+  } else if (sp === 'schatten') {
+    // Nächster Krit ignoriert DEF
+    m._shadowBlade = true;
+    log('🗡️ ' + m.name + ': Schattenklinge! Nächster Krit ignoriert DEF', 'c');
+  } else if (sp === 'lavaspucker') {
+    G.monsterDebuffs = { effect:'burn', effectName:'Verbrennung', turnsLeft:4, value: Math.floor(h.maxHp * 0.05) };
+    log('🔥 ' + m.name + ': Lavastrahl! Verbrennung für 4 Runden', 'c');
+  } else if (sp === 'teilen') {
+    const sharedDmg = Math.floor(m.atk * 0.3);
+    extraDmg = sharedDmg;
+    log('👹 ' + m.name + ': Seelenspaltung! Teilt Schaden: -' + sharedDmg + ' HP', 'c');
+  } else if (sp === 'verschlingen') {
+    const stolen = Math.floor(h.gold * 0.05);
+    if (stolen > 0) { h.gold = Math.max(0, h.gold - stolen); log('🌌 ' + m.name + ': Kosmischer Schlund! -' + stolen + 'G gestohlen', 'c'); }
+  } else if (sp === 'urteil') {
+    extraDmg = Math.floor(m.atk * 0.8);
+    log('⚖️ ' + m.name + ': Göttliches Urteil! -' + extraDmg + ' HP (ignoriert DEF)', 'c');
+  } else if (sp === 'weltgericht') {
+    extraDmg = Math.floor(h.maxHp * 0.12);
+    log('🌍 ' + m.name + ': Weltgericht! Massivsturm: -' + extraDmg + ' HP', 'c');
+  } else if (sp === 'phase') {
+    // handled in damage calc
+  } else if (sp === 'wiedergeburt' && m.hp <= 0 && !m._reborn) {
+    m._reborn = true;
+    m.hp = Math.floor(m.maxHp * 0.3);
+    log('🔥 ' + m.name + ': Wiedergeburt! Steht wieder auf mit ' + m.hp + ' HP!', 'l');
+    return -1; // signal: don't kill yet
+  }
+
+  return extraDmg;
+}
+
+// Apply active debuff effects each combat tick
+function applyDebuffTick(h) {
+  if (!G.monsterDebuffs || !G.monsterDebuffs.effect) return;
+  const d = G.monsterDebuffs;
+  if (d.effect === 'poison' || d.effect === 'burn') {
+    h.hp = Math.max(0, h.hp - d.value);
+  }
+}
+
+function getDebuffedStats(s) {
+  if (!G.monsterDebuffs || !G.monsterDebuffs.effect) return s;
+  const d = G.monsterDebuffs;
+  if (d.effect === 'def')  return { ...s, def:  Math.floor(s.def  * (1 - d.value + 1) * 0.5) };
+  if (d.effect === 'slow') return { ...s, spd:  s.spd * 1.5 };
+  if (d.effect === 'stun') return { ...s, stun: true };
+  return s;
+}
+
+function getMonsterTypeTag(m) {
+  if (!m || !m.type) return '';
+  const col = TYPE_COLORS[m.type] || '#888';
+  const lbl = TYPE_LABELS[m.type] || m.type;
+  return '<span style="font-family:Cinzel,serif;font-size:.5rem;color:' + col + ';background:rgba(0,0,0,.3);padding:1px 4px;border-radius:3px;border:1px solid ' + col + ';">' + lbl + '</span>';
+}
+
+function getWeaknessTag(m) {
+  if (!m || !m.weak || m.weak === 'alle') return '';
+  return '<span style="font-family:Cinzel,serif;font-size:.48rem;color:var(--text3);margin-left:3px;">⚡ ' + m.weak.charAt(0).toUpperCase() + m.weak.slice(1) + '-Schwäche</span>';
+}
+
 function getStats() {
   const h = G.hero;
   let atk = h.baseAtk, def = h.baseDef, spd = h.spd, crit = h.baseCrit;
@@ -2354,7 +2904,7 @@ function updateArena() {
     return;
   }
   document.getElementById('monSprite').textContent=m.emoji;
-  document.getElementById('monName').textContent=m.name;
+  document.getElementById('monName').innerHTML = m.name + ' ' + getMonsterTypeTag(m);
   document.getElementById('monHpTxt').textContent=Math.ceil(m.hp)+'/'+m.maxHp;
   document.getElementById('monHpBar').style.width=Math.max(0,m.hp/m.maxHp*100)+'%';
   document.getElementById('waveChip').textContent='Welle '+G.wave;
@@ -2732,9 +3282,26 @@ function tick() {
     hCD = s.spd;
     const target = G.monsters[0];
     if (target) {
-      let dmg = Math.max(1, s.atk + rng(-1, 3) - Math.floor(target.atk * 0.08));
-      const isCrit = Math.random() * 100 < s.crit;
+      // Debuff: stun check
+      const ds = getDebuffedStats(s);
+      if (ds.stun) { tickMonsterDebuffs(); updateArenaHpBar(); return; }
+      let dmg = Math.max(1, ds.atk + rng(-1, 3) - Math.floor(target.atk * 0.08));
+      const isCrit = Math.random() * 100 < ds.crit;
       if (isCrit) dmg = Math.floor(dmg * 1.8);
+      // Weakness multiplier
+      const wm = getWeaknessMult(target);
+      if (wm > 1) { dmg = Math.floor(dmg * wm); }
+      // Shield absorb
+      if (target._shield && target._shield > 0) {
+        const absorbed = Math.min(target._shield, dmg);
+        target._shield -= absorbed; dmg -= absorbed;
+        if (target._shield <= 0) { target._shield = 0; log('🛡️ Kryptenschild zerstört!', 'n'); }
+        if (dmg <= 0) { floatDmgEl('mon_' + target.id, 0, '#aaa'); updateArenaHpBar(); return; }
+      }
+      // Stone form
+      if (target._stoneForm > 0) { target._stoneForm--; floatDmgEl('mon_' + target.id, 0, '#888'); updateArenaHpBar(); return; }
+      // Dodge
+      if (target._dodge) { target._dodge = false; dmg = Math.floor(dmg * 0.5); }
       if (G.skills.has('doubleStrike') && Math.random() < 0.05) {
         const d2 = Math.floor(dmg * 0.7);
         target.hp -= d2;
@@ -2743,11 +3310,17 @@ function tick() {
       if (G.skills.has('bloodRage') && h.hp < h.maxHp * 0.4) dmg = Math.floor(dmg * 1.2);
       target.hp -= dmg;
       if (G.skills.has('vampirism')) { const heal = Math.floor(dmg * 0.08); h.hp = Math.min(h.maxHp, h.hp + heal); }
-      floatDmgEl('mon_' + target.id, dmg, isCrit ? '#f0cc55' : '#e05050');
+      floatDmgEl('mon_' + target.id, dmg, wm > 1 ? '#ff8800' : isCrit ? '#f0cc55' : '#e05050');
       try { playSfx(isCrit ? 'crit' : 'hit'); } catch(e) {}
       const el = document.getElementById('mon_' + target.id);
       if (el) { el.style.filter = 'brightness(3) saturate(0)'; setTimeout(() => { if(el) el.style.filter = ''; }, 200); }
-      if (target.hp <= 0) { monsterKilled(target); return; }
+      // Wiedergeburt check
+      if (target.hp <= 0) {
+        const rebornSignal = applyMonsterSpecial(target, h, ds);
+        if (rebornSignal === -1) { updateArenaHpBar(); return; } // reborn!
+        monsterKilled(target); return;
+      }
+      tickMonsterDebuffs();
     }
     updateArenaHpBar();
   }
@@ -2767,10 +3340,16 @@ function tick() {
   G.monsters.forEach(m => {
     m.atkCd -= 0.25;
     if (m.atkCd <= 0) {
-      m.atkCd = 1.1 + Math.random() * 0.7;
-      let mDmg = Math.max(1, m.atk - Math.floor(s.def * 0.6));
+      const sDebuffed = getDebuffedStats(s);
+      m.atkCd = (1.1 + Math.random() * 0.7) * (sDebuffed.slow ? 1.5 : 1);
+      let mDmg = Math.max(1, m.atk - Math.floor(sDebuffed.def * 0.6));
       if (G.skills.has('ironSkin')) mDmg = Math.floor(mDmg * 0.85);
+      // Phase special: 30% chance to negate
+      if (m.special === 'phase' && Math.random() < 0.3) { floatDmg(document.getElementById('heroSprite'), 0, '#00DDFF'); log('👻 ' + m.name + ' phasiert! Angriff negiert.', 'n'); return; }
+      const extraDmg = applyMonsterSpecial(m, h, sDebuffed);
+      if (extraDmg > 0) h.hp = Math.max(0, h.hp - extraDmg);
       h.hp -= mDmg;
+      applyDebuffTick(h);
       const heroEl = document.getElementById('heroSprite');
       if (heroEl) floatDmg(heroEl, mDmg, '#ff9040');
       if (h.hp <= 0) { h.hp = 0; updateAll(); heroDied(); return; }
@@ -2812,6 +3391,7 @@ function monsterKilled(m) {
 }
 
 function heroDied() {
+  G.monsterDebuffs = {};
   log('💔 Besiegt! Regeneriere...', 'c');
   clearInterval(G.combatInterval); G.combatInterval = null;
   G.monsters = []; G.monster = null;
@@ -4032,7 +4612,7 @@ function startDungeonFight(isBoss) {
   document.getElementById('dungeonFight').style.display = 'block';
   const mn = document.getElementById('dungMonName');
   if (mn) {
-    mn.textContent = bossName;
+    mn.innerHTML = bossName + ' ' + getMonsterTypeTag(G.dungeonMonster) + (G.dungeonMonster.special ? '<div style="font-size:.58rem;color:var(--orange2);margin-top:2px;">⚡ ' + G.dungeonMonster.specialDesc + '</div>' : '');
     mn.style.color = isBoss ? 'var(--gold2)' : 'var(--red2)';
     mn.style.fontSize = isBoss ? '1.05rem' : '.9rem';
   }
@@ -4183,19 +4763,44 @@ function dungeonAttack() {
   const s = getStats();
   const atkBonus = (G._dungTempAtk || 0);
   const defBonus = (G._dungTempDef || 0);
-  let dmg = Math.max(1, s.atk + atkBonus + rng(-2, 5));
-  const isCrit = Math.random() * 100 < s.crit;
+  const ds = getDebuffedStats(s);
+  if (ds.stun) { tickMonsterDebuffs(); log('💫 Betäubt! Kein Angriff.', 'c'); updateDungFight(); return; }
+  let dmg = Math.max(1, ds.atk + atkBonus + rng(-2, 5));
+  const isCrit = Math.random() * 100 < ds.crit;
   if (isCrit) dmg = Math.floor(dmg * 1.8);
+  // Weakness
+  const wm = getWeaknessMult(m);
+  if (wm > 1) dmg = Math.floor(dmg * wm);
+  // Shield
+  if (m._shield && m._shield > 0) {
+    const ab = Math.min(m._shield, dmg); m._shield -= ab; dmg -= ab;
+    if (m._shield <= 0) { m._shield=0; log('🛡️ Kryptenschild zerstört!','n'); }
+    if (dmg <= 0) { updateDungFight(); return; }
+  }
+  // Stone form
+  if (m._stoneForm > 0) { m._stoneForm--; log('🗿 Steinform! Kein Schaden.','n'); updateDungFight(); return; }
+  if (m._dodge) { m._dodge = false; dmg = Math.floor(dmg * 0.5); }
   m.hp -= dmg;
   try { playSfx(isCrit ? 'crit' : 'hit'); } catch(e) {}
   const dl = document.getElementById('dungLog');
-  if (dl) { const e = document.createElement('div'); e.className = 'log-e c'; e.textContent = '⚔️ ' + dmg + (isCrit ? ' (KRIT!)' : ''); dl.prepend(e); }
+  const weakTag = wm > 1 ? ' ⚡SCHWÄCHE!' : '';
+  if (dl) { const e = document.createElement('div'); e.className = 'log-e c'; e.textContent = '⚔️ ' + dmg + (isCrit ? ' (KRIT!)' : '') + weakTag; dl.prepend(e); }
   updateDungFight();
-  if (m.hp <= 0) { dungeonVictory(); return; }
-  // Monster counter-attack
-  const mDmg = Math.max(1, m.atk - Math.floor((s.def + defBonus) * 0.55));
+  // Wiedergeburt check
+  if (m.hp <= 0) {
+    const sig = applyMonsterSpecial(m, G.hero, ds);
+    if (sig === -1) { updateDungFight(); return; }
+    dungeonVictory(); return;
+  }
+  tickMonsterDebuffs();
+  // Monster counter-attack + special
+  const mDmg = Math.max(1, m.atk - Math.floor((ds.def + defBonus) * 0.55));
+  const extraDmg = applyMonsterSpecial(m, G.hero, ds);
+  if (extraDmg > 0) G.hero.hp = Math.max(0, G.hero.hp - extraDmg);
   G.hero.hp = Math.max(0, G.hero.hp - mDmg);
-  if (dl) { const e = document.createElement('div'); e.className = 'log-e'; e.textContent = m.name.replace(/^[^ ]+ /,'') + ' trifft: -' + mDmg; dl.prepend(e); }
+  applyDebuffTick(G.hero);
+  const mName = m.name.replace(/^[^ ]+ /,'');
+  if (dl) { const e = document.createElement('div'); e.className = 'log-e'; e.textContent = mName + ': -' + mDmg; dl.prepend(e); }
   updateAll(); updateDungFight();
   if (G.hero.hp <= 0) { G.hero.hp = 0; dungeonDefeat(); }
 }
@@ -4299,7 +4904,7 @@ function claimDungeonReward() {
 
 function dungeonDefeat() {
   G.dungeonMonster = null; G.dungeonActive = false;
-  G._dungTempAtk = 0; G._dungTempDef = 0;
+  G._dungTempAtk = 0; G._dungTempDef = 0; G.monsterDebuffs = {};
   document.getElementById('dungeonRoom').style.display = 'none';
   document.getElementById('dungeonFight').style.display = 'none';
   document.getElementById('dungeonTrap').style.display = 'none';
