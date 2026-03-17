@@ -5412,8 +5412,20 @@ async function _doSave() {
       quest_claimed:   JSON.stringify([...G.questClaimed]),
       // Shop
       shop_purchases:  JSON.stringify(G.shopPurchases  || {}),
-      // Forge extras — stored as JSON in extra fields
-      // (Materialien + Ofen werden via local_guild-ähnlichem Blob gespeichert)
+      // Forge: Materialien, Ofenlevel, Auto-Sell
+      forge_materials:   JSON.stringify(G.materials       || {}),
+      furnace_level:     G.furnaceLevel   || 1,
+      auto_sell_rules:   JSON.stringify(G.autoSellRules   || {}),
+      auto_sell_earned:  G.autoSellEarned || 0,
+      // Event State
+      event_progress:    JSON.stringify(G.eventProgress   || {}),
+      event_claimed:     JSON.stringify([...(G.eventClaimed  || [])]),
+      event_currency:    JSON.stringify(G.eventCurrency   || {}),
+      event_purchased:   JSON.stringify([...(G.eventPurchased|| [])]),
+      event_boss:        JSON.stringify(G.eventBoss       || {}),
+      event_buffs:       JSON.stringify(G.eventBuffs      || {}),
+      // Daily quest claimed
+      daily_claimed:     JSON.stringify([...(G.dailyClaimed  || [])]),
     });
 
     // 2. Upgrades — erst löschen dann neu (verhindert 409)
@@ -5565,6 +5577,23 @@ async function loadFromSupabase() {
 
     // Shop
     try { G.shopPurchases = JSON.parse(p.shop_purchases || '{}'); } catch(e) { G.shopPurchases = {}; }
+
+    // Forge: Materialien + Ofenlevel + Auto-Sell
+    try { G.materials      = JSON.parse(p.forge_materials  || '{}'); } catch(e) { G.materials = {}; }
+    G.furnaceLevel  = p.furnace_level   || 1;
+    try { G.autoSellRules  = JSON.parse(p.auto_sell_rules  || '{}'); } catch(e) { G.autoSellRules = {}; }
+    G.autoSellEarned = p.auto_sell_earned || 0;
+
+    // Event State
+    try { G.eventProgress  = JSON.parse(p.event_progress   || '{}'); } catch(e) { G.eventProgress  = {}; }
+    try { G.eventClaimed   = new Set(JSON.parse(p.event_claimed   || '[]')); } catch(e) { G.eventClaimed  = new Set(); }
+    try { G.eventCurrency  = JSON.parse(p.event_currency   || '{}'); } catch(e) { G.eventCurrency  = {}; }
+    try { G.eventPurchased = new Set(JSON.parse(p.event_purchased || '[]')); } catch(e) { G.eventPurchased = new Set(); }
+    try { G.eventBoss      = JSON.parse(p.event_boss       || '{}'); } catch(e) { G.eventBoss      = {}; }
+    try { G.eventBuffs     = JSON.parse(p.event_buffs      || '{}'); } catch(e) { G.eventBuffs     = {}; }
+
+    // Daily quest claimed
+    try { G.dailyClaimed   = new Set(JSON.parse(p.daily_claimed   || '[]')); } catch(e) { G.dailyClaimed  = new Set(); }
 
     const upgrades = await sbGet('sm_upgrades', `player_id=eq.${pid}`);
     G.upgrades = {};
@@ -7388,15 +7417,23 @@ async function continueInit() {
   await new Promise(r=>setTimeout(r,300));
   removeLoader();
 
-  // Event-State laden
-  try { loadEventState(); } catch(e) {}
-  // Materialien aus LocalStorage laden
+  // localStorage als Fallback wenn Supabase keine Daten hatte
+  // (Materialien/Ofen/Event nur aus localStorage nehmen wenn noch leer)
   try {
     const fd = JSON.parse(localStorage.getItem('sm3_forge') || '{}');
-    if (fd.materials)     G.materials     = fd.materials;
-    if (fd.furnaceLevel)  G.furnaceLevel  = fd.furnaceLevel;
-    if (fd.autoSellRules) G.autoSellRules = fd.autoSellRules;
-    if (fd.autoSellEarned) G.autoSellEarned = fd.autoSellEarned;
+    if (fd.materials     && !Object.keys(G.materials||{}).length)     G.materials      = fd.materials;
+    if (fd.furnaceLevel  && !G.furnaceLevel)                           G.furnaceLevel   = fd.furnaceLevel;
+    if (fd.autoSellRules && !Object.keys(G.autoSellRules||{}).length) G.autoSellRules  = fd.autoSellRules;
+    if (fd.autoSellEarned && !G.autoSellEarned)                        G.autoSellEarned = fd.autoSellEarned;
+  } catch(e) {}
+  try {
+    const ed = JSON.parse(localStorage.getItem('sm3_event') || '{}');
+    if (ed.eventProgress  && !Object.keys(G.eventProgress||{}).length)  G.eventProgress  = ed.eventProgress;
+    if (ed.eventClaimed   && !G.eventClaimed?.size)                      G.eventClaimed   = new Set(ed.eventClaimed);
+    if (ed.eventCurrency  && !Object.keys(G.eventCurrency||{}).length)  G.eventCurrency  = ed.eventCurrency;
+    if (ed.eventPurchased && !G.eventPurchased?.size)                    G.eventPurchased = new Set(ed.eventPurchased);
+    if (ed.eventBoss      && !Object.keys(G.eventBoss||{}).length)       G.eventBoss      = ed.eventBoss;
+    if (ed.eventBuffs     && !Object.keys(G.eventBuffs||{}).length)      G.eventBuffs     = ed.eventBuffs;
   } catch(e) {}
   try { checkIdle(); }           catch(e) {}
   try { spawnMonster(); startCombat(); } catch(e) {}
