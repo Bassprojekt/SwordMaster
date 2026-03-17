@@ -1255,6 +1255,17 @@ input[type=range].vol-slider::-webkit-slider-thumb:hover { transform:scale(1.2);
           <div class="pill">💰 <b id="guildGold">0</b></div>
         </div>
       </div>
+      <!-- Guild Level Progress Bar -->
+      <div style="margin-top:10px;">
+        <div class="bar-label">
+          <span style="font-family:'Cinzel',serif;font-size:.68rem;color:var(--gold);">🏰 Gilden-Fortschritt</span>
+          <span id="guildXpLabel" style="font-size:.68rem;color:var(--text2);">0 / 1000 Gold</span>
+        </div>
+        <div class="bar" style="height:8px;">
+          <div class="bar-fill" id="guildXpBar" style="width:0%;background:linear-gradient(to right,var(--gold),var(--gold2));"></div>
+        </div>
+        <div style="font-size:.62rem;color:var(--text3);margin-top:3px;font-style:italic;" id="guildNextLevelInfo">Spendet Gold um die Gilde zu leveln!</div>
+      </div>
       <div style="margin-top:8px;" id="myGuildRankDisplay"></div>
     </div>
     <!-- Chat -->
@@ -1274,11 +1285,19 @@ input[type=range].vol-slider::-webkit-slider-thumb:hover { transform:scale(1.2);
     </div>
     <!-- Donate & Leave -->
     <div class="card">
-      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-        <input type="number" id="donateAmount" placeholder="Gold spenden..." min="1" style="flex:1;min-width:120px;padding:7px;background:rgba(0,0,0,.4);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:.82rem;outline:none;"/>
+      <div class="sec-title">💰 Gold spenden</div>
+      <div style="font-size:.73rem;color:var(--text2);margin-bottom:8px;">Gespendetes Gold füllt die Gilden-XP. Mit genug Gold steigt die Gilde auf und wird stärker!</div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px;">
+        <input type="number" id="donateAmount" placeholder="Betrag eingeben..." min="1" style="flex:1;min-width:120px;padding:7px;background:rgba(0,0,0,.4);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:.82rem;outline:none;"/>
         <button class="ctrl-btn" onclick="donateToGuild()" style="border-color:var(--green2);color:var(--green2);">💰 Spenden</button>
-        <button class="ctrl-btn" onclick="leaveGuild()" style="border-color:var(--red2);color:var(--red2);">🚪 Verlassen</button>
       </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;">
+        <button class="ctrl-btn" onclick="setDonate(100)" style="font-size:.65rem;padding:4px 10px;">+100G</button>
+        <button class="ctrl-btn" onclick="setDonate(500)" style="font-size:.65rem;padding:4px 10px;">+500G</button>
+        <button class="ctrl-btn" onclick="setDonate(1000)" style="font-size:.65rem;padding:4px 10px;">+1000G</button>
+        <button class="ctrl-btn" onclick="setDonate(Math.floor(G.hero.gold*0.1))" style="font-size:.65rem;padding:4px 10px;">10% deines Golds</button>
+      </div>
+      <button class="ctrl-btn" onclick="leaveGuild()" style="border-color:var(--red2);color:var(--red2);width:100%;">🚪 Gilde verlassen</button>
     </div>
   </div>
 </div>
@@ -3747,8 +3766,7 @@ async function loadGuildData(){
     if(document.getElementById('guildEmoji'))document.getElementById('guildEmoji').textContent=local.emoji||'🏰';
     if(document.getElementById('guildNameDisplay'))document.getElementById('guildNameDisplay').textContent=local.name||'Gilde';
     if(document.getElementById('guildTagline'))document.getElementById('guildTagline').textContent=local.tagline||'Keine Beschreibung';
-    if(document.getElementById('guildLevel'))document.getElementById('guildLevel').textContent=local.level||1;
-    if(document.getElementById('guildGold'))document.getElementById('guildGold').textContent=local.gold||0;
+    updateGuildLevelUI(local.gold||0);
   }
   const roleC={leader:'var(--gold2)',officer:'var(--purple2)',member:'var(--blue2)'};
   const roleL={leader:'👑 Anführer',officer:'⭐ Offizier',member:'⚔️ Mitglied'};
@@ -3762,8 +3780,7 @@ async function loadGuildData(){
       if(document.getElementById('guildEmoji'))document.getElementById('guildEmoji').textContent=g.emoji||'🏰';
       if(document.getElementById('guildNameDisplay'))document.getElementById('guildNameDisplay').textContent=g.name||'Gilde';
       if(document.getElementById('guildTagline'))document.getElementById('guildTagline').textContent=g.tagline||'Keine Beschreibung';
-      if(document.getElementById('guildLevel'))document.getElementById('guildLevel').textContent=g.level||1;
-      if(document.getElementById('guildGold'))document.getElementById('guildGold').textContent=g.gold||0;
+      updateGuildLevelUI(g.gold||0);
     } else if(!local){
       // Weder lokal noch online — Gilde existiert nicht mehr
       log('⚠️ Gilde nicht gefunden. Mitgliedschaft zurückgesetzt.','c');
@@ -3950,13 +3967,101 @@ async function kickGuildMember(pid,name){
   log('🚫 '+name+' aus der Gilde geworfen!','c');setTimeout(loadGuildMembers,600);
 }
 
-async function donateToGuild(){
-  if(!G.guildId)return;const amount=parseInt(document.getElementById('donateAmount')?.value)||0;
-  if(amount<1||G.hero.gold<amount){log('❌ Ungültiger Betrag!','c');return;}
-  G.hero.gold-=amount;
-  const guilds=await sbGet('sm_guilds','id=eq.'+G.guildId);
-  if(guilds&&guilds[0])await sbUpsert('sm_guilds',{id:G.guildId,gold:(guilds[0].gold||0)+amount});
-  log('💰 '+amount+' Gold gespendet!','i');updateAll();loadGuildData();saveToSupabase();
+// ── Gilden Level-System ──
+// Gold-Schwellen für Level-Ups: Level 1→2 = 1000G, Level 2→3 = 2500G, usw.
+function guildGoldForLevel(level) {
+  return Math.floor(1000 * Math.pow(1.6, level - 1));
+}
+
+function guildLevelFromTotalGold(totalGold) {
+  let level = 1;
+  let spent = 0;
+  while (true) {
+    const needed = guildGoldForLevel(level);
+    if (spent + needed > totalGold) break;
+    spent += needed;
+    level++;
+    if (level >= 50) break; // max level 50
+  }
+  return { level, spentOnCurrentLevel: totalGold - (()=>{let s=0;for(let i=1;i<level;i++)s+=guildGoldForLevel(i);return s;})(), neededForNext: guildGoldForLevel(level) };
+}
+
+function updateGuildLevelUI(totalGold) {
+  const { level, spentOnCurrentLevel, neededForNext } = guildLevelFromTotalGold(totalGold || 0);
+  if (document.getElementById('guildLevel')) document.getElementById('guildLevel').textContent = level;
+  if (document.getElementById('guildGold')) document.getElementById('guildGold').textContent = (totalGold || 0).toLocaleString();
+  const pct = Math.min(100, Math.floor(spentOnCurrentLevel / neededForNext * 100));
+  if (document.getElementById('guildXpBar')) document.getElementById('guildXpBar').style.width = pct + '%';
+  if (document.getElementById('guildXpLabel')) document.getElementById('guildXpLabel').textContent = spentOnCurrentLevel.toLocaleString() + ' / ' + neededForNext.toLocaleString() + ' Gold';
+  if (document.getElementById('guildNextLevelInfo')) {
+    if (level >= 50) {
+      document.getElementById('guildNextLevelInfo').textContent = '👑 Maximales Gilden-Level erreicht!';
+    } else {
+      const remaining = neededForNext - spentOnCurrentLevel;
+      document.getElementById('guildNextLevelInfo').textContent = `Noch ${remaining.toLocaleString()} Gold für Level ${level + 1}`;
+    }
+  }
+}
+
+function setDonate(amount) {
+  const inp = document.getElementById('donateAmount');
+  if (inp) inp.value = Math.max(1, Math.floor(amount));
+}
+
+async function donateToGuild() {
+  if (!G.guildId) return;
+  const amount = parseInt(document.getElementById('donateAmount')?.value) || 0;
+  if (amount < 1) { log('❌ Mindestens 1 Gold spenden!', 'c'); return; }
+  if (G.hero.gold < amount) { log('❌ Nicht genug Gold! (Hast: ' + G.hero.gold + 'G)', 'c'); return; }
+
+  // Sofort lokal abziehen
+  G.hero.gold -= amount;
+
+  // Lokalen Gildengold aktualisieren
+  if (!G._localGuild) G._localGuild = { id: G.guildId, name: '?', gold: 0, level: 1 };
+  const oldGold = G._localGuild.gold || 0;
+  const newGold = oldGold + amount;
+  G._localGuild.gold = newGold;
+
+  // Level neu berechnen
+  const { level: newLevel } = guildLevelFromTotalGold(newGold);
+  const oldLevel = G._localGuild.level || 1;
+  G._localGuild.level = newLevel;
+
+  // UI sofort aktualisieren
+  updateGuildLevelUI(newGold);
+  updateAll();
+
+  if (newLevel > oldLevel) {
+    log('🎉 GILDE LEVEL UP! Gilde ist jetzt Level ' + newLevel + '!', 'l');
+  } else {
+    log('💰 ' + amount + ' Gold gespendet! Gilde hat jetzt ' + newGold.toLocaleString() + ' Gold gesamt.', 'i');
+  }
+
+  // Eingabe leeren
+  const inp = document.getElementById('donateAmount'); if (inp) inp.value = '';
+
+  // Supabase im Hintergrund aktualisieren
+  saveToSupabase();
+  try {
+    // Aktuellen Stand aus Supabase holen und addieren (verhindert Race-Conditions)
+    const guilds = await sbGet('sm_guilds', 'id=eq.' + G.guildId);
+    if (guilds && guilds[0]) {
+      const serverGold = (guilds[0].gold || 0) + amount;
+      const { level: serverLevel } = guildLevelFromTotalGold(serverGold);
+      await sbUpsert('sm_guilds', { id: G.guildId, gold: serverGold, level: serverLevel });
+      // Lokalen Cache synchronisieren
+      G._localGuild.gold = serverGold;
+      G._localGuild.level = serverLevel;
+      updateGuildLevelUI(serverGold);
+    } else {
+      // Gilde noch nicht in Supabase — erstmal nur lokalen Wert hochladen
+      await sbUpsert('sm_guilds', { id: G.guildId, gold: newGold, level: newLevel });
+    }
+  } catch (e) {
+    // Offline ist ok — lokal gespeichert
+    console.warn('donateToGuild Supabase-Fehler:', e);
+  }
 }
 
 // ════════════════════════════════════════════
