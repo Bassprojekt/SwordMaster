@@ -724,6 +724,143 @@ body {
 }
 #guildHeaderBadge:hover { border-color:var(--green2); }
 
+/* ══ GILDEN-RAID ══ */
+.raid-boss-area {
+  background: rgba(0,0,0,.3);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+.raid-boss-area::before {
+  content:'';
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse at 50% 100%,rgba(176,48,48,.18),transparent 70%);
+  pointer-events:none;
+}
+.raid-boss-sprite {
+  font-size: 3.8rem;
+  display: block;
+  margin-bottom: 6px;
+  animation: raidFloat 2.5s ease-in-out infinite;
+  filter: drop-shadow(0 4px 12px rgba(224,80,80,.4));
+}
+@keyframes raidFloat {
+  0%,100%{transform:translateY(0) scale(1)}
+  50%{transform:translateY(-8px) scale(1.04)}
+}
+.raid-boss-sprite.raid-hit {
+  animation: raidHit .3s ease-out;
+}
+@keyframes raidHit {
+  0%{transform:scale(1);filter:brightness(1)}
+  30%{transform:scale(1.15);filter:brightness(5) saturate(0)}
+  100%{transform:scale(1);filter:brightness(1)}
+}
+.raid-boss-name {
+  font-family:'Cinzel',serif;
+  font-size:.95rem;font-weight:700;
+  color:var(--red2);
+  text-shadow:0 0 12px rgba(224,80,80,.3);
+  margin-bottom:4px;
+}
+.raid-hp-bar-wrap { margin: 6px 0 3px; }
+.raid-hp-bar {
+  height:14px;
+  background:rgba(255,255,255,.05);
+  border-radius:7px;
+  overflow:hidden;
+  border:1px solid rgba(224,80,80,.25);
+}
+.raid-hp-fill {
+  height:100%;
+  background:linear-gradient(to right,#6b0000,var(--red2));
+  border-radius:7px;
+  transition:width .5s ease;
+  position:relative;
+}
+.raid-hp-fill::after {
+  content:'';
+  position:absolute;top:0;left:0;right:0;height:50%;
+  background:rgba(255,255,255,.12);border-radius:7px;
+}
+.raid-hp-label {
+  font-family:'Cinzel',serif;
+  font-size:.65rem;color:var(--text2);
+  display:flex;justify-content:space-between;
+  margin-bottom:3px;
+}
+.raid-contrib-row {
+  display:flex;align-items:center;gap:8px;
+  background:rgba(0,0,0,.2);
+  border:1px solid var(--border);
+  border-radius:7px;
+  padding:5px 10px;
+  margin-bottom:4px;
+  font-size:.72rem;
+}
+.raid-contrib-name {
+  flex:1;font-family:'Cinzel',serif;font-weight:700;color:var(--text);
+}
+.raid-contrib-bar-wrap { flex:2; }
+.raid-contrib-bar {
+  height:5px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;
+}
+.raid-contrib-fill {
+  height:100%;border-radius:3px;
+  background:linear-gradient(to right,var(--purple),var(--purple2));
+  transition:width .4s ease;
+}
+.raid-contrib-val {
+  font-family:'Cinzel',serif;font-size:.66rem;color:var(--gold);
+  min-width:50px;text-align:right;
+}
+.raid-action-row {
+  display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px;
+}
+.raid-strike-btn {
+  flex:1;
+  padding:10px;
+  background:linear-gradient(135deg,rgba(176,48,48,.3),rgba(176,48,48,.1));
+  border:1px solid var(--red2);
+  border-radius:9px;
+  font-family:'Cinzel',serif;font-size:.8rem;font-weight:700;
+  color:var(--red2);cursor:pointer;
+  transition:all .18s;letter-spacing:.04em;
+}
+.raid-strike-btn:hover:not(:disabled) {
+  background:rgba(176,48,48,.4);
+  box-shadow:0 0 16px rgba(224,80,80,.3);
+}
+.raid-strike-btn:active:not(:disabled) { transform:scale(.96); }
+.raid-strike-btn:disabled { opacity:.4;cursor:not-allowed; }
+.raid-no-boss {
+  text-align:center;padding:18px 10px;
+}
+.raid-spawn-btn {
+  margin-top:12px;
+  padding:10px 22px;
+  background:linear-gradient(135deg,rgba(100,20,20,.4),rgba(176,48,48,.2));
+  border:1px solid var(--red2);
+  border-radius:9px;
+  font-family:'Cinzel',serif;font-size:.82rem;font-weight:700;
+  color:var(--red2);cursor:pointer;transition:all .2s;letter-spacing:.05em;
+}
+.raid-spawn-btn:hover { box-shadow:0 0 20px rgba(224,80,80,.35); }
+.raid-spawn-btn:disabled { opacity:.4;cursor:not-allowed; }
+.raid-reward-box {
+  background:rgba(201,162,39,.07);
+  border:1px solid rgba(201,162,39,.3);
+  border-radius:10px;padding:12px;
+  text-align:center;margin-top:8px;
+}
+.raid-cooldown {
+  font-family:'Cinzel',serif;font-size:.7rem;
+  color:var(--text2);margin-top:6px;text-align:center;
+}
 /* ══ WHITE MODE ══ */
 body.white-mode {
   --bg:       #f0eee8;
@@ -1300,6 +1437,13 @@ input[type=range].vol-slider::-webkit-slider-thumb:hover { transform:scale(1.2);
       <div class="sec-title">⚡ Aktive Gilden-Boni</div>
       <div id="guildBonusContent" style="display:flex;flex-direction:column;gap:6px;">
         <div style="color:var(--text2);font-size:.75rem;font-style:italic;">Lade Boni...</div>
+      </div>
+    </div>
+    <!-- ═══ GILDEN-RAID ═══ -->
+    <div class="card" id="raidCard">
+      <div class="sec-title">🐉 Gilden-Raid</div>
+      <div id="raidContent">
+        <div style="color:var(--text2);font-size:.75rem;font-style:italic;">Lade Raid-Status...</div>
       </div>
     </div>
     <!-- Chat -->
@@ -3124,7 +3268,7 @@ async function _doSave() {
       // Guild
       guild_id:   G.guildId   || null,
       guild_role: G.guildRole || 'member',
-      local_guild: G._localGuild ? JSON.stringify(G._localGuild) : null,
+      local_guild: G._localGuild ? JSON.stringify({...G._localGuild, raid: G._localGuild.raid || null}) : null,
       // Research
       research_active: G.researchActive || null,
       research_end:    G.researchEnd    || 0,
@@ -3269,7 +3413,10 @@ async function loadFromSupabase() {
     // Guild
     G.guildId   = p.guild_id   || null;
     G.guildRole = p.guild_role || 'member';
-    try { G._localGuild = p.local_guild ? JSON.parse(p.local_guild) : null; } catch(e) { G._localGuild = null; }
+    try {
+      G._localGuild = p.local_guild ? JSON.parse(p.local_guild) : null;
+      // Raid-Daten aus _localGuild wiederherstellen
+    } catch(e) { G._localGuild = null; }
 
     // Research
     G.researchActive = p.research_active || null;
@@ -3563,7 +3710,7 @@ function switchTab(name) {
   if(name==='dungeon'){renderDungeon();}
   if(name==='pvp'){renderPVP();}
   if(name==='pets'){renderPets();}
-  if(name==='gilde'){renderGuild();}
+  if(name==='gilde'){renderGuild();setTimeout(()=>{try{loadRaidFromSupabase().then(()=>renderRaid());}catch(e){}},500);}
   if(name==='rang'){renderRang();}
   if(name==='shop'){renderShop();}
   if(name==='forschung'){renderUpgrades();renderResearch();}
@@ -3804,7 +3951,8 @@ function renderGuild(){
   const hasGuild=!!G.guildId;
   if(document.getElementById('guildNoGuild'))document.getElementById('guildNoGuild').style.display=hasGuild?'none':'block';
   if(document.getElementById('guildPanel'))document.getElementById('guildPanel').style.display=hasGuild?'block':'none';
-  if(hasGuild)loadGuildData();else loadPublicGuilds();
+  if(hasGuild){ loadGuildData(); loadRaidFromSupabase().then(()=>renderRaid()); }
+  else { loadPublicGuilds(); renderRaid(); }
 }
 
 async function loadPublicGuilds(){
@@ -3831,6 +3979,7 @@ async function loadGuildData(){
     updateGuildLevelUI(local.gold||0);
   }
   try { renderGuildBonuses(); } catch(e) {}
+  try { renderRaid(); } catch(e) {}
   const roleC={leader:'var(--gold2)',officer:'var(--purple2)',member:'var(--blue2)'};
   const roleL={leader:'👑 Anführer',officer:'⭐ Offizier',member:'⚔️ Mitglied'};
   if(document.getElementById('myGuildRankDisplay'))document.getElementById('myGuildRankDisplay').innerHTML=`<div class="pill" style="border-color:${roleC[G.guildRole]||roleC.member};color:${roleC[G.guildRole]||roleC.member};">${roleL[G.guildRole]||roleL.member}</div>`;
@@ -4530,7 +4679,11 @@ function startGuildChatRefresh() {
   guildChatInterval = setInterval(() => {
     try {
       const page = document.getElementById('page-gilde');
-      if (page && page.classList.contains('active') && G.guildId) loadGuildChat();
+      if (page && page.classList.contains('active') && G.guildId) {
+        loadGuildChat();
+        // Raid-Status von Supabase holen (damit andere Spieler-Beiträge sichtbar sind)
+        loadRaidFromSupabase().then(() => { try { renderRaid(); } catch(e) {} });
+      }
     } catch(e) {}
   }, 10000);
 }
@@ -4673,6 +4826,323 @@ async function continueInit() {
     setTimeout(()=>{ try{saveToSupabase();}catch(e){} }, 3000);
   }
 }
+
+
+// ════════════════════════════════════════════
+// ── GILDEN-RAID SYSTEM
+// ════════════════════════════════════════════
+
+const RAID_BOSSES = [
+  { id:'goblin_king',   name:'Goblin-König',     emoji:'👺', tier:1, hpBase:5000,   reward:{gold:800,  xp:500,  items:1}, minLevel:1  },
+  { id:'stone_troll',   name:'Steintroll',        emoji:'🧟', tier:1, hpBase:12000,  reward:{gold:2000, xp:1200, items:2}, minLevel:5  },
+  { id:'dark_witch',    name:'Dunkle Hexe',       emoji:'🧙', tier:2, hpBase:30000,  reward:{gold:5000, xp:3000, items:3}, minLevel:10 },
+  { id:'fire_dragon',   name:'Feuerdrache',       emoji:'🐉', tier:2, hpBase:80000,  reward:{gold:12000,xp:7500, items:4}, minLevel:20 },
+  { id:'shadow_lord',   name:'Schattenlord',      emoji:'👾', tier:3, hpBase:200000, reward:{gold:30000,xp:18000,items:5}, minLevel:35 },
+  { id:'ancient_titan', name:'Uralter Titan',     emoji:'🗿', tier:3, hpBase:500000, reward:{gold:75000,xp:45000,items:6}, minLevel:50 },
+];
+
+// G._raid = { bossId, hp, maxHp, contributions:{playerId:gold}, startedAt, endedAt, reward }
+// Gespeichert in G._localGuild.raid
+
+function getRaid() {
+  return (G._localGuild && G._localGuild.raid) ? G._localGuild.raid : null;
+}
+
+function raidBossDef(id) {
+  return RAID_BOSSES.find(b => b.id === id) || RAID_BOSSES[0];
+}
+
+// Welcher Boss steht zur Verfügung (basierend auf Gilden-Level)
+function availableRaidBoss() {
+  const lv = G._localGuild ? (G._localGuild.level || 1) : 1;
+  const affordable = RAID_BOSSES.filter(b => lv >= Math.ceil(b.minLevel / 3));
+  return affordable[affordable.length - 1] || RAID_BOSSES[0];
+}
+
+// HP-Skalierung: Boss HP steigt mit Gilden-Level
+function raidBossHp(boss) {
+  const lv = G._localGuild ? (G._localGuild.level || 1) : 1;
+  return Math.floor(boss.hpBase * (1 + (lv - 1) * 0.15));
+}
+
+// Schaden durch Gold-Spende: 1 Gold = 1 Schadenspunkt + ATK-Bonus
+function raidDamageForGold(gold) {
+  const s = getStats();
+  const atkBonus = 1 + s.atk / 200;
+  return Math.floor(gold * atkBonus);
+}
+
+function startRaid() {
+  if (!G.guildId || !G._localGuild) { log('❌ Keine Gilde!', 'c'); return; }
+  const raid = getRaid();
+  if (raid && !raid.defeated && !raid.expired) { log('❌ Raid läuft bereits!', 'c'); return; }
+
+  // Cooldown: 30 Min nach letztem Raid
+  if (raid && raid.endedAt) {
+    const cooldownMs = 30 * 60 * 1000;
+    const elapsed = Date.now() - raid.endedAt;
+    if (elapsed < cooldownMs) {
+      const min = Math.ceil((cooldownMs - elapsed) / 60000);
+      log('⏳ Raid-Cooldown: noch ' + min + ' Min!', 'c');
+      return;
+    }
+  }
+
+  const boss = availableRaidBoss();
+  const maxHp = raidBossHp(boss);
+  const newRaid = {
+    bossId: boss.id,
+    hp: maxHp,
+    maxHp: maxHp,
+    contributions: {},
+    startedAt: Date.now(),
+    endedAt: null,
+    defeated: false,
+    expired: false
+  };
+
+  G._localGuild.raid = newRaid;
+  log('🐉 GILDEN-RAID gestartet! ' + boss.emoji + ' ' + boss.name + ' erscheint mit ' + maxHp.toLocaleString() + ' HP!', 'l');
+  renderRaid();
+  saveRaidToSupabase();
+  saveToSupabase();
+}
+
+function contributeToRaid() {
+  const raid = getRaid();
+  if (!raid || raid.defeated || raid.expired) { log('❌ Kein aktiver Raid!', 'c'); return; }
+
+  const input = document.getElementById('raidContribAmount');
+  const amount = parseInt(input?.value) || 0;
+  if (amount < 1) { log('❌ Mindestens 1 Gold!', 'c'); return; }
+  if (G.hero.gold < amount) { log('❌ Zu wenig Gold! (Hast: ' + G.hero.gold + 'G)', 'c'); return; }
+
+  const dmg = raidDamageForGold(amount);
+  G.hero.gold -= amount;
+
+  // Contribution tracken
+  const pid = getPlayerId();
+  raid.contributions[pid] = (raid.contributions[pid] || 0) + amount;
+
+  // Schaden am Boss
+  raid.hp = Math.max(0, raid.hp - dmg);
+
+  if (input) input.value = '';
+
+  // Floaty-Damage am Boss-Sprite
+  try {
+    const sprite = document.getElementById('raidBossSprite');
+    if (sprite) {
+      sprite.classList.remove('raid-hit');
+      void sprite.offsetWidth;
+      sprite.classList.add('raid-hit');
+      setTimeout(() => sprite.classList.remove('raid-hit'), 350);
+    }
+    playSfx('crit');
+  } catch(e) {}
+
+  log('⚔️ Du triffst ' + raidBossDef(raid.bossId).name + ' für ' + dmg.toLocaleString() + ' Schaden! (-' + amount + 'G)', 'c');
+
+  // Boss besiegt?
+  if (raid.hp <= 0) {
+    raidVictory(raid);
+  } else {
+    renderRaid();
+    saveRaidToSupabase();
+    saveToSupabase();
+  }
+}
+
+function raidVictory(raid) {
+  raid.defeated = true;
+  raid.hp = 0;
+  raid.endedAt = Date.now();
+
+  const boss = raidBossDef(raid.bossId);
+  const lv = G._localGuild.level || 1;
+
+  // Belohnung: skaliert mit Gilden-Level
+  const rewardGold = Math.floor(boss.reward.gold * (1 + lv * 0.05));
+  const rewardXp   = Math.floor(boss.reward.xp   * (1 + lv * 0.05) * xpMult());
+  const rewardItems = boss.reward.items;
+
+  G.hero.gold += rewardGold;
+  G.hero.xp   += rewardXp;
+  for (let i = 0; i < rewardItems; i++) dropItem();
+
+  checkLevelUp();
+  updateAll();
+
+  log('🎉 RAID SIEG! ' + boss.emoji + ' ' + boss.name + ' besiegt! +' + rewardGold.toLocaleString() + 'G +' + rewardXp.toLocaleString() + 'XP +' + rewardItems + ' Items!', 'l');
+  playSfx('levelup');
+
+  // Victory UI im Raid-Panel zeigen
+  raid._victoryReward = { gold: rewardGold, xp: rewardXp, items: rewardItems };
+
+  renderRaid();
+  saveRaidToSupabase();
+  saveToSupabase();
+}
+
+async function saveRaidToSupabase() {
+  if (!G.guildId || !G._localGuild) return;
+  try {
+    const raidData = G._localGuild.raid ? JSON.stringify(G._localGuild.raid) : null;
+    await sbUpsert('sm_guilds', { id: G.guildId, local_guild: JSON.stringify(G._localGuild) });
+  } catch(e) {}
+}
+
+async function loadRaidFromSupabase() {
+  if (!G.guildId) return;
+  try {
+    const guilds = await sbGet('sm_guilds', 'id=eq.' + G.guildId);
+    if (guilds && guilds[0]) {
+      if (!G._localGuild) G._localGuild = guilds[0];
+      // Merge raid data from server
+      try {
+        const serverGuild = guilds[0];
+        if (serverGuild.local_guild) {
+          const parsed = JSON.parse(serverGuild.local_guild);
+          if (parsed && parsed.raid) {
+            // Server hat neueren Raid-Stand (mehr Beiträge von anderen)
+            if (!G._localGuild.raid || (parsed.raid.hp < G._localGuild.raid.hp)) {
+              G._localGuild.raid = parsed.raid;
+            }
+          }
+        }
+      } catch(e) {}
+    }
+  } catch(e) {}
+}
+
+function setRaidContrib(amount) {
+  const inp = document.getElementById('raidContribAmount');
+  if (inp) inp.value = Math.max(1, Math.floor(amount));
+}
+
+function renderRaid() {
+  const container = document.getElementById('raidContent');
+  if (!container) return;
+
+  if (!G.guildId || !G._localGuild) {
+    container.innerHTML = '<div style="color:var(--text2);font-size:.75rem;font-style:italic;padding:8px 0;">Tritt einer Gilde bei um an Raids teilzunehmen!</div>';
+    return;
+  }
+
+  const raid = getRaid();
+  const boss = raid ? raidBossDef(raid.bossId) : availableRaidBoss();
+  const nextBoss = availableRaidBoss();
+
+  // Kein Raid aktiv
+  if (!raid || raid.defeated || raid.expired) {
+    const canStart = !raid || (raid.endedAt && Date.now() - raid.endedAt >= 30 * 60 * 1000);
+    const cooldownLeft = raid && raid.endedAt ? Math.max(0, 30 * 60 * 1000 - (Date.now() - raid.endedAt)) : 0;
+    const coolMin = Math.ceil(cooldownLeft / 60000);
+
+    let victoryHtml = '';
+    if (raid && raid.defeated && raid._victoryReward) {
+      const r = raid._victoryReward;
+      victoryHtml = `
+        <div class="raid-reward-box" style="margin-bottom:10px;">
+          <div style="font-family:'Cinzel',serif;font-size:.82rem;color:var(--gold2);margin-bottom:6px;">🏆 Letzter Raid gewonnen!</div>
+          <div style="display:flex;gap:12px;justify-content:center;font-family:'Cinzel',serif;font-size:.75rem;">
+            <span style="color:var(--gold2);">💰 +${r.gold.toLocaleString()}G</span>
+            <span style="color:var(--green2);">⭐ +${r.xp.toLocaleString()} XP</span>
+            <span style="color:var(--purple2);">🎁 +${r.items} Items</span>
+          </div>
+        </div>`;
+    }
+
+    container.innerHTML = `
+      ${victoryHtml}
+      <div class="raid-no-boss">
+        <div style="font-size:3rem;margin-bottom:8px;opacity:.6;filter:grayscale(0.4);">${nextBoss.emoji}</div>
+        <div style="font-family:'Cinzel',serif;font-size:.85rem;color:var(--text2);margin-bottom:4px;">${nextBoss.name}</div>
+        <div style="font-size:.7rem;color:var(--text3);margin-bottom:4px;">
+          HP: ${raidBossHp(nextBoss).toLocaleString()}
+          &nbsp;·&nbsp; Tier ${nextBoss.tier}
+        </div>
+        <div style="font-size:.68rem;color:var(--text3);margin-bottom:10px;">
+          Belohnung: 💰 ${nextBoss.reward.gold.toLocaleString()}G &nbsp; ⭐ ${nextBoss.reward.xp.toLocaleString()} XP &nbsp; 🎁 ${nextBoss.reward.items} Items
+        </div>
+        <button class="raid-spawn-btn" onclick="startRaid()" ${canStart ? '' : 'disabled'}>
+          ${canStart ? '⚔️ Raid starten!' : '⏳ Cooldown: ' + coolMin + ' Min'}
+        </button>
+      </div>`;
+    return;
+  }
+
+  // Aktiver Raid
+  const pct = Math.max(0, raid.hp / raid.maxHp * 100);
+  const totalDmg = Object.values(raid.contributions).reduce((a, b) => a + b, 0);
+  const myContrib = raid.contributions[getPlayerId()] || 0;
+  const myDmg = raidDamageForGold(myContrib);
+
+  // Contributions sortiert nach Beitrag
+  const contribs = Object.entries(raid.contributions)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5);
+
+  const contribHtml = contribs.length > 0 ? `
+    <div style="margin-bottom:8px;">
+      <div style="font-family:'Cinzel',serif;font-size:.66rem;color:var(--text2);margin-bottom:5px;">⚔️ Beiträge der Mitglieder:</div>
+      ${contribs.map(([pid, gold]) => {
+        const pctBar = totalDmg > 0 ? Math.round(gold / totalDmg * 100) : 0;
+        const isMe = pid === getPlayerId();
+        return `<div class="raid-contrib-row">
+          <div class="raid-contrib-name" style="${isMe ? 'color:var(--gold2);' : ''}">${isMe ? '★ Du' : '⚔️ Spieler'}</div>
+          <div class="raid-contrib-bar-wrap"><div class="raid-contrib-bar"><div class="raid-contrib-fill" style="width:${pctBar}%;"></div></div></div>
+          <div class="raid-contrib-val">${gold.toLocaleString()}G</div>
+        </div>`;
+      }).join('')}
+    </div>` : '';
+
+  // HP-Farbe basierend auf %-Stand
+  const hpColor = pct > 60 ? 'linear-gradient(to right,#6b0000,var(--red2))' :
+                  pct > 30 ? 'linear-gradient(to right,#5a3000,var(--orange2))' :
+                             'linear-gradient(to right,#0b3d20,var(--green2))';
+
+  container.innerHTML = `
+    <div class="raid-boss-area">
+      <span class="raid-boss-sprite" id="raidBossSprite">${boss.emoji}</span>
+      <div class="raid-boss-name">${boss.name}</div>
+      <div class="raid-hp-label">
+        <span>💀 Boss-HP</span>
+        <span>${raid.hp.toLocaleString()} / ${raid.maxHp.toLocaleString()}</span>
+      </div>
+      <div class="raid-hp-bar">
+        <div class="raid-hp-fill" style="width:${pct.toFixed(1)}%;background:${hpColor};"></div>
+      </div>
+      <div style="font-size:.62rem;color:var(--text3);margin-top:4px;">${pct.toFixed(1)}% HP verbleibend</div>
+    </div>
+
+    ${contribHtml}
+
+    <div style="font-size:.72rem;color:var(--text2);margin-bottom:8px;">
+      Dein Beitrag: <b style="color:var(--gold2);">${myContrib.toLocaleString()}G</b>
+      = <b style="color:var(--red2);">${myDmg.toLocaleString()} Schaden</b>
+      &nbsp;·&nbsp; Gesamt: ${totalDmg.toLocaleString()}G
+    </div>
+
+    <div class="raid-action-row">
+      <input type="number" id="raidContribAmount" min="1" placeholder="Gold einsetzen..."
+        style="flex:1;min-width:100px;padding:7px;background:rgba(0,0,0,.4);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:.82rem;outline:none;"/>
+      <button class="raid-strike-btn" onclick="contributeToRaid()">⚔️ Angreifen!</button>
+    </div>
+    <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:6px;">
+      <button class="ctrl-btn" onclick="setRaidContrib(100)" style="font-size:.62rem;padding:3px 8px;">100G</button>
+      <button class="ctrl-btn" onclick="setRaidContrib(500)" style="font-size:.62rem;padding:3px 8px;">500G</button>
+      <button class="ctrl-btn" onclick="setRaidContrib(1000)" style="font-size:.62rem;padding:3px 8px;">1000G</button>
+      <button class="ctrl-btn" onclick="setRaidContrib(Math.floor(G.hero.gold*0.1))" style="font-size:.62rem;padding:3px 8px;">10%</button>
+      <button class="ctrl-btn" onclick="setRaidContrib(G.hero.gold)" style="font-size:.62rem;padding:3px 8px;border-color:var(--red2);color:var(--red2);">Alles!</button>
+    </div>
+    <div style="margin-top:8px;padding:6px 10px;background:rgba(0,0,0,.2);border-radius:6px;font-size:.66rem;color:var(--text3);">
+      💡 1 Gold = ${raidDamageForGold(1).toFixed(2)} Schaden (ATK-Bonus eingerechnet)
+    </div>`;
+}
+
+// Raid-Status beim Gilden-Tab-Wechsel aktualisieren
+const _origRenderGuild = typeof renderGuild === 'function' ? renderGuild : null;
 
 // ════════════════════════════════════════════
 // ── SETTINGS & AUDIO
