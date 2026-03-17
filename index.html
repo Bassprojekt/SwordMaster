@@ -2623,10 +2623,22 @@ async function sbUpsert(table, data) {
   try {
     const r = await sbFetch(`${SUPA_URL}/rest/v1/${table}`, {
       method: 'POST',
-      headers: { ...SUPA_HDR, 'Prefer': 'resolution=merge-duplicates' },
+      headers: { ...SUPA_HDR, 'Prefer': 'resolution=merge-duplicates,return=minimal' },
       body: JSON.stringify(data)
     });
-    return r.ok;
+    return r.ok || r.status === 409;
+  } catch(e) { return false; }
+}
+
+// sbPost: neuen Datensatz einfügen (kein Konflikt-Handling)
+async function sbPost(table, data) {
+  try {
+    const r = await sbFetch(`${SUPA_URL}/rest/v1/${table}`, {
+      method: 'POST',
+      headers: { ...SUPA_HDR, 'Prefer': 'return=minimal' },
+      body: JSON.stringify(data)
+    });
+    return r.ok || r.status === 409; // 409 = schon vorhanden, ist ok
   } catch(e) { return false; }
 }
 
@@ -2713,29 +2725,34 @@ async function _doSave() {
       shop_purchases:  JSON.stringify(G.shopPurchases  || {}),
     });
 
-    // 2. Upgrades
+    // 2. Upgrades — erst löschen dann neu (verhindert 409)
     const upgRows = Object.entries(G.upgrades).map(([upgrade_id, level]) => ({
       player_id: pid, upgrade_id, level
     }));
-    if (upgRows.length) await sbUpsert('sm_upgrades', upgRows);
+    if (upgRows.length) {
+      await sbDelete('sm_upgrades', `player_id=eq.${pid}`);
+      await sbUpsert('sm_upgrades', upgRows);
+    }
 
-    // 3. Skills
+    // 3. Skills — erst löschen dann neu
     const skillRows = [...G.skills].map(skill_id => ({ player_id: pid, skill_id }));
-    if (skillRows.length) await sbUpsert('sm_skills', skillRows);
+    if (skillRows.length) {
+      await sbDelete('sm_skills', `player_id=eq.${pid}`);
+      await sbUpsert('sm_skills', skillRows);
+    }
 
-    // 4. Pets
+    // 4. Pets — erst löschen dann neu
     const petRows = Object.entries(G.pets).map(([pet_id]) => ({
       player_id: pid, pet_id, is_active: G.activePets.has(pet_id)
     }));
-    if (petRows.length) await sbUpsert('sm_pets', petRows);
+    if (petRows.length) {
+      await sbDelete('sm_pets', `player_id=eq.${pid}`);
+      await sbUpsert('sm_pets', petRows);
+    }
 
     // 5. Inventory — erst alles löschen dann neu einfügen
     if (G.inventory.length > 0) {
-      // Lösche zuerst
-      const delResp = await fetch(
-        `${SUPA_URL}/rest/v1/sm_inventory?player_id=eq.${pid}`,
-        { method:'DELETE', headers: SUPA_HDR }
-      );
+      await sbDelete('sm_inventory', `player_id=eq.${pid}`);
 
       // Dann einfügen (ohne id Feld — Supabase generiert UUID automatisch)
       const invRows = G.inventory.map(it => ({
