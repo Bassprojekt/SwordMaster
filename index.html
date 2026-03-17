@@ -2966,7 +2966,8 @@ async function sbPost(table, data) {
       headers: { ...SUPA_HDR, 'Prefer': 'return=minimal' },
       body: JSON.stringify(data)
     });
-    return r.ok || r.status === 409; // 409 = schon vorhanden, ist ok
+    // 200, 201, 204 = Erfolg; 409 = schon vorhanden (auch ok)
+    return r.status >= 200 && r.status < 300 || r.status === 409;
   } catch(e) { return false; }
 }
 
@@ -3042,6 +3043,7 @@ async function _doSave() {
       // Guild
       guild_id:   G.guildId   || null,
       guild_role: G.guildRole || 'member',
+      local_guild: G._localGuild ? JSON.stringify(G._localGuild) : null,
       // Research
       research_active: G.researchActive || null,
       research_end:    G.researchEnd    || 0,
@@ -3186,6 +3188,7 @@ async function loadFromSupabase() {
     // Guild
     G.guildId   = p.guild_id   || null;
     G.guildRole = p.guild_role || 'member';
+    try { G._localGuild = p.local_guild ? JSON.parse(p.local_guild) : null; } catch(e) { G._localGuild = null; }
 
     // Research
     G.researchActive = p.research_active || null;
@@ -3738,36 +3741,61 @@ async function loadPublicGuilds(){
 
 async function loadGuildData(){
   if(!G.guildId)return;
-  const guilds=await sbGet('sm_guilds','id=eq.'+G.guildId);if(!guilds||!guilds.length)return;
-  const g=guilds[0];
-  if(document.getElementById('guildEmoji'))document.getElementById('guildEmoji').textContent=g.emoji||'🏰';
-  if(document.getElementById('guildNameDisplay'))document.getElementById('guildNameDisplay').textContent=g.name||'Gilde';
-  if(document.getElementById('guildTagline'))document.getElementById('guildTagline').textContent=g.tagline||'Keine Beschreibung';
-  if(document.getElementById('guildLevel'))document.getElementById('guildLevel').textContent=g.level||1;
-  if(document.getElementById('guildGold'))document.getElementById('guildGold').textContent=g.gold||0;
+  // Zuerst lokalen Cache zeigen (sofort, kein Warten)
+  const local = G._localGuild && G._localGuild.id === G.guildId ? G._localGuild : null;
+  if(local){
+    if(document.getElementById('guildEmoji'))document.getElementById('guildEmoji').textContent=local.emoji||'🏰';
+    if(document.getElementById('guildNameDisplay'))document.getElementById('guildNameDisplay').textContent=local.name||'Gilde';
+    if(document.getElementById('guildTagline'))document.getElementById('guildTagline').textContent=local.tagline||'Keine Beschreibung';
+    if(document.getElementById('guildLevel'))document.getElementById('guildLevel').textContent=local.level||1;
+    if(document.getElementById('guildGold'))document.getElementById('guildGold').textContent=local.gold||0;
+  }
   const roleC={leader:'var(--gold2)',officer:'var(--purple2)',member:'var(--blue2)'};
   const roleL={leader:'👑 Anführer',officer:'⭐ Offizier',member:'⚔️ Mitglied'};
-  if(document.getElementById('myGuildRankDisplay'))document.getElementById('myGuildRankDisplay').innerHTML=`<div class="pill" style="border-color:${roleC[G.guildRole]};color:${roleC[G.guildRole]};">${roleL[G.guildRole]}</div>`;
+  if(document.getElementById('myGuildRankDisplay'))document.getElementById('myGuildRankDisplay').innerHTML=`<div class="pill" style="border-color:${roleC[G.guildRole]||roleC.member};color:${roleC[G.guildRole]||roleC.member};">${roleL[G.guildRole]||roleL.member}</div>`;
+  // Dann Supabase im Hintergrund aktualisieren
+  try {
+    const guilds=await sbGet('sm_guilds','id=eq.'+G.guildId);
+    if(guilds&&guilds.length){
+      const g=guilds[0];
+      G._localGuild=g; // Cache aktualisieren
+      if(document.getElementById('guildEmoji'))document.getElementById('guildEmoji').textContent=g.emoji||'🏰';
+      if(document.getElementById('guildNameDisplay'))document.getElementById('guildNameDisplay').textContent=g.name||'Gilde';
+      if(document.getElementById('guildTagline'))document.getElementById('guildTagline').textContent=g.tagline||'Keine Beschreibung';
+      if(document.getElementById('guildLevel'))document.getElementById('guildLevel').textContent=g.level||1;
+      if(document.getElementById('guildGold'))document.getElementById('guildGold').textContent=g.gold||0;
+    } else if(!local){
+      // Weder lokal noch online — Gilde existiert nicht mehr
+      log('⚠️ Gilde nicht gefunden. Mitgliedschaft zurückgesetzt.','c');
+      G.guildId=null;G.guildRole='member';G._localGuild=null;
+      renderGuild();saveToSupabase();return;
+    }
+  } catch(e){}
   loadGuildMembers();loadGuildChat();
 }
 
 async function loadGuildMembers(){
   const div=document.getElementById('guildMembersList');if(!div||!G.guildId)return;
-  const members=await sbGet('sm_guild_members','guild_id=eq.'+G.guildId);
-  if(!members){div.innerHTML='<div style="color:var(--text2);font-size:.73rem;">Keine Mitglieder.</div>';return;}
-  if(document.getElementById('guildMemberCount'))document.getElementById('guildMemberCount').textContent=members.length;
-  div.innerHTML='';
-  for(const m of members){
-    const pdata=await sbGet('sm_players','id=eq.'+m.player_id);
-    const pname=pdata&&pdata[0]?pdata[0].player_name:'Unbekannt';
-    const plv=pdata&&pdata[0]?pdata[0].hero_level:1;
-    const roleC={leader:'var(--gold2)',officer:'var(--purple2)',member:'var(--blue2)'};
-    const roleL={leader:'👑 Anführer',officer:'⭐ Offizier',member:'⚔️ Mitglied'};
-    const isLeader=G.guildRole==='leader'&&m.player_id!==getPlayerId();
-    const row=document.createElement('div');row.className='member-row';
-    row.innerHTML=`<div class="mr-name">${pname} <span style="font-size:.6rem;color:var(--text2);">Lv ${plv}</span></div><div class="mr-tag" style="border-color:${roleC[m.role]||roleC.member};color:${roleC[m.role]||roleC.member};">${roleL[m.role]||roleL.member}</div>${isLeader?`<div style="display:flex;gap:4px;"><button class="ctrl-btn" style="font-size:.56rem;padding:2px 6px;" onclick="promoteGuildMember('${m.player_id}','${pname}')">⬆️</button><button class="ctrl-btn" style="font-size:.56rem;padding:2px 6px;border-color:var(--red2);color:var(--red2);" onclick="kickGuildMember('${m.player_id}','${pname}')">🚫</button></div>`:''}`;
-    div.appendChild(row);
-  }
+  // Sofort lokalen Spieler zeigen während geladen wird
+  const roleC={leader:'var(--gold2)',officer:'var(--purple2)',member:'var(--blue2)'};
+  const roleL={leader:'👑 Anführer',officer:'⭐ Offizier',member:'⚔️ Mitglied'};
+  div.innerHTML=`<div class="member-row"><div class="mr-name">${getPlayerName()} <span style="font-size:.6rem;color:var(--text2);">Lv ${G.hero.level}</span></div><div class="mr-tag" style="border-color:${roleC[G.guildRole]||roleC.member};color:${roleC[G.guildRole]||roleC.member};">${roleL[G.guildRole]||roleL.member}</div></div>`;
+  if(document.getElementById('guildMemberCount'))document.getElementById('guildMemberCount').textContent='1+';
+  try {
+    const members=await sbGet('sm_guild_members','guild_id=eq.'+G.guildId);
+    if(!members||!members.length){return;}
+    if(document.getElementById('guildMemberCount'))document.getElementById('guildMemberCount').textContent=members.length;
+    div.innerHTML='';
+    for(const m of members){
+      const pdata=await sbGet('sm_players','id=eq.'+m.player_id);
+      const pname=pdata&&pdata[0]?pdata[0].player_name:(m.player_id===getPlayerId()?getPlayerName():'Unbekannt');
+      const plv=pdata&&pdata[0]?pdata[0].hero_level:1;
+      const isLeader=G.guildRole==='leader'&&m.player_id!==getPlayerId();
+      const row=document.createElement('div');row.className='member-row';
+      row.innerHTML=`<div class="mr-name">${pname} <span style="font-size:.6rem;color:var(--text2);">Lv ${plv}</span></div><div class="mr-tag" style="border-color:${roleC[m.role]||roleC.member};color:${roleC[m.role]||roleC.member};">${roleL[m.role]||roleL.member}</div>${isLeader?`<div style="display:flex;gap:4px;"><button class="ctrl-btn" style="font-size:.56rem;padding:2px 6px;" onclick="promoteGuildMember('${m.player_id}','${pname}')">⬆️</button><button class="ctrl-btn" style="font-size:.56rem;padding:2px 6px;border-color:var(--red2);color:var(--red2);" onclick="kickGuildMember('${m.player_id}','${pname}')">🚫</button></div>`:''}`;
+      div.appendChild(row);
+    }
+  } catch(e){}
 }
 
 async function loadGuildChat(){
@@ -3793,28 +3821,117 @@ async function sendGuildChat(){
 }
 
 function openCreateGuild(){
-  if(G.hero.gold<500){log('❌ Gilde kostet 500 Gold!','c');return;}
-  const ep=document.getElementById('guildEmojiPicker');if(ep){ep.innerHTML='';['🏰','⚔️','🔥','💎','🌟','👑','🐉','🌙','⚡','🛡️','🗡️','🔮'].forEach(e=>{const b=document.createElement('button');b.textContent=e;b.style.cssText='font-size:1.2rem;background:none;border:1px solid var(--border);border-radius:4px;padding:3px 7px;cursor:pointer;';b.onclick=()=>{selectedGuildEmoji=e;ep.querySelectorAll('button').forEach(x=>x.style.borderColor='var(--border)');b.style.borderColor='var(--gold)';};ep.appendChild(b);});}
+  if(G.hero.gold<500){log('❌ Gilde kostet 500 Gold!','c');alert('Du brauchst 500 Gold um eine Gilde zu gründen!');return;}
+  const ep=document.getElementById('guildEmojiPicker');
+  if(ep){
+    ep.innerHTML='';
+    ['🏰','⚔️','🔥','💎','🌟','👑','🐉','🌙','⚡','🛡️','🗡️','🔮'].forEach(e=>{
+      const b=document.createElement('button');
+      b.textContent=e;
+      b.style.cssText='font-size:1.2rem;background:none;border:1px solid var(--border);border-radius:4px;padding:3px 7px;cursor:pointer;transition:all .15s;';
+      b.onclick=()=>{
+        selectedGuildEmoji=e;
+        ep.querySelectorAll('button').forEach(x=>x.style.borderColor='var(--border)');
+        b.style.borderColor='var(--gold)';b.style.background='rgba(201,162,39,.1)';
+      };
+      ep.appendChild(b);
+    });
+    // Ersten Button als Standard markieren
+    const first=ep.querySelector('button');if(first){first.style.borderColor='var(--gold)';first.style.background='rgba(201,162,39,.1)';}
+  }
+  // Eingabefelder leeren
+  const ni=document.getElementById('guildNameInput');if(ni)ni.value='';
+  const ti=document.getElementById('guildTagInput');if(ti)ti.value='';
+  const err=document.getElementById('createGuildError');if(err)err.textContent='';
   document.getElementById('createGuildOverlay').classList.remove('hidden');
 }
 
 async function createGuild(){
-  const name=document.getElementById('guildNameInput')?.value.trim();
-  if(!name||name.length<2){log('❌ Name zu kurz!','c');return;}
-  if(G.hero.gold<500){log('❌ Zu wenig Gold!','c');return;}
-  G.hero.gold-=500;const gid=makeUUID();
-  await sbPost('sm_guilds',{id:gid,name,tagline:document.getElementById('guildTagInput')?.value.trim()||'',emoji:selectedGuildEmoji,level:1,gold:0,leader_id:getPlayerId(),created_at:new Date().toISOString()});
-  await sbPost('sm_guild_members',{id:makeUUID(),guild_id:gid,player_id:getPlayerId(),player_name:getPlayerName(),role:'leader',joined_at:new Date().toISOString()});
-  G.guildId=gid;G.guildRole='leader';
-  document.getElementById('createGuildOverlay').classList.add('hidden');
-  log('🏰 Gilde "'+name+'" gegründet!','l');updateAll();renderGuild();saveToSupabase();
+  const nameEl=document.getElementById('guildNameInput');
+  const tagEl=document.getElementById('guildTagInput');
+  const errEl=document.getElementById('createGuildError');
+  const btn=document.querySelector('#createGuildOverlay .collect-btn');
+
+  const name=(nameEl?.value||'').trim();
+  if(!name||name.length<2){
+    if(errEl)errEl.textContent='❌ Gilden-Name mindestens 2 Zeichen!';
+    return;
+  }
+  if(G.hero.gold<500){
+    if(errEl)errEl.textContent='❌ Du brauchst 500 Gold!';
+    return;
+  }
+
+  if(btn){btn.textContent='⏳ Erstelle...';btn.disabled=true;}
+  if(errEl)errEl.textContent='';
+
+  try {
+    const gid=makeUUID();
+    const tagline=(tagEl?.value||'').trim();
+    const guildData={id:gid,name,tagline,emoji:selectedGuildEmoji,level:1,gold:0,leader_id:getPlayerId(),created_at:new Date().toISOString()};
+    const memberData={id:makeUUID(),guild_id:gid,player_id:getPlayerId(),player_name:getPlayerName(),role:'leader',joined_at:new Date().toISOString()};
+
+    // Sofort lokal speichern — unabhängig von Supabase
+    G.hero.gold -= 500;
+    G.guildId = gid;
+    G.guildRole = 'leader';
+    G._localGuild = guildData;
+    G._pendingGuildCreate = {guildData, memberData}; // für Retry
+
+    // Dialog schließen und sofort anzeigen
+    document.getElementById('createGuildOverlay').classList.add('hidden');
+    log('🏰 Gilde "'+name+'" gegründet!','l');
+    updateAll();
+    renderGuild();
+    saveToSupabase();
+
+    // Supabase im Hintergrund versuchen (nicht blockierend)
+    (async()=>{
+      try {
+        const guildOk=await sbPost('sm_guilds',guildData);
+        if(guildOk){
+          await sbPost('sm_guild_members',memberData);
+          G._pendingGuildCreate=null;
+          log('☁️ Gilde mit Server synchronisiert!','n');
+        } else {
+          log('⚠️ Gilde lokal gespeichert — wird beim nächsten Login synchronisiert.','n');
+        }
+      } catch(e){
+        log('⚠️ Gilde lokal gespeichert — Offline-Modus.','n');
+      }
+    })();
+
+  } catch(e) {
+    console.error('createGuild Fehler:',e);
+    if(errEl)errEl.textContent='❌ Fehler: '+e.message;
+    log('❌ Fehler beim Gilde erstellen: '+e.message,'c');
+  } finally {
+    if(btn){btn.textContent='🏰 Gründen';btn.disabled=false;}
+  }
 }
 
 async function joinGuild(gid){
-  const already=await sbGet('sm_guild_members','player_id=eq.'+getPlayerId());
-  if(already&&already.length){log('❌ Du bist bereits in einer Gilde!','c');return;}
-  await sbPost('sm_guild_members',{id:makeUUID(),guild_id:gid,player_id:getPlayerId(),player_name:getPlayerName(),role:'member',joined_at:new Date().toISOString()});
-  G.guildId=gid;G.guildRole='member';log('🚪 Gilde beigetreten!','l');updateAll();renderGuild();saveToSupabase();
+  if(G.guildId){log('❌ Du bist bereits in einer Gilde! Erst verlassen.','c');return;}
+  try {
+    // Erstmal prüfen ob schon Mitglied in DB
+    const already=await sbGet('sm_guild_members','player_id=eq.'+getPlayerId());
+    if(already&&already.length){
+      G.guildId=already[0].guild_id;G.guildRole=already[0].role||'member';
+      log('🔄 Gilden-Mitgliedschaft wiederhergestellt!','n');updateAll();renderGuild();saveToSupabase();return;
+    }
+    // Gilde lokal laden und cachen
+    const guilds=await sbGet('sm_guilds','id=eq.'+gid);
+    if(guilds&&guilds.length) G._localGuild=guilds[0];
+    // Sofort lokal beitreten
+    G.guildId=gid;G.guildRole='member';
+    log('🚪 Gilde beigetreten!','l');updateAll();renderGuild();saveToSupabase();
+    // Im Hintergrund Supabase eintragen
+    sbPost('sm_guild_members',{id:makeUUID(),guild_id:gid,player_id:getPlayerId(),player_name:getPlayerName(),role:'member',joined_at:new Date().toISOString()});
+  } catch(e){
+    // Auch bei Netzwerkfehler lokal beitreten
+    G.guildId=gid;G.guildRole='member';
+    log('🚪 Gilde beigetreten (Offline-Modus)!','l');updateAll();renderGuild();saveToSupabase();
+  }
 }
 
 async function leaveGuild(){
