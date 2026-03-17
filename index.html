@@ -697,9 +697,216 @@ body {
 #btnShowRecent.active, #btnShowAll.active {
   border-color:var(--gold2); color:var(--gold2); background:rgba(201,162,39,.1);
 }
+
+/* ══ WHITE MODE ══ */
+body.white-mode {
+  --bg:       #f0eee8;
+  --bg2:      #e8e4da;
+  --panel:    #fff9f0;
+  --panel2:   #f5ede0;
+  --border:   #c8b89a;
+  --border2:  #a89070;
+  --gold:     #8a6010;
+  --gold2:    #6a4808;
+  --red:      #b03030;
+  --red2:     #c04040;
+  --green:    #2e7040;
+  --green2:   #2a6035;
+  --blue:     #1848a0;
+  --blue2:    #2050a0;
+  --purple:   #5020a0;
+  --purple2:  #6030b0;
+  --text:     #2a2018;
+  --text2:    #6a5840;
+  --text3:    #9a8870;
+  --shadow:   0 4px 24px rgba(0,0,0,0.15);
+  --glow-gold: 0 0 20px rgba(138,96,16,0.2);
+}
+
+body.white-mode .game-header {
+  background: linear-gradient(to bottom, #ede8de, var(--bg));
+}
+
+body.white-mode .card::before {
+  background: linear-gradient(to right, transparent, var(--border), transparent);
+}
+
+body.white-mode .log-box { background: rgba(0,0,0,0.05); }
+body.white-mode .bar { background: rgba(0,0,0,0.08); }
+body.white-mode .bar-fill::after { background: rgba(255,255,255,0.4); }
+body.white-mode .arena-bg { background: radial-gradient(ellipse at 50% 100%, rgba(180,100,100,.1) 0%, transparent 70%); }
+body.white-mode #settingsGearBtn { color: var(--gold); }
+
+/* ══ SETTINGS OVERLAY ══ */
+#settingsOverlay {
+  position:fixed;inset:0;z-index:3000;
+  background:rgba(0,0,0,0.75);
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .25s;
+}
+#settingsOverlay.open {
+  opacity:1;pointer-events:all;
+}
+#settingsBox {
+  background:var(--panel);
+  border:1px solid var(--border2);
+  border-radius:18px;
+  padding:24px 22px 20px;
+  width:min(94vw,400px);
+  box-shadow:0 12px 48px rgba(0,0,0,0.7);
+  position:relative;
+  animation:settingsPop .2s ease-out;
+}
+@keyframes settingsPop{from{transform:scale(.92);opacity:0}to{transform:scale(1);opacity:1}}
+
+#settingsBox h2 {
+  font-family:'Cinzel',serif;font-size:1.05rem;font-weight:900;
+  color:var(--gold2);letter-spacing:.1em;
+  display:flex;align-items:center;gap:8px;margin-bottom:18px;
+}
+
+.sett-section {
+  margin-bottom:16px;padding-bottom:16px;
+  border-bottom:1px solid var(--border);
+}
+.sett-section:last-of-type { border-bottom:none;margin-bottom:0;padding-bottom:0; }
+
+.sett-label {
+  font-family:'Cinzel',serif;font-size:.76rem;font-weight:700;
+  color:var(--text2);letter-spacing:.07em;margin-bottom:10px;
+  display:flex;align-items:center;gap:6px;
+}
+
+.sett-row {
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  margin-bottom:8px;
+}
+.sett-row:last-child { margin-bottom:0; }
+
+/* Toggle Switch */
+.toggle-wrap { display:flex;align-items:center;gap:8px; }
+.toggle-switch {
+  position:relative;width:44px;height:24px;cursor:pointer;
+}
+.toggle-switch input { opacity:0;width:0;height:0;position:absolute; }
+.toggle-slider {
+  position:absolute;inset:0;
+  background:var(--border2);border-radius:24px;
+  transition:background .2s;
+}
+.toggle-slider::after {
+  content:'';position:absolute;
+  left:3px;top:3px;width:18px;height:18px;
+  background:#fff;border-radius:50%;
+  transition:transform .2s;
+  box-shadow:0 1px 3px rgba(0,0,0,.4);
+}
+.toggle-switch input:checked + .toggle-slider { background:var(--green2); }
+.toggle-switch input:checked + .toggle-slider::after { transform:translateX(20px); }
+
+/* Volume Slider */
+.vol-row {
+  display:flex;align-items:center;gap:10px;margin-top:6px;
+}
+.vol-row span { font-family:'Cinzel',serif;font-size:.68rem;color:var(--text2);min-width:34px;text-align:right; }
+input[type=range].vol-slider {
+  flex:1;-webkit-appearance:none;height:5px;
+  background:var(--border);border-radius:3px;outline:none;cursor:pointer;
+}
+input[type=range].vol-slider::-webkit-slider-thumb {
+  -webkit-appearance:none;width:16px;height:16px;
+  border-radius:50%;background:var(--gold2);
+  cursor:pointer;box-shadow:0 0 6px rgba(0,0,0,.4);
+  transition:transform .1s;
+}
+input[type=range].vol-slider::-webkit-slider-thumb:hover { transform:scale(1.2); }
+
+/* Theme Buttons */
+.theme-btns { display:flex;gap:8px; }
+.theme-btn {
+  flex:1;padding:9px 6px;border-radius:10px;
+  border:2px solid var(--border);
+  background:var(--panel2);
+  font-family:'Cinzel',serif;font-size:.72rem;font-weight:700;
+  cursor:pointer;transition:all .18s;
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  color:var(--text2);
+}
+.theme-btn:hover { border-color:var(--gold); color:var(--gold); }
+.theme-btn.active { border-color:var(--gold2);color:var(--gold2);background:rgba(201,162,39,.1); }
+.theme-btn .theme-ico { font-size:1.4rem; }
+
+.sett-close-btn {
+  width:100%;margin-top:14px;
+  padding:10px;border-radius:10px;
+  background:linear-gradient(135deg,rgba(201,162,39,.15),rgba(201,162,39,.05));
+  border:1px solid var(--gold);
+  font-family:'Cinzel',serif;font-size:.8rem;font-weight:700;
+  color:var(--gold2);cursor:pointer;transition:all .2s;letter-spacing:.06em;
+}
+.sett-close-btn:hover { background:rgba(201,162,39,.2); }
+
+#settingsGearBtn:hover { color:var(--gold2);border-color:var(--gold);transform:rotate(30deg); }
+#settingsGearBtn { transition:all .25s; }
 </style>
 </head>
 <body>
+
+<!-- ═══ SETTINGS OVERLAY ═══ -->
+<div id="settingsOverlay" onclick="if(event.target===this)closeSettings()">
+  <div id="settingsBox">
+    <h2>⚙️ Einstellungen</h2>
+
+    <!-- THEME -->
+    <div class="sett-section">
+      <div class="sett-label">🎨 Erscheinungsbild</div>
+      <div class="theme-btns">
+        <button class="theme-btn active" id="themeDark" onclick="setTheme('dark')">
+          <div class="theme-ico">🌙</div>Dark Mode
+        </button>
+        <button class="theme-btn" id="themeWhite" onclick="setTheme('white')">
+          <div class="theme-ico">☀️</div>White Mode
+        </button>
+      </div>
+    </div>
+
+    <!-- MUSIK -->
+    <div class="sett-section">
+      <div class="sett-label">🎵 Hintergrundmusik</div>
+      <div class="sett-row">
+        <div style="font-size:.8rem;color:var(--text);">Musik aktiv</div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="musicToggle" onchange="toggleMusic(this.checked)">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      <div class="vol-row">
+        <span>🔇</span>
+        <input type="range" class="vol-slider" id="musicVolSlider" min="0" max="100" value="40" oninput="setMusicVol(this.value)">
+        <span id="musicVolPct">40%</span>
+      </div>
+    </div>
+
+    <!-- SOUND EFFEKTE -->
+    <div class="sett-section">
+      <div class="sett-label">💥 Sound Effekte</div>
+      <div class="sett-row">
+        <div style="font-size:.8rem;color:var(--text);">Effekte aktiv</div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="sfxToggle" checked onchange="toggleSfx(this.checked)">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      <div class="vol-row">
+        <span>🔇</span>
+        <input type="range" class="vol-slider" id="sfxVolSlider" min="0" max="100" value="60" oninput="setSfxVol(this.value)">
+        <span id="sfxVolPct">60%</span>
+      </div>
+    </div>
+
+    <button class="sett-close-btn" onclick="closeSettings()">✕ Schließen</button>
+  </div>
+</div>
 
 <!-- HEADER -->
 <div class="game-header">
@@ -711,6 +918,7 @@ body {
       <div class="hstat">⭐ Lv<b id="hLv">1</b></div>
       <div class="hstat">💀 <b id="hKills">0</b></div>
       <div class="hstat" id="saveStatus" style="color:var(--text2);font-size:0.65rem;">💾 —</div>
+      <button id="settingsGearBtn" onclick="openSettings()" title="Einstellungen" style="background:rgba(0,0,0,0.4);border:1px solid var(--border);border-radius:6px;padding:3px 9px;cursor:pointer;color:var(--text2);font-size:1rem;transition:all .2s;display:flex;align-items:center;">⚙️</button>
     </div>
   </div>
   <div class="era-bar">
@@ -2215,6 +2423,7 @@ function tick() {
       target.hp -= dmg;
       if (G.skills.has('vampirism')) { const heal = Math.floor(dmg * 0.08); h.hp = Math.min(h.maxHp, h.hp + heal); }
       floatDmgEl('mon_' + target.id, dmg, isCrit ? '#f0cc55' : '#e05050');
+      try { playSfx(isCrit ? 'crit' : 'hit'); } catch(e) {}
       const el = document.getElementById('mon_' + target.id);
       if (el) { el.style.filter = 'brightness(3) saturate(0)'; setTimeout(() => { if(el) el.style.filter = ''; }, 200); }
       if (target.hp <= 0) { monsterKilled(target); return; }
@@ -2257,6 +2466,7 @@ function monsterKilled(m) {
   const gold  = Math.round((m.gold + rng(0, 3)) * gm * lk);
   G.hero.xp += xp; G.hero.gold += gold; G.kills++;
   log('💀 ' + m.name + ' besiegt! +' + xp + ' XP  +' + gold + ' Gold', 'c');
+  try { playSfx('kill'); } catch(e) {}
   petHealOnKill();
   try { trackQuestProgress('kill', 1); trackQuestProgress('gold', gold); checkQuestBadge(); } catch(e) {}
   G.monsters = G.monsters.filter(x => x.id !== m.id);
@@ -2304,6 +2514,7 @@ function checkLevelUp() {
     if (G.hero.level % 5 === 0) G.hero.spd = Math.max(0.25, G.hero.spd - 0.1);
     log('🎉 LEVEL UP ' + G.hero.level + '!', 'l');
     leveled = true;
+    try { playSfx('levelup'); } catch(e) {}
   }
   if (leveled) { updateEraUI(); saveToSupabase(); }
 }
@@ -2418,6 +2629,7 @@ function forge() {
   const btn=document.getElementById('forgeBtn');
   btn.classList.add('forging');
   setTimeout(()=>btn.classList.remove('forging'),180);
+  try { playSfx('forge'); } catch(e) {}
   dropItem(true);
   G.forgeCount++;
   updateHeaderStats();
@@ -4088,6 +4300,226 @@ async function continueInit() {
     setTimeout(()=>{ try{saveToSupabase();}catch(e){} }, 3000);
   }
 }
+
+// ════════════════════════════════════════════
+// ── SETTINGS & AUDIO
+// ════════════════════════════════════════════
+
+// ── Audio Context & Sound Engine ──
+let audioCtx = null;
+let musicGain = null, sfxGain = null;
+let musicSource = null, musicLoop = null;
+let musicEnabled = false, sfxEnabled = true;
+let musicVolume = 0.4, sfxVolume = 0.6;
+
+function getAudioCtx() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    musicGain = audioCtx.createGain(); musicGain.gain.value = 0; musicGain.connect(audioCtx.destination);
+    sfxGain   = audioCtx.createGain(); sfxGain.gain.value   = sfxVolume; sfxGain.connect(audioCtx.destination);
+  }
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+
+// Procedural ambient music loop using oscillators
+function startMusic() {
+  try {
+    const ctx = getAudioCtx();
+    if (musicLoop) { clearInterval(musicLoop); musicLoop = null; }
+    if (musicSource) { try { musicSource.stop(); } catch(e){} musicSource = null; }
+
+    musicGain.gain.value = musicEnabled ? musicVolume : 0;
+
+    // Base drone
+    const drone = ctx.createOscillator();
+    const droneGain = ctx.createGain();
+    drone.type = 'sine';
+    drone.frequency.value = 55;
+    droneGain.gain.value = 0.12;
+    drone.connect(droneGain); droneGain.connect(musicGain);
+    drone.start();
+    musicSource = drone;
+
+    // Melody line – slow arpeggiation
+    const notes = [220, 247, 277, 330, 370, 330, 277, 247];
+    let ni = 0;
+    const melody = ctx.createOscillator();
+    const melGain = ctx.createGain();
+    melody.type = 'triangle';
+    melody.frequency.value = notes[0];
+    melGain.gain.value = 0;
+    melody.connect(melGain); melGain.connect(musicGain);
+    melody.start();
+
+    musicLoop = setInterval(() => {
+      if (!musicEnabled) return;
+      try {
+        const now = ctx.currentTime;
+        melody.frequency.setTargetAtTime(notes[ni % notes.length], now, 0.05);
+        melGain.gain.setTargetAtTime(0.06, now, 0.05);
+        melGain.gain.setTargetAtTime(0, now + 0.7, 0.15);
+        ni++;
+      } catch(e) {}
+    }, 900);
+  } catch(e) { console.warn('Music init failed:', e); }
+}
+
+function stopMusic() {
+  try {
+    if (musicGain) musicGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.3);
+    if (musicLoop) { clearInterval(musicLoop); musicLoop = null; }
+  } catch(e) {}
+}
+
+// ── Sound Effects ──
+function playSfx(type) {
+  if (!sfxEnabled) return;
+  try {
+    const ctx = getAudioCtx();
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(sfxGain);
+
+    if (type === 'hit') {
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(180, now);
+      osc.frequency.exponentialRampToValueAtTime(60, now + 0.12);
+      gain.gain.setValueAtTime(0.25, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+      osc.start(now); osc.stop(now + 0.15);
+    } else if (type === 'crit') {
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(520, now);
+      osc.frequency.exponentialRampToValueAtTime(300, now + 0.1);
+      gain.gain.setValueAtTime(0.2, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+      osc.start(now); osc.stop(now + 0.18);
+    } else if (type === 'kill') {
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(440, now);
+      osc.frequency.setValueAtTime(660, now + 0.08);
+      osc.frequency.setValueAtTime(880, now + 0.16);
+      gain.gain.setValueAtTime(0.2, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+      osc.start(now); osc.stop(now + 0.3);
+    } else if (type === 'levelup') {
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(523, now);
+      osc.frequency.setValueAtTime(659, now + 0.1);
+      osc.frequency.setValueAtTime(784, now + 0.2);
+      osc.frequency.setValueAtTime(1047, now + 0.3);
+      gain.gain.setValueAtTime(0.25, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+      osc.start(now); osc.stop(now + 0.5);
+    } else if (type === 'forge') {
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(300, now);
+      osc.frequency.exponentialRampToValueAtTime(150, now + 0.2);
+      gain.gain.setValueAtTime(0.18, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+      osc.start(now); osc.stop(now + 0.25);
+    } else if (type === 'buy') {
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(700, now);
+      osc.frequency.exponentialRampToValueAtTime(900, now + 0.08);
+      gain.gain.setValueAtTime(0.15, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+      osc.start(now); osc.stop(now + 0.12);
+    }
+  } catch(e) {}
+}
+
+// ── Settings UI ──
+function openSettings() {
+  document.getElementById('settingsOverlay').classList.add('open');
+  loadSettingsFromStorage();
+}
+function closeSettings() {
+  document.getElementById('settingsOverlay').classList.remove('open');
+}
+
+function loadSettingsFromStorage() {
+  try {
+    const s = JSON.parse(localStorage.getItem('sm_settings') || '{}');
+    if (s.theme) setTheme(s.theme, true);
+    if (s.musicEnabled !== undefined) {
+      musicEnabled = s.musicEnabled;
+      document.getElementById('musicToggle').checked = musicEnabled;
+      if (musicEnabled) startMusic(); else stopMusic();
+    }
+    if (s.musicVolume !== undefined) {
+      musicVolume = s.musicVolume;
+      document.getElementById('musicVolSlider').value = Math.round(musicVolume * 100);
+      document.getElementById('musicVolPct').textContent = Math.round(musicVolume * 100) + '%';
+      if (musicGain) musicGain.gain.value = musicEnabled ? musicVolume : 0;
+    }
+    if (s.sfxEnabled !== undefined) {
+      sfxEnabled = s.sfxEnabled;
+      document.getElementById('sfxToggle').checked = sfxEnabled;
+    }
+    if (s.sfxVolume !== undefined) {
+      sfxVolume = s.sfxVolume;
+      document.getElementById('sfxVolSlider').value = Math.round(sfxVolume * 100);
+      document.getElementById('sfxVolPct').textContent = Math.round(sfxVolume * 100) + '%';
+      if (sfxGain) sfxGain.gain.value = sfxVolume;
+    }
+  } catch(e) {}
+}
+
+function saveSettingsToStorage() {
+  try {
+    localStorage.setItem('sm_settings', JSON.stringify({
+      theme: document.body.classList.contains('white-mode') ? 'white' : 'dark',
+      musicEnabled, musicVolume, sfxEnabled, sfxVolume
+    }));
+  } catch(e) {}
+}
+
+function setTheme(mode, silent) {
+  if (mode === 'white') {
+    document.body.classList.add('white-mode');
+    document.getElementById('themeDark').classList.remove('active');
+    document.getElementById('themeWhite').classList.add('active');
+  } else {
+    document.body.classList.remove('white-mode');
+    document.getElementById('themeDark').classList.add('active');
+    document.getElementById('themeWhite').classList.remove('active');
+  }
+  if (!silent) saveSettingsToStorage();
+}
+
+function toggleMusic(on) {
+  musicEnabled = on;
+  if (on) { startMusic(); } else { stopMusic(); }
+  saveSettingsToStorage();
+}
+
+function setMusicVol(val) {
+  musicVolume = val / 100;
+  document.getElementById('musicVolPct').textContent = val + '%';
+  if (musicGain) musicGain.gain.value = musicEnabled ? musicVolume : 0;
+  saveSettingsToStorage();
+}
+
+function toggleSfx(on) {
+  sfxEnabled = on;
+  if (sfxGain) sfxGain.gain.value = on ? sfxVolume : 0;
+  saveSettingsToStorage();
+}
+
+function setSfxVol(val) {
+  sfxVolume = val / 100;
+  document.getElementById('sfxVolPct').textContent = val + '%';
+  if (sfxGain && sfxEnabled) sfxGain.gain.value = sfxVolume;
+  saveSettingsToStorage();
+}
+
+// Load settings on page start
+window.addEventListener('DOMContentLoaded', () => {
+  try { loadSettingsFromStorage(); } catch(e) {}
+});
 
 init();
 </script>
