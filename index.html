@@ -2,6 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>⚔️ SwordMaster</title>
 <style>
@@ -1569,7 +1570,7 @@ input[type=range].vol-slider::-webkit-slider-thumb:hover { transform:scale(1.2);
       <div style="flex:1;min-width:0;">
         <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px;">
           <span id="heroNameDisplay" style="font-family:'Cinzel',serif;font-size:.9rem;font-weight:700;color:var(--gold2);"></span>
-          <button id="editNameBtn" onclick="openNameEdit()" style="background:none;border:none;cursor:pointer;color:var(--text2);font-size:.8rem;padding:1px 3px;">✏️</button>
+          <img id="googleAvatar" src="" alt="" style="display:none;width:22px;height:22px;border-radius:50%;border:1px solid var(--border2);vertical-align:middle;margin-right:3px;"><button id="editNameBtn" onclick="openNameEdit()" style="background:none;border:none;cursor:pointer;color:var(--text2);font-size:.8rem;padding:1px 3px;">✏️</button>
           <div id="nameCooldownBadge" style="display:none;font-size:.58rem;font-family:'Cinzel',serif;color:var(--text3);background:rgba(0,0,0,.3);border:1px solid var(--border);border-radius:3px;padding:1px 5px;">⏳ <span id="nameCooldownTxt">48h</span></div>
           <div class="lvl-badge" id="lvlBadge">LVL 1</div>
         </div>
@@ -2185,35 +2186,52 @@ input[type=range].vol-slider::-webkit-slider-thumb:hover { transform:scale(1.2);
 <!-- IDLE POPUP -->
 <!-- ACCOUNT OVERLAY — erscheint beim ersten Start -->
 <div class="idle-overlay hidden" id="accountOverlay">
-  <div class="idle-box" style="max-width:380px;text-align:center;">
-    <div style="font-size:2.5rem;margin-bottom:6px;">⚔️</div>
-    <h2 style="margin-bottom:4px;">SwordMaster</h2>
-    <p style="color:var(--text2);font-size:.8rem;margin-bottom:16px;">Erstelle einen Account oder melde dich an um deinen Spielstand zu sichern.</p>
+  <div class="idle-box" style="max-width:360px;text-align:center;">
+    <!-- Logo -->
+    <div style="font-size:3rem;margin-bottom:8px;filter:drop-shadow(0 0 20px rgba(240,204,85,.5));">⚔️</div>
+    <h2 style="font-family:'Cinzel',serif;font-size:1.4rem;color:var(--gold2);margin-bottom:6px;letter-spacing:.08em;">SWORDMASTER</h2>
+    <p style="color:var(--text2);font-size:.78rem;margin-bottom:24px;line-height:1.5;">Melde dich mit Google an — dein Spielstand wird<br>automatisch auf allen Geräten synchronisiert.</p>
 
-    <!-- Tabs -->
-    <div style="display:flex;gap:6px;justify-content:center;margin-bottom:14px;">
-      <button id="accTabNew" onclick="showAccTab('new')" style="flex:1;padding:7px;border-radius:7px;border:2px solid var(--gold);background:rgba(201,162,39,.1);font-family:'Cinzel',serif;font-size:.72rem;color:var(--gold2);cursor:pointer;">🆕 Neu</button>
-      <button id="accTabLogin" onclick="showAccTab('login')" style="flex:1;padding:7px;border-radius:7px;border:1px solid var(--border);background:rgba(0,0,0,.3);font-family:'Cinzel',serif;font-size:.72rem;color:var(--text2);cursor:pointer;">🔑 Anmelden</button>
+    <!-- Google Sign-In Button -->
+    <button id="googleSignInBtn" onclick="signInWithGoogle()" style="
+      display:flex;align-items:center;justify-content:center;gap:10px;
+      width:100%;padding:12px 20px;
+      background:#fff;border:1px solid #ddd;border-radius:10px;
+      font-family:Arial,sans-serif;font-size:.9rem;font-weight:500;color:#3c4043;
+      cursor:pointer;transition:all .2s;
+      box-shadow:0 2px 8px rgba(0,0,0,.15);
+    " onmouseover="this.style.boxShadow='0 4px 16px rgba(0,0,0,.25)'" onmouseout="this.style.boxShadow='0 2px 8px rgba(0,0,0,.15)'">
+      <svg width="20" height="20" viewBox="0 0 24 24">
+        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+      </svg>
+      Mit Google anmelden
+    </button>
+
+    <!-- Status-Meldung -->
+    <div id="authStatus" style="margin-top:12px;font-size:.72rem;color:var(--text2);min-height:20px;"></div>
+
+    <!-- Trennlinie -->
+    <div style="display:flex;align-items:center;gap:10px;margin:16px 0;">
+      <div style="flex:1;height:1px;background:rgba(255,255,255,.1);"></div>
+      <span style="font-size:.65rem;color:var(--text3);">oder</span>
+      <div style="flex:1;height:1px;background:rgba(255,255,255,.1);"></div>
     </div>
 
-    <!-- Neu registrieren -->
-    <div id="accPanelNew">
-      <input id="accNameInput" type="text" maxlength="18" placeholder="Dein Spielername..." style="width:100%;padding:9px;background:rgba(0,0,0,.4);border:1px solid var(--border2);border-radius:7px;color:var(--text);font-family:'Cinzel',serif;font-size:.9rem;outline:none;text-align:center;margin-bottom:8px;"/>
-      <input id="accPinInput" type="password" maxlength="20" placeholder="Passwort (min. 4 Zeichen)..." style="width:100%;padding:9px;background:rgba(0,0,0,.4);border:1px solid var(--border2);border-radius:7px;color:var(--text);font-family:'Crimson Pro',serif;font-size:.9rem;outline:none;text-align:center;margin-bottom:6px;"/>
-      <div id="accNewError" style="color:var(--red2);font-size:.72rem;min-height:16px;margin-bottom:8px;"></div>
-      <button onclick="registerAccount()" class="collect-btn" style="width:100%;">✅ Account erstellen & spielen</button>
-      <p style="color:var(--text3);font-size:.65rem;margin-top:8px;">Passwort sichert deinen Spielstand auf allen Geräten.</p>
-    </div>
-
-    <!-- Einloggen -->
-    <div id="accPanelLogin" style="display:none;">
-      <input id="accLoginName" type="text" maxlength="18" placeholder="Spielername..." style="width:100%;padding:9px;background:rgba(0,0,0,.4);border:1px solid var(--border2);border-radius:7px;color:var(--text);font-family:'Cinzel',serif;font-size:.9rem;outline:none;text-align:center;margin-bottom:8px;"/>
-      <input id="accLoginPin" type="password" maxlength="20" placeholder="Passwort..." style="width:100%;padding:9px;background:rgba(0,0,0,.4);border:1px solid var(--border2);border-radius:7px;color:var(--text);font-family:'Crimson Pro',serif;font-size:.9rem;outline:none;text-align:center;margin-bottom:6px;"/>
-      <div id="accLoginError" style="color:var(--red2);font-size:.72rem;min-height:16px;margin-bottom:8px;"></div>
-      <button onclick="loginAccount()" class="collect-btn" style="width:100%;">🔑 Anmelden & Spielstand laden</button>
-    </div>
-
-    <button onclick="playAsGuest()" style="margin-top:10px;background:none;border:none;color:var(--text3);font-size:.7rem;cursor:pointer;text-decoration:underline;">Ohne Account spielen (Spielstand kann verloren gehen)</button>
+    <!-- Gast-Modus -->
+    <button onclick="playAsGuest()" style="
+      width:100%;padding:9px;
+      background:rgba(0,0,0,.3);border:1px solid var(--border);border-radius:8px;
+      font-family:'Cinzel',serif;font-size:.7rem;color:var(--text2);
+      cursor:pointer;transition:all .15s;
+    " onmouseover="this.style.borderColor='var(--border2)'" onmouseout="this.style.borderColor='var(--border)'">
+      👤 Als Gast spielen
+    </button>
+    <p style="color:var(--text3);font-size:.6rem;margin-top:8px;line-height:1.5;">
+      Als Gast gespeicherter Fortschritt bleibt nur auf diesem Gerät.
+    </p>
   </div>
 </div>
 
@@ -2246,6 +2264,7 @@ input[type=range].vol-slider::-webkit-slider-thumb:hover { transform:scale(1.2);
     <div style="display:flex;gap:8px;justify-content:center;margin-top:14px;flex-wrap:wrap;">
       <button class="collect-btn" onclick="confirmNameEdit()" style="padding:9px 22px;">✅ Speichern</button>
       <button class="collect-btn" onclick="closeNameEdit()" style="background:rgba(0,0,0,.4);border-color:var(--border2);color:var(--text2);padding:9px 22px;">❌ Abbrechen</button>
+      <button onclick="signOut()" style="margin-top:8px;width:100%;padding:8px;background:rgba(180,30,30,.12);border:1px solid rgba(180,30,30,.4);border-radius:8px;font-family:'Cinzel',serif;font-size:.66rem;color:var(--red2);cursor:pointer;" title="Ausloggen">🚪 Ausloggen</button>
     </div>
   </div>
 </div>
@@ -5179,96 +5198,126 @@ const SUPA_URL  = 'https://wzavkrblpraprxqvainj.supabase.co';
 const SUPA_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind6YXZrcmJscHJhcHJ4cXZhaW5qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2NTkwOTAsImV4cCI6MjA4OTIzNTA5MH0.Rm53ZDcE0YlymAmWoXtYBo7zlkOgZVTUuvz9pLTIOQM';
 const SUPA_HDR  = { 'Content-Type':'application/json', 'apikey': SUPA_KEY, 'Authorization': 'Bearer '+SUPA_KEY };
 
-// Spieler-ID aus localStorage — bleibt dauerhaft auf diesem Gerät
 // ════════════════════════════════════════════
-// ── ACCOUNT SYSTEM
+// ── GOOGLE OAUTH AUTH SYSTEM
 // ════════════════════════════════════════════
 
+// Supabase JS Client für OAuth (SDK wird per CDN geladen)
+let _supaClient = null;
+function getSupaClient() {
+  if (_supaClient) return _supaClient;
+  if (typeof window.supabase !== 'undefined') {
+    _supaClient = window.supabase.createClient(SUPA_URL, SUPA_KEY);
+  }
+  return _supaClient;
+}
+
+// Spieler-ID: entweder Google-User-ID (UUID von Supabase Auth) oder Gast-UUID
 function getPlayerId() {
   return localStorage.getItem('sm_player_id') || null;
 }
-
 function setPlayerId(id) {
   localStorage.setItem('sm_player_id', id);
 }
 
-function showAccTab(tab) {
-  document.getElementById('accPanelNew').style.display   = tab==='new'   ? 'block' : 'none';
-  document.getElementById('accPanelLogin').style.display = tab==='login' ? 'block' : 'none';
-  document.getElementById('accTabNew').style.borderWidth   = tab==='new'   ? '2px' : '1px';
-  document.getElementById('accTabNew').style.color         = tab==='new'   ? 'var(--gold2)' : 'var(--text2)';
-  document.getElementById('accTabLogin').style.borderWidth = tab==='login' ? '2px' : '1px';
-  document.getElementById('accTabLogin').style.color       = tab==='login' ? 'var(--gold2)' : 'var(--text2)';
+// Anzeigename: Google-Name, gespeicherter Name, oder Gast
+function getPlayerName() {
+  return localStorage.getItem('sm_player_name') || 'Held';
 }
 
-// Passwort hashen (einfach, kein Server nötig)
-async function hashPin(pin) {
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pin + 'sm_salt_2026'));
-  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+// ── Google Sign-In ────────────────────────
+async function signInWithGoogle() {
+  const btn    = document.getElementById('googleSignInBtn');
+  const status = document.getElementById('authStatus');
+  if (btn) { btn.disabled = true; btn.style.opacity = '.7'; }
+  if (status) status.textContent = '⏳ Weiterleitung zu Google...';
+
+  try {
+    const client = getSupaClient();
+    if (!client) throw new Error('Supabase SDK nicht geladen');
+
+    const { error } = await client.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        // Nach OAuth zurück zur selben Seite
+        redirectTo: window.location.href.split('?')[0],
+        queryParams: { access_type: 'offline', prompt: 'consent' }
+      }
+    });
+
+    if (error) throw error;
+    // Browser leitet zu Google weiter — kein weiterer Code nötig
+  } catch (err) {
+    console.error('Google Sign-In error:', err);
+    if (status) status.textContent = '❌ Fehler: ' + (err.message || 'Unbekannter Fehler');
+    if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
+  }
 }
 
-async function registerAccount() {
-  const name = document.getElementById('accNameInput').value.trim();
-  const pin  = document.getElementById('accPinInput').value;
-  const err  = document.getElementById('accNewError');
+// ── OAuth Callback verarbeiten ────────────
+// Wird nach dem Google-Redirect aufgerufen
+async function handleOAuthCallback() {
+  const client = getSupaClient();
+  if (!client) return false;
 
-  if (name.length < 2) { err.textContent = '❌ Name mindestens 2 Zeichen!'; return; }
-  if (pin.length < 4)  { err.textContent = '❌ Passwort mindestens 4 Zeichen!'; return; }
-  if (!/^[a-zA-ZäöüÄÖÜß0-9 _\-]+$/.test(name)) { err.textContent = '❌ Ungültige Zeichen im Namen!'; return; }
+  // Supabase liest den Hash/Code aus der URL automatisch aus
+  const { data: { session }, error } = await client.auth.getSession();
 
-  err.textContent = '⏳ Prüfe Verfügbarkeit...';
+  if (error || !session) return false;
 
-  // Check ob Name schon vergeben
-  const existing = await sbGet('sm_accounts', `username=eq.${encodeURIComponent(name)}`);
-  if (existing && existing.length > 0) {
-    err.textContent = '❌ Name bereits vergeben!'; return;
+  const user = session.user;
+  const uid  = user.id;  // UUID von Supabase Auth = unsere player_id
+
+  // Spieler-ID setzen
+  setPlayerId(uid);
+
+  // Name aus Google-Profil holen (display_name > email-prefix > 'Held')
+  const googleName = user.user_metadata?.full_name
+    || user.user_metadata?.name
+    || user.email?.split('@')[0]
+    || 'Held';
+
+  // Nur setzen wenn noch kein eigener Name gewählt
+  if (!localStorage.getItem('sm_player_name') ||
+      localStorage.getItem('sm_player_name') === 'Held') {
+    localStorage.setItem('sm_player_name', googleName.slice(0, 18));
   }
 
-  const pid      = makeUUID();
-  const pinHash  = await hashPin(pin);
+  // Auth-Header für API-Calls mit User-JWT aktualisieren
+  SUPA_HDR['Authorization'] = 'Bearer ' + session.access_token;
 
-  const ok = await sbPost('sm_accounts', {
-    id: pid, username: name, pin_hash: pinHash, created_at: new Date().toISOString()
-  });
-
-  if (!ok) { err.textContent = '❌ Fehler beim Erstellen. Versuche es erneut!'; return; }
-
-  setPlayerId(pid);
-  localStorage.setItem('sm_player_name', name);
-  document.getElementById('accountOverlay').classList.add('hidden');
-  log('✅ Account "' + name + '" erstellt!', 'l');
-  await continueInit();
+  return true;
 }
 
-async function loginAccount() {
-  const name = document.getElementById('accLoginName').value.trim();
-  const pin  = document.getElementById('accLoginPin').value;
-  const err  = document.getElementById('accLoginError');
-
-  if (!name || !pin) { err.textContent = '❌ Name und Passwort eingeben!'; return; }
-  err.textContent = '⏳ Anmelden...';
-
-  const pinHash = await hashPin(pin);
-  const accounts = await sbGet('sm_accounts', `username=eq.${encodeURIComponent(name)}&pin_hash=eq.${pinHash}`);
-
-  if (!accounts || accounts.length === 0) {
-    err.textContent = '❌ Name oder Passwort falsch!'; return;
-  }
-
-  const acc = accounts[0];
-  setPlayerId(acc.id);
-  localStorage.setItem('sm_player_name', name);
-  document.getElementById('accountOverlay').classList.add('hidden');
-  log('✅ Willkommen zurück, ' + name + '!', 'l');
-  await continueInit();
-}
-
+// ── Gast-Modus ────────────────────────────
 async function playAsGuest() {
-  // Gast bekommt zufällige ID die im localStorage bleibt
   if (!getPlayerId()) setPlayerId(makeUUID());
   document.getElementById('accountOverlay').classList.add('hidden');
   await continueInit();
 }
+
+// ── Ausloggen ─────────────────────────────
+async function signOut() {
+  try {
+    const client = getSupaClient();
+    if (client) await client.auth.signOut();
+  } catch(e) {}
+  localStorage.removeItem('sm_player_id');
+  localStorage.removeItem('sm_player_name');
+  location.reload();
+}
+
+// ── Token-Refresh im Hintergrund ──────────
+async function refreshAuthToken() {
+  const client = getSupaClient();
+  if (!client) return;
+  try {
+    const { data: { session } } = await client.auth.refreshSession();
+    if (session) SUPA_HDR['Authorization'] = 'Bearer ' + session.access_token;
+  } catch(e) {}
+}
+// Alle 50 Minuten Token refreshen (Supabase Tokens laufen nach 1h ab)
+setInterval(refreshAuthToken, 50 * 60 * 1000);
 
 
 function makeUUID() {
@@ -5541,7 +5590,7 @@ async function loadFromSupabase() {
     const p = players[0];
 
     // Namen aus Supabase wiederherstellen (falls noch nicht lokal gesetzt)
-    if (p.player_name && p.player_name !== 'Klar') {
+    if (p.player_name && p.player_name !== 'Held' && p.player_name !== 'Klar') {
       if (!localStorage.getItem('sm_player_name')) {
         localStorage.setItem('sm_player_name', p.player_name);
       }
@@ -5738,10 +5787,7 @@ function collectIdle() {
 
 const NAME_COOLDOWN_MS = 48 * 60 * 60 * 1000; // 48 Stunden
 
-function getPlayerName() {
-  return localStorage.getItem('sm_player_name') || 'Klar';
-}
-
+// getPlayerName is defined in the auth section above
 function setPlayerName(name) {
   localStorage.setItem('sm_player_name', name);
   localStorage.setItem('sm_name_changed', Date.now().toString());
@@ -7375,14 +7421,66 @@ setInterval(() => { try { checkDailyReset(); } catch(e) {} }, 60000);
 // ── INIT
 // ════════════════════════════════════════════
 async function init() {
-  // Account-Check: Hat der Browser schon eine Player-ID?
-  if (!getPlayerId()) {
-    // Kein gespeicherter Account — Login-Screen zeigen
-    document.getElementById('accountOverlay').classList.remove('hidden');
-    return; // continueInit() wird von registerAccount/loginAccount/playAsGuest aufgerufen
+  // ── Schritt 1: OAuth-Callback prüfen (Google Redirect zurück) ──
+  // Supabase schreibt nach dem Redirect einen Hash oder Code in die URL
+  const url = window.location.href;
+  const hasOAuthCallback = url.includes('access_token=') ||
+                           url.includes('code=')         ||
+                           url.includes('#access_token');
+
+  if (hasOAuthCallback) {
+    // Lade-Screen sofort zeigen
+    document.body.insertAdjacentHTML('beforeend', `
+      <div id="oauthLoadScreen" style="position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;">
+        <div style="font-size:2rem;color:var(--gold2);">⚔️</div>
+        <div style="font-family:'Cinzel',serif;font-size:1rem;color:var(--gold2);">Anmelden...</div>
+        <div style="font-size:.78rem;color:var(--text2);" id="oauthMsg">Google Account wird verknüpft...</div>
+      </div>
+    `);
+
+    try {
+      const ok = await handleOAuthCallback();
+      if (ok) {
+        // URL bereinigen (Hash/Code entfernen) ohne Reload
+        window.history.replaceState({}, document.title, window.location.pathname);
+        document.getElementById('oauthLoadScreen')?.remove();
+        await continueInit();
+        return;
+      }
+    } catch(e) {
+      console.error('OAuth callback error:', e);
+    }
+    document.getElementById('oauthLoadScreen')?.remove();
   }
-  // Bereits eingeloggt — direkt laden
-  await continueInit();
+
+  // ── Schritt 2: Bestehende Session prüfen (SDK) ──
+  try {
+    const client = getSupaClient();
+    if (client) {
+      const { data: { session } } = await client.auth.getSession();
+      if (session) {
+        const uid = session.user.id;
+        setPlayerId(uid);
+        SUPA_HDR['Authorization'] = 'Bearer ' + session.access_token;
+        // Name aus Google-Profil setzen falls noch nicht vorhanden
+        if (!localStorage.getItem('sm_player_name') || localStorage.getItem('sm_player_name') === 'Held') {
+          const n = session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email?.split('@')[0];
+          if (n) localStorage.setItem('sm_player_name', n.slice(0, 18));
+        }
+        await continueInit();
+        return;
+      }
+    }
+  } catch(e) { console.warn('Session check failed:', e); }
+
+  // ── Schritt 3: Lokale Gast-ID prüfen ──
+  if (getPlayerId()) {
+    await continueInit();
+    return;
+  }
+
+  // ── Schritt 4: Login-Screen zeigen ──
+  document.getElementById('accountOverlay').classList.remove('hidden');
 }
 
 async function continueInit() {
