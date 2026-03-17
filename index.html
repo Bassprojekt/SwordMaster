@@ -698,6 +698,32 @@ body {
   border-color:var(--gold2); color:var(--gold2); background:rgba(201,162,39,.1);
 }
 
+/* ══ GUILD BONUS ══ */
+.guild-bonus-row {
+  display:flex; align-items:center; gap:10px;
+  background:rgba(0,0,0,.2); border:1px solid var(--border);
+  border-radius:8px; padding:8px 12px;
+}
+.guild-bonus-icon { font-size:1.1rem; flex-shrink:0; width:22px; text-align:center; }
+.guild-bonus-info { flex:1; min-width:0; }
+.guild-bonus-name { font-family:'Cinzel',serif; font-size:.72rem; font-weight:700; color:var(--text); }
+.guild-bonus-bar-wrap { margin-top:3px; position:relative; }
+.guild-bonus-bar { height:5px; background:rgba(255,255,255,.06); border-radius:3px; overflow:hidden; }
+.guild-bonus-bar-fill { height:100%; border-radius:3px; transition:width .5s ease; }
+.guild-bonus-val { font-family:'Cinzel',serif; font-size:.68rem; color:var(--gold2); flex-shrink:0; min-width:44px; text-align:right; }
+.guild-bonus-max { color:var(--green2) !important; }
+
+/* Guild bonus badge in header */
+#guildHeaderBadge {
+  background:rgba(0,0,0,0.4); border:1px solid var(--green);
+  border-radius:6px; padding:3px 8px;
+  font-family:'Cinzel',serif; font-size:.65rem;
+  color:var(--green2); display:none; align-items:center; gap:4px;
+  white-space:nowrap; cursor:pointer;
+  transition:all .2s;
+}
+#guildHeaderBadge:hover { border-color:var(--green2); }
+
 /* ══ WHITE MODE ══ */
 body.white-mode {
   --bg:       #f0eee8;
@@ -918,6 +944,7 @@ input[type=range].vol-slider::-webkit-slider-thumb:hover { transform:scale(1.2);
       <div class="hstat">⭐ Lv<b id="hLv">1</b></div>
       <div class="hstat">💀 <b id="hKills">0</b></div>
       <div class="hstat" id="saveStatus" style="color:var(--text2);font-size:0.65rem;">💾 —</div>
+      <div id="guildHeaderBadge" onclick="switchTab('gilde')" title="Gilden-Boni aktiv">🏰 <span id="guildHeaderBadgeTxt">Lv1</span></div>
       <button id="settingsGearBtn" onclick="openSettings()" title="Einstellungen" style="background:rgba(0,0,0,0.4);border:1px solid var(--border);border-radius:6px;padding:3px 9px;cursor:pointer;color:var(--text2);font-size:1rem;transition:all .2s;display:flex;align-items:center;">⚙️</button>
     </div>
   </div>
@@ -1267,6 +1294,13 @@ input[type=range].vol-slider::-webkit-slider-thumb:hover { transform:scale(1.2);
         <div style="font-size:.62rem;color:var(--text3);margin-top:3px;font-style:italic;" id="guildNextLevelInfo">Spendet Gold um die Gilde zu leveln!</div>
       </div>
       <div style="margin-top:8px;" id="myGuildRankDisplay"></div>
+    </div>
+    <!-- Gilden-Boni Panel -->
+    <div class="card" id="guildBonusCard">
+      <div class="sec-title">⚡ Aktive Gilden-Boni</div>
+      <div id="guildBonusContent" style="display:flex;flex-direction:column;gap:6px;">
+        <div style="color:var(--text2);font-size:.75rem;font-style:italic;">Lade Boni...</div>
+      </div>
     </div>
     <!-- Chat -->
     <div class="card">
@@ -1856,11 +1890,28 @@ function getStats() {
     if (p && p.special==='spd') spd = Math.max(0.25, spd*0.85);
   });
 
+  // Guild ATK/DEF bonus
+  const gb = guildBonus();
+  if (gb.atk > 0) atk = Math.floor(atk * (1 + gb.atk));
+  if (gb.def > 0) def = Math.floor(def * (1 + gb.def));
+
   spd = Math.max(0.25, parseFloat(spd.toFixed(2)));
   return { atk, def, spd, crit: Math.min(75, crit) };
 }
 
-function goldMult()   { return 1 + (G.upgrades.gold_mult||0)*0.12 + (G.skills.has('goldSense')?0.15:0) + ((G.shopBoosts&&G.shopBoosts.goldBoost||0)>Date.now()?0.5:0); }
+function guildBonus() {
+  if (!G.guildId || !G._localGuild) return { xp:0, gold:0, atk:0, def:0, level:0 };
+  const lv = G._localGuild.level || 1;
+  return {
+    xp:   Math.min(0.75, (lv-1)*0.015),
+    gold: Math.min(0.60, (lv-1)*0.012),
+    atk:  Math.min(0.40, (lv-1)*0.008),
+    def:  Math.min(0.25, (lv-1)*0.005),
+    level: lv
+  };
+}
+function xpMult()     { return 1 + ((G.shopBoosts&&G.shopBoosts.xpBoost||0)>Date.now()?0.5:0) + guildBonus().xp; }
+function goldMult()   { return 1 + (G.upgrades.gold_mult||0)*0.12 + (G.skills.has('goldSense')?0.15:0) + ((G.shopBoosts&&G.shopBoosts.goldBoost||0)>Date.now()?0.5:0) + guildBonus().gold; }
 function dropBonus()  { return (G.upgrades.drop_rate||0)*0.08 + (G.skills.has('treasureHunt')?0.2:0); }
 function idleMult()   { return 1 + (G.upgrades.idle_mul||0)*0.6; }
 function rarBonus()   { return (G.upgrades.item_qual||0)*0.15; }
@@ -1912,6 +1963,7 @@ function floatDmg(el,dmg,col='#e05050') {
 function updateAll() {
   try { updateHeaderStats(); } catch(e) {}
   try { updateHeroPage(); } catch(e) {}
+  try { renderGuildBonuses(); } catch(e) {}
   try { updateEraUI(); } catch(e) {}
   try { updateArenaPanel(); } catch(e) {}
   // sync arena HP bar
@@ -2001,11 +2053,21 @@ function updateHeroPage() {
   _s('xpBar','width',Math.min(100,h.xp/xpNeed()*100)+'%');
   _s('manaTxt','text',Math.ceil(h.mana)+'/'+h.maxMana);
   _s('manaBar','width',Math.max(0,h.mana/h.maxMana*100)+'%');
-  _s('pAtk','text',s.atk);
-  _s('pDef','text',s.def);
+  const gb = guildBonus();
+  const atkLabel = gb.atk > 0 ? s.atk + ' ✦' : s.atk;
+  const defLabel = gb.def > 0 ? s.def + ' ✦' : s.def;
+  _s('pAtk','text', atkLabel);
+  _s('pDef','text', defLabel);
   _s('pSpd','text',s.spd.toFixed(2));
   _s('pCrit','text',s.crit);
   _s('fGold','text',h.gold);
+  // Guild bonus XP indicator on XP bar label
+  try {
+    const xpEl = document.getElementById('xpTxt');
+    if (xpEl && gb.xp > 0) {
+      xpEl.title = 'Gilden-Bonus: +' + Math.round(gb.xp*100) + '% XP aktiv';
+    }
+  } catch(e) {}
   _s('fItems','text','Items im Inventar: '+G.inventory.length);
   const autoMs=forgeMs();
   _s('fAutoSpeed','text',G.autoForge?('Auto-Schmied: alle '+autoMs+'ms'):'');
@@ -2480,8 +2542,8 @@ function tick() {
 }
 
 function monsterKilled(m) {
-  const lk = luckMult(); const gm = goldMult();
-  const xp   = Math.round((m.xp + Math.floor(G.wave * 0.3)) * lk);
+  const lk = luckMult(); const gm = goldMult(); const xm = xpMult();
+  const xp   = Math.round((m.xp + Math.floor(G.wave * 0.3)) * lk * xm);
   const gold  = Math.round((m.gold + rng(0, 3)) * gm * lk);
   G.hero.xp += xp; G.hero.gold += gold; G.kills++;
   log('💀 ' + m.name + ' besiegt! +' + xp + ' XP  +' + gold + ' Gold', 'c');
@@ -3329,7 +3391,7 @@ function collectIdle() {
   const pop = document.getElementById('idleOverlay');
   const r = pop._r; if (!r) return;
   G.hero.gold += r.gold;
-  G.hero.xp   += r.xp;
+  G.hero.xp   += Math.round(r.xp * xpMult());
   for (let i=0; i<r.items; i++) dropItem();
   checkLevelUp();
   updateAll();
@@ -3630,7 +3692,7 @@ function dungeonAttack(){
 function dungeonVictory(){
   const m=G.dungeonMonster;const isBoss=m?.isBoss;
   const goldR=Math.round((m.gold*1.5+G.dungeonFloor*3)*(isBoss?3:1));
-  const xpR=Math.round((m.xp*1.2+G.dungeonFloor*2)*(isBoss?2:1));
+  const xpR=Math.round((m.xp*1.2+G.dungeonFloor*2)*(isBoss?2:1)*xpMult());
   G.hero.gold+=goldR;G.hero.xp+=xpR;G.kills++;
   if(G.dungeonFloor>G.dungeonBestFloor)G.dungeonBestFloor=G.dungeonFloor;
   G.dungeonFloor++;G.dungeonMonster=null;
@@ -3768,6 +3830,7 @@ async function loadGuildData(){
     if(document.getElementById('guildTagline'))document.getElementById('guildTagline').textContent=local.tagline||'Keine Beschreibung';
     updateGuildLevelUI(local.gold||0);
   }
+  try { renderGuildBonuses(); } catch(e) {}
   const roleC={leader:'var(--gold2)',officer:'var(--purple2)',member:'var(--blue2)'};
   const roleL={leader:'👑 Anführer',officer:'⭐ Offizier',member:'⚔️ Mitglied'};
   if(document.getElementById('myGuildRankDisplay'))document.getElementById('myGuildRankDisplay').innerHTML=`<div class="pill" style="border-color:${roleC[G.guildRole]||roleC.member};color:${roleC[G.guildRole]||roleC.member};">${roleL[G.guildRole]||roleL.member}</div>`;
@@ -3967,6 +4030,84 @@ async function kickGuildMember(pid,name){
   log('🚫 '+name+' aus der Gilde geworfen!','c');setTimeout(loadGuildMembers,600);
 }
 
+// ── Gilden-Boni UI ──────────────────────────
+function renderGuildBonuses() {
+  const container = document.getElementById('guildBonusContent');
+  const headerBadge = document.getElementById('guildHeaderBadge');
+  const headerTxt   = document.getElementById('guildHeaderBadgeTxt');
+
+  if (!G.guildId || !G._localGuild) {
+    if (container) container.innerHTML = '<div style="color:var(--text2);font-size:.75rem;font-style:italic;">Tritt einer Gilde bei um Boni zu erhalten!</div>';
+    if (headerBadge) headerBadge.style.display = 'none';
+    return;
+  }
+
+  const gb = guildBonus();
+  const lv = gb.level;
+
+  // Header badge
+  if (headerBadge) {
+    headerBadge.style.display = 'flex';
+    if (headerTxt) headerTxt.textContent = 'Gilde Lv' + lv;
+  }
+
+  if (!container) return;
+
+  const bonuses = [
+    { icon:'⭐', name:'XP-Bonus', val:gb.xp, max:0.75, color:'linear-gradient(to right,#0b3d20,var(--green2))', label: '+' + Math.round(gb.xp*100) + '% XP' },
+    { icon:'💰', name:'Gold-Bonus', val:gb.gold, max:0.60, color:'linear-gradient(to right,#3a2800,var(--gold2))', label: '+' + Math.round(gb.gold*100) + '% Gold' },
+    { icon:'⚔️', name:'Angriff-Bonus', val:gb.atk, max:0.40, color:'linear-gradient(to right,var(--red),var(--red2))', label: '+' + Math.round(gb.atk*100) + '% ATK' },
+    { icon:'🛡️', name:'Verteidigung-Bonus', val:gb.def, max:0.25, color:'linear-gradient(to right,var(--blue),var(--blue2))', label: '+' + Math.round(gb.def*100) + '% DEF' },
+  ];
+
+  if (lv === 1) {
+    container.innerHTML = '<div style="color:var(--text2);font-size:.75rem;font-style:italic;">Spendet Gold um die Gilde zu leveln und Boni freizuschalten! Ab Lv2 aktiv.</div>';
+    // Still show empty bars as preview
+    container.innerHTML += bonuses.map(b => `
+      <div class="guild-bonus-row">
+        <div class="guild-bonus-icon">${b.icon}</div>
+        <div class="guild-bonus-info">
+          <div class="guild-bonus-name">${b.name}</div>
+          <div class="guild-bonus-bar-wrap">
+            <div class="guild-bonus-bar"><div class="guild-bonus-bar-fill" style="width:0%;${b.color.includes('gold')?'background:'+b.color:'background:'+b.color}"></div></div>
+          </div>
+        </div>
+        <div class="guild-bonus-val" style="color:var(--text3);">—</div>
+      </div>`).join('');
+    return;
+  }
+
+  container.innerHTML = bonuses.map(b => {
+    const pct = Math.min(100, b.val / b.max * 100);
+    const isMax = b.val >= b.max;
+    return `
+    <div class="guild-bonus-row">
+      <div class="guild-bonus-icon">${b.icon}</div>
+      <div class="guild-bonus-info">
+        <div class="guild-bonus-name">${b.name}${isMax ? ' <span style="color:var(--green2);font-size:.6rem;">MAX</span>' : ''}</div>
+        <div class="guild-bonus-bar-wrap">
+          <div class="guild-bonus-bar">
+            <div class="guild-bonus-bar-fill" style="width:${pct}%;background:${b.color};"></div>
+          </div>
+        </div>
+      </div>
+      <div class="guild-bonus-val${isMax?' guild-bonus-max':''}">${b.label}</div>
+    </div>`;
+  }).join('');
+
+  // Next level preview
+  if (lv < 50) {
+    const nextLv = lv + 1;
+    const nextGb = { xp: Math.min(0.75,(nextLv-1)*0.015), gold: Math.min(0.60,(nextLv-1)*0.012), atk: Math.min(0.40,(nextLv-1)*0.008) };
+    container.innerHTML += `<div style="margin-top:6px;padding:7px 10px;background:rgba(201,162,39,.05);border:1px solid rgba(201,162,39,.2);border-radius:7px;font-size:.68rem;color:var(--text2);">
+      <span style="font-family:'Cinzel',serif;color:var(--gold);font-weight:700;">Lv${nextLv} Vorschau:</span>
+      &nbsp;⭐ +${Math.round(nextGb.xp*100)}%
+      &nbsp;💰 +${Math.round(nextGb.gold*100)}%
+      &nbsp;⚔️ +${Math.round(nextGb.atk*100)}%
+    </div>`;
+  }
+}
+
 // ── Gilden Level-System ──
 // Gold-Schwellen für Level-Ups: Level 1→2 = 1000G, Level 2→3 = 2500G, usw.
 function guildGoldForLevel(level) {
@@ -3993,6 +4134,7 @@ function updateGuildLevelUI(totalGold) {
   const pct = Math.min(100, Math.floor(spentOnCurrentLevel / neededForNext * 100));
   if (document.getElementById('guildXpBar')) document.getElementById('guildXpBar').style.width = pct + '%';
   if (document.getElementById('guildXpLabel')) document.getElementById('guildXpLabel').textContent = spentOnCurrentLevel.toLocaleString() + ' / ' + neededForNext.toLocaleString() + ' Gold';
+  try { renderGuildBonuses(); } catch(e) {}
   if (document.getElementById('guildNextLevelInfo')) {
     if (level >= 50) {
       document.getElementById('guildNextLevelInfo').textContent = '👑 Maximales Gilden-Level erreicht!';
@@ -4033,7 +4175,8 @@ async function donateToGuild() {
   updateAll();
 
   if (newLevel > oldLevel) {
-    log('🎉 GILDE LEVEL UP! Gilde ist jetzt Level ' + newLevel + '!', 'l');
+    const gbNew = guildBonus();
+    log('🎉 GILDE LEVEL UP! Gilde ist jetzt Level ' + newLevel + '! · +' + Math.round(gbNew.xp*100) + '% XP · +' + Math.round(gbNew.gold*100) + '% Gold · +' + Math.round(gbNew.atk*100) + '% ATK', 'l');
   } else {
     log('💰 ' + amount + ' Gold gespendet! Gilde hat jetzt ' + newGold.toLocaleString() + ' Gold gesamt.', 'i');
   }
@@ -4344,7 +4487,7 @@ function renderQuests(){
 }
 
 function claimQuest(q,tab){
-  G.hero.gold+=q.reward.gold;G.hero.xp+=q.reward.xp;
+  G.hero.gold+=q.reward.gold;G.hero.xp+=Math.round(q.reward.xp*xpMult());
   if(tab==='daily')G.dailyClaimed.add(q.id);else G.questClaimed.add(q.id);
   log('📜 Quest: '+q.title+' abgeschlossen! +'+q.reward.gold+'G +'+q.reward.xp+'XP','l');
   checkLevelUp();updateAll();renderQuests();saveToSupabase();
@@ -4516,6 +4659,14 @@ async function continueInit() {
 
   if (loaded) {
     log('✅ Willkommen zuruck! Level ' + G.hero.level + ' geladen.', 'n');
+    try {
+      const gb = guildBonus();
+      if (gb.level > 1) {
+        setTimeout(() => {
+          log('🏰 Gilden-Boni aktiv (Lv' + gb.level + '): +' + Math.round(gb.xp*100) + '% XP · +' + Math.round(gb.gold*100) + '% Gold · +' + Math.round(gb.atk*100) + '% ATK', 'l');
+        }, 800);
+      }
+    } catch(e) {}
   } else {
     setSaveStatus('⚠️ Offline-Modus', 'var(--orange2)');
     log('⚔ SwordMaster gestartet! SQL-Script in Supabase ausfuhren fur Cloud.', 'n');
