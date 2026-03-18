@@ -6429,10 +6429,17 @@ async function _doSave() {
       dungeon_keys:       G.dungeonKeys       || 3,
       dungeon_best_floor: G.dungeonBestFloor  || 0,
       // PVP
-      pvp_points: G.pvpPoints  || 0,
-      pvp_wins:   G.pvpWins    || 0,
-      pvp_losses: G.pvpLosses  || 0,
-      pvp_streak: G.pvpStreak  || 0,
+      pvp_points:      G.pvpPoints  || 0,
+      pvp_wins:        G.pvpWins    || 0,
+      pvp_losses:      G.pvpLosses  || 0,
+      pvp_streak:      G.pvpStreak  || 0,
+      // PVP Anti-Abuse: täglich zurückgesetzt
+      pvp_fought_today: JSON.stringify({
+        date:    new Date().toDateString(),
+        fights:  G._pvpDailyFights || 0,
+        record:  G._pvpFightRecord  || {},
+        recent:  G._pvpRecentOpps   || [],
+      }),
       // Guild
       guild_id:   G.guildId   || null,
       guild_role: G.guildRole || 'member',
@@ -6602,6 +6609,27 @@ async function loadFromSupabase() {
     G.pvpWins    = p.pvp_wins    || 0;
     G.pvpLosses  = p.pvp_losses  || 0;
     G.pvpStreak  = p.pvp_streak  || 0;
+    // PVP Anti-Abuse wiederherstellen
+    try {
+      const pvpAb = JSON.parse(p.pvp_fought_today || '{}');
+      const today = new Date().toDateString();
+      if (pvpAb.date === today) {
+        // Heutiger Stand laden
+        G._pvpDailyFights = pvpAb.fights || 0;
+        G._pvpFightRecord  = pvpAb.record  || {};
+        G._pvpRecentOpps   = pvpAb.recent  || [];
+      } else {
+        // Neuer Tag → alles zurücksetzen
+        G._pvpDailyFights = 0;
+        G._pvpFightRecord  = {};
+        G._pvpRecentOpps   = [];
+      }
+    } catch(e) {
+      G._pvpDailyFights = 0;
+      G._pvpFightRecord  = {};
+      G._pvpRecentOpps   = [];
+    }
+    G._pvpDailyReset = Date.now();
 
     // Guild
     G.guildId   = p.guild_id   || null;
