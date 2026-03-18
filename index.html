@@ -3647,7 +3647,12 @@ function goldMult()   { const fxG = getEffectMods(); return Math.min(2.0, 1 + (G
 function dropBonus()  { return (G.upgrades.drop_rate||0)*0.08 + (G.skills.has('treasureHunt')?0.2:0); }
 function idleMult()   { return 1 + (G.upgrades.idle_mul||0)*0.6; }
 function rarBonus()   { return (G.upgrades.item_qual||0)*0.15; }
-function forgeMs()    { return Math.max(400, 2000 - (G.upgrades.forge_spd||0)*320); }
+function forgeMs() {
+  let ms = 2000 - (G.upgrades.forge_spd||0)*320;
+  if (G.shopBoosts && G.shopBoosts.forgeMaster) ms *= 0.75;   // -25%
+  if (G.skills.has('master_smith'))              ms *= 0.70;   // -30%
+  return Math.max(400, Math.round(ms));
+}
 function upgCost(u)   { const lv=G.upgrades[u.id]||0; return Math.floor(u.baseCost*Math.pow(u.cm,lv)); }
 
 // ════════════════════════════════════════════
@@ -4589,7 +4594,12 @@ function upgradeFurnace() {
   }
   // Kosten abziehen
   for (const [mat, qty] of Object.entries(next.upgCost)) {
-    if (mat === 'gold') G.hero.gold -= qty;
+    if (mat === 'gold') {
+      const disc = G._furnaceDiscount || 0;
+      const finalCost = Math.floor(qty * (1 - disc));
+      G.hero.gold -= finalCost;
+      if (disc > 0) { log('🔥 Ofen-Rabatt angewendet: -' + Math.round(disc*100) + '%!', 'i'); G._furnaceDiscount = 0; }
+    }
     else useMat(mat, qty);
   }
   G.furnaceLevel = nextLv;
@@ -4644,19 +4654,34 @@ function craftRecipe(recipeId) {
 // ── Forge mit Ofen-Integration ──
 function forgeWithFurnace() {
   const f = getFurnace();
-  const itemCount = f.itemsPerForge + (G.skills.has('double_strike') ? 0 : 0); // base
+  let itemCount = f.itemsPerForge;
+  // forge2 Research: jedes 7. Schmieden gibt 1 Extra-Item
+  if (!G._forge2Counter) G._forge2Counter = 0;
+  G._forge2Counter++;
+  if (G.research && G.research.has('forge2') && G._forge2Counter % 7 === 0) {
+    itemCount += 1;
+    log('⚒️ Doppelschmiede! Extra-Item!', 'i');
+  }
   // Materialien-Bonus auf Seltenheit: wenn genug Materialien vorhanden
   G._forgeMatBonus = calcForgeMatBonus();
   for (let i = 0; i < itemCount; i++) {
     forgeCounter++;
     let rar = pickRarityWithFurnace();
-    // forgeMastery: jedes 10. ist mindestens Selten
+    // forgeScroll (Shop): nächste 10 Items ≥ Selten
+    if (G.shopBoosts && G.shopBoosts.forgeScrollCount > 0) {
+      const rIdx = RARITIES.findIndex(r => r.id === rar.id);
+      if (rIdx < 2) rar = RARITIES[2];
+      G.shopBoosts.forgeScrollCount--;
+      if (G.shopBoosts.forgeScrollCount <= 0) { delete G.shopBoosts.forgeScrollCount; log('📜 Güte-Scroll aufgebraucht.', 'n'); }
+    }
+    // forgeMastery (Skill): jedes 10. ist mindestens Selten
     if (G.skills.has('forgeMastery') && forgeCounter % 10 === 0) {
       const rIdx = RARITIES.findIndex(r => r.id === rar.id);
       if (rIdx < 2) rar = RARITIES[2];
     }
     // Meisterwerk: 1% Chance auf Legendary+ unabhängig von allem
-    if (Math.random() < 0.01 + (G.furnaceLevel - 1) * 0.002) {
+    const mythChance = 0.01 + (G.furnaceLevel - 1) * 0.002 + (G.research && G.research.has('forge3') ? 0.015 : 0);
+    if (Math.random() < mythChance) {
       rar = RARITIES[Math.min(5, Math.max(4, RARITIES.findIndex(r => r.id === rar.id) + 1))];
       // Flash
       setTimeout(() => {
@@ -4678,7 +4703,7 @@ function forgeWithFurnace() {
     };
     G.inventory.unshift(item);
     G.recentForged.unshift(item);
-    if (G.inventory.length > 200) G.inventory.pop();
+    if (G.inventory.length > (G.inventoryLimit || 200)) G.inventory.pop();
     if (i === 0) log('🎁 [' + rar.label + '] ' + item.emoji + ' ' + item.name + ' +' + item.sv + ' ' + item.sk.toUpperCase() + (itemCount > 1 ? ' (×'+itemCount+')' : ''), 'i');
     // Track rarity achievements (only first time)
     try {
@@ -4698,6 +4723,8 @@ function forgeWithFurnace() {
 
 function calcForgeMatBonus() {
   // Materialien geben temporären Rarity-Bonus
+  // forge4 Research: +50% mehr Materialien-Bonus
+  const alchemyMult = (G.research && G.research.has('forge4')) ? 1.5 : 1.0;
   let bonus = 0;
   const mats = G.materials;
   if ((mats.stardust   || 0) >= 5)  bonus += 0.30;
@@ -4705,7 +4732,7 @@ function calcForgeMatBonus() {
   else if ((mats.mithril  || 0) >= 15) bonus += 0.15;
   else if ((mats.gold_ore || 0) >= 20) bonus += 0.10;
   else if ((mats.steel    || 0) >= 30) bonus += 0.06;
-  return bonus;
+  return bonus * alchemyMult;
 }
 
 function pickRarityWithFurnace() {
@@ -4948,10 +4975,17 @@ function togglePet(id) {
 // Pet combat helpers
 function petATKBonus() {
   let b=0; const s=getStats();
+  const petFoodMult = (G.shopBoosts && G.shopBoosts.petFood) ? 1.15 : 1.0;
+  const alphaMult   = G.skills.has('alpha_pack')
+    ? (1 + [...G.activePets].reduce((sum, pid) => {
+        const p = PETS.find(x=>x.id===pid);
+        return sum + (p ? 0.1 : 0);
+      }, 0))
+    : 1.0;
   G.activePets.forEach(pid=>{
     const p=PETS.find(x=>x.id===pid);
     if(p&&p.atkPct>0){
-      let dmg=s.atk*p.atkPct;
+      let dmg=s.atk*p.atkPct*petFoodMult*alphaMult;
       if(G.skills.has('war_cry'))dmg*=1.4;
       b+=dmg;
     }
@@ -5267,14 +5301,16 @@ function tick() {
 
 function monsterKilled(m) {
   const lk = luckMult(); const gm = goldMult() * eventGoldMult(); const xm = xpMult() * eventXpMult();
-  const xp   = Math.round((m.xp + Math.floor(G.wave * 0.08)) * lk * xm);
+  const waveXpBonus = (G.research && G.research.has('dung3') && G.wave >= 100) ? 1.2 : 1.0;
+  const xp   = Math.round((m.xp + Math.floor(G.wave * 0.08)) * lk * xm * waveXpBonus);
   // ── Gold skaliert mit Kampfhärte (Lösung E) ──────────────
   // Je mehr Treffer gebraucht wurden, desto mehr Gold
   // Schnelle 1-Hit-Kills = Basisgold. Harte Kämpfe = bis 3× Gold
   const hits = m._hitsReceived || 1;
   // log2(hits+1): 1 Hit→×1.0, 3 Hits→×1.6, 6 Hits→×2.0, 15 Hits→×2.5, 30 Hits→×3.0
   const hardnessMult = Math.min(3.0, 1.0 + Math.log2(hits + 1) * 0.5);
-  const gold  = Math.round(m.gold * gm * lk * hardnessMult);
+  const waveGoldBonus = (G.research && G.research.has('dung3') && G.wave >= 100) ? 1.2 : 1.0;
+  const gold  = Math.round(m.gold * gm * lk * hardnessMult * waveGoldBonus);
   let pickpocketBonus = 0;
   if (G.skills.has('pickpocket') && Math.random() < 0.05) { pickpocketBonus = Math.floor(gold * 0.5 + rng(5,20)); }
   G.hero.xp += xp; G.hero.gold += gold + pickpocketBonus; G.kills++;
@@ -5311,6 +5347,15 @@ function monsterKilled(m) {
 
 function heroDied() {
   G.monsterDebuffs = {};
+  // Wiedergeburt-Item: sofort mit vollem HP aufstehen
+  if (G.reviveReady) {
+    G.reviveReady = false;
+    G.hero.hp = G.hero.maxHp;
+    log('💫 Wiedergeburt! Du stehst sofort wieder auf!', 'l');
+    try { playSfx('levelup'); } catch(e) {}
+    updateAll();
+    return; // kein Tod
+  }
   log('💔 Besiegt! Regeneriere...', 'c');
   clearInterval(G.combatInterval); G.combatInterval = null;
   G.monsters = []; G.monster = null;
@@ -5439,7 +5484,7 @@ function dropItem(fromForge=false) {
   };
   G.inventory.unshift(item);
   G.recentForged.unshift(item);
-  if(G.inventory.length>200) G.inventory.pop();
+  if(G.inventory.length>(G.inventoryLimit||200)) G.inventory.pop();
   log(`🎁 [${rar.label}] ${item.emoji} ${item.name} +${item.sv} ${item.sk.toUpperCase()}`,'i');
   renderForgedGrid();
   renderInventory();
@@ -6825,6 +6870,15 @@ function dungeonAttack() {
     dmg = Math.max(1, dmg - Math.floor(dmg * dEffArm / 100));
   }
   m._hitsReceived = (m._hitsReceived || 0) + 1;
+  // pets3 research: Pets unterstützen im Dungeon
+  if (G.research && G.research.has('pets3') && G.activePets.size > 0) {
+    const petDmg = Math.floor(petATKBonus() * 0.5); // 50% des normalen Pet-Schadens
+    if (petDmg > 0) {
+      const dl2 = document.getElementById('dungLog');
+      if (dl2) { const ep = document.createElement('div'); ep.className='log-e'; ep.style.color='#f39c12'; ep.textContent='🐾 Pet-Angriff: -'+petDmg; dl2.prepend(ep); }
+      m.hp -= petDmg;
+    }
+  }
   // Schaden-Cap auch im Dungeon: max 45% HP pro Treffer (Bosse können mehr nehmen)
   const dungCapPct = m.isBoss ? 0.25 : 0.45;
   dmg = Math.min(dmg, Math.floor(m.maxHp * dungCapPct));
@@ -6978,7 +7032,7 @@ function dungeonFlee() {
 // Key regen timer (1 key per 30min, max 5) + countdown display
 let _dungKeyRegenStart = Date.now();
 setInterval(() => {
-  if ((G.dungeonKeys || 0) < 5) {
+  if ((G.dungeonKeys || 0) < (G.research && G.research.has('dung2') ? 7 : 5)) {
     if (!G.dungeonKeys) G.dungeonKeys = 0;
     G.dungeonKeys++;
     log('🗝️ Dungeon-Schlüssel aufgeladen! (' + G.dungeonKeys + '/5)', 'n');
@@ -6989,7 +7043,7 @@ setInterval(() => {
 
 // Countdown display every second
 setInterval(() => {
-  if ((G.dungeonKeys || 0) < 5) {
+  if ((G.dungeonKeys || 0) < (G.research && G.research.has('dung2') ? 7 : 5)) {
     const pill = document.getElementById('dungNextKeyPill');
     const timer = document.getElementById('dungNextKeyTimer');
     if (pill) pill.style.display = 'flex';
@@ -7946,11 +8000,13 @@ function buyShopItem(item){
   if(item.eff==='dungKey'){G.dungeonKeys=(G.dungeonKeys||0)+1;log('🗝️ +1 Dungeon-Schlüssel!','i');renderDungeon();}
   if(item.eff==='dungKey3'){G.dungeonKeys=(G.dungeonKeys||0)+3;log('🗝️ +3 Dungeon-Schlüssel!','i');renderDungeon();}
   if(item.eff==='dungKey5'){G.dungeonKeys=(G.dungeonKeys||0)+5;log('🗝️ +5 Dungeon-Schlüssel!','i');renderDungeon();}
+  if(item.eff==='invExpand'){G.inventoryLimit=(G.inventoryLimit||200)+20;log('🎒 Inventar-Limit auf '+(G.inventoryLimit)+' erweitert!','i');}
   if(item.eff==='furnaceDiscount'){G._furnaceDiscount=0.30;log('🔥 Nächste Ofenstufe 30% günstiger!','i');}
   if(item.eff==='xpBoost'){G.shopBoosts.xpBoost=Date.now()+30*60000;log('⭐ XP-Boost aktiv (30 Min)!','i');}
   if(item.eff==='goldBoost'){G.shopBoosts.goldBoost=Date.now()+30*60000;log('💰 Gold-Boost aktiv (30 Min)!','i');}
   if(item.eff==='petFood'){G.shopBoosts.petFood=true;log('🍖 Pets stärker!','i');}
-  if(item.eff==='forgeMaster'){G.shopBoosts.forgeMaster=true;if(G.autoForge)restartAuto();log('🔨 Meister-Amboss aktiv!','i');}
+  if(item.eff==='forgeScroll'){G.shopBoosts.forgeScrollCount=(G.shopBoosts.forgeScrollCount||0)+10;log('📜 Güte-Scroll aktiv! Nächste 10 Items ≥ Selten.','i');}
+  if(item.eff==='forgeMaster'){G.shopBoosts.forgeMaster=true;if(G.autoForge)restartAuto();log('🔨 Meister-Amboss aktiv! Auto-Schmied 25% schneller.','i');}
   log('🛒 Gekauft: '+item.name,'i');updateAll();renderShop();saveToSupabase();
 }
 
