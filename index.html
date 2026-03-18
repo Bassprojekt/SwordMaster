@@ -7698,7 +7698,7 @@ function renderPVPOpponentCards(opponents) {
       </div>`;
     // Gegner sperren wenn schon zu oft bekämpft (repeat penalty > 2)
     const fightCount2 = (G._pvpFightRecord && G._pvpFightRecord[opp.player_id]) || 0;
-    const isExhausted = fightCount2 >= 3; // nach 3 Kämpfen gesperrt
+    const isExhausted = fightCount2 >= 1; // nach 1 Kampf gesperrt — Gegner nicht wiederholbar
     if (isExhausted) {
       d.style.opacity = '0.4';
       d.style.cursor  = 'not-allowed';
@@ -7738,6 +7738,14 @@ function startPVPBattle(opp, oppAtk, oppDef, oppPts, winChance) {
     return;
   }
   G._pvpLastFightTime = now;
+
+  // ── fightRecord SOFORT erhöhen (verhindert Doppelklick) ──
+  if (!G._pvpFightRecord) G._pvpFightRecord = {};
+  G._pvpFightRecord[opp.player_id] = (G._pvpFightRecord[opp.player_id] || 0) + 1;
+
+  // Gegner sofort aus der Herausforderer-Liste entfernen
+  _pvpOpponents = _pvpOpponents.filter(o => o.player_id !== opp.player_id);
+  renderPVPOpponentCards(_pvpOpponents);
 
   const battleCard = document.getElementById('pvpBattleCard');
   const battleLog  = document.getElementById('pvpBattleLog');
@@ -7784,9 +7792,10 @@ function startPVPBattle(opp, oppAtk, oppDef, oppPts, winChance) {
   const rankDiff = oppPts - G.pvpPoints;
   let ptsGain, ptsLoss;
   if (won) {
-    // Wiederholungs-Malus: immer weniger Punkte für denselben Gegner
-    const fightCount = (G._pvpFightRecord && G._pvpFightRecord[opp.player_id]) || 0;
-    const repeatPenalty = Math.pow(0.5, Math.max(0, fightCount - 1)); // 1. Mal=100%, 2.=50%, 3.=25%...
+    // Wiederholungs-Malus (fightRecord bereits erhöht in startPVPBattle)
+    const fightCount = (G._pvpFightRecord && G._pvpFightRecord[opp.player_id]) || 1;
+    // fightCount=1 → erster Kampf → 100%, 2 → 50%, 3 → 25% etc.
+    const repeatPenalty = Math.pow(0.5, Math.max(0, fightCount - 1));
     ptsGain = Math.max(1, Math.round(
       Math.max(10, Math.min(80, 25 + Math.floor(rankDiff / 30))) * repeatPenalty
     ));
@@ -7834,7 +7843,7 @@ function finalizePVPBattle(won, ptsGain, ptsLoss, opp, oppPts, resultEl) {
     if (ld) { const e = document.createElement('div'); e.className='log-e l'; e.textContent=msg; ld.prepend(e); }
     if (resultEl) {
       resultEl.style.display = 'block';
-      resultEl.innerHTML = `<div style="color:var(--green2);font-family:'Cinzel',serif;font-size:.95rem;font-weight:700;">🏆 Sieg!</div><div style="font-size:.72rem;color:var(--text2);margin-top:4px;">+${ptsGain} Punkte · +${gold} Gold${streakTxt}</div><button class="ctrl-btn" onclick="document.getElementById('pvpBattleCard').style.display='none';refreshPVP();" style="margin-top:8px;">⚔️ Nächster Kampf</button>`;
+      resultEl.innerHTML = `<div style="color:var(--green2);font-family:'Cinzel',serif;font-size:.95rem;font-weight:700;">🏆 Sieg!</div><div style="font-size:.72rem;color:var(--text2);margin-top:4px;">+${ptsGain} Punkte · +${gold} Gold${streakTxt}</div><button class="ctrl-btn" onclick="document.getElementById('pvpBattleCard').style.display='none';loadPVPOpponents();" style="margin-top:8px;">⚔️ Nächster Kampf</button>`;
     }
   } else {
     G.pvpPoints = Math.max(0, G.pvpPoints - ptsLoss);
@@ -7846,7 +7855,7 @@ function finalizePVPBattle(won, ptsGain, ptsLoss, opp, oppPts, resultEl) {
     if (ld) { const e = document.createElement('div'); e.className='log-e c'; e.textContent=msg; ld.prepend(e); }
     if (resultEl) {
       resultEl.style.display = 'block';
-      resultEl.innerHTML = `<div style="color:var(--red2);font-family:'Cinzel',serif;font-size:.95rem;font-weight:700;">💔 Niederlage</div><div style="font-size:.72rem;color:var(--text2);margin-top:4px;">-${ptsLoss} Punkte</div><button class="ctrl-btn" onclick="document.getElementById('pvpBattleCard').style.display='none';refreshPVP();" style="margin-top:8px;">🔄 Nochmal</button>`;
+      resultEl.innerHTML = `<div style="color:var(--red2);font-family:'Cinzel',serif;font-size:.95rem;font-weight:700;">💔 Niederlage</div><div style="font-size:.72rem;color:var(--text2);margin-top:4px;">-${ptsLoss} Punkte</div><button class="ctrl-btn" onclick="document.getElementById('pvpBattleCard').style.display='none';loadPVPOpponents();" style="margin-top:8px;">🔄 Neue Gegner</button>`;
     }
   }
 
@@ -7854,16 +7863,14 @@ function finalizePVPBattle(won, ptsGain, ptsLoss, opp, oppPts, resultEl) {
   if (!G._pvpRecentOpps)  G._pvpRecentOpps  = [];
   if (!G._pvpFightRecord) G._pvpFightRecord  = {}; // player_id → fight count
 
-  // Zähle wie oft wir diesen Gegner schon bekämpft haben
+  // fightRecord wurde bereits in startPVPBattle erhöht
   const oppId = opp.player_id;
-  G._pvpFightRecord[oppId] = (G._pvpFightRecord[oppId] || 0) + 1;
 
-  // Füge zu recent hinzu — bleibt für GESAMTE Session
+  // Füge zu recent hinzu — bleibt für GESAMTE Session (verhindert Neulade)
   if (!G._pvpRecentOpps.includes(oppId)) {
     G._pvpRecentOpps.push(oppId);
   }
-  // Begrenze auf 30 um Speicher zu schonen
-  if (G._pvpRecentOpps.length > 30) G._pvpRecentOpps.shift();
+  if (G._pvpRecentOpps.length > 50) G._pvpRecentOpps.shift();
 
   // ── Tageslimit: max 20 PVP-Kämpfe pro Tag ─────────────────
   if (!G._pvpDailyReset || G._pvpDailyReset < new Date().setHours(0,0,0,0)) {
