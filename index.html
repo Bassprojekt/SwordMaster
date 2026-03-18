@@ -11763,7 +11763,7 @@ function doEnchant() {
 
   // Animation + Log
   log(`✨ ${item.emoji} ${item.name} mit ${rune.emoji} ${rune.name} verzaubert! ${rune.desc}`, 'l');
-  try { playSfx('levelup'); } catch(e) {}
+  try { playSfx('rune'); } catch(e) {}
 
   const resultEl = document.getElementById('enchantResult');
   if (resultEl) {
@@ -12443,62 +12443,134 @@ function stopMusic() {
   } catch(e) {}
 }
 
-// ── Sound Effects ──
+// ── Sound Effects ──────────────────────────────────────────
+// Hilfsfunktion: White Noise Buffer erzeugen
+function _makeNoiseBuffer(ctx, duration, decay=2.0) {
+  const len = Math.ceil(ctx.sampleRate * duration);
+  const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+  const d   = buf.getChannelData(0);
+  for (let i = 0; i < len; i++)
+    d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, decay);
+  return buf;
+}
+
+// Hilfsfunktion: Oszillator mit ADSR
+function _osc(ctx, type, freq, gainNode, startT, dur, vol, attack=0.004, decay=0.1, sustain=0.3, release=0.15) {
+  const o = ctx.createOscillator();
+  const g = ctx.createGain();
+  o.type = type; o.frequency.value = freq;
+  g.gain.setValueAtTime(0, startT);
+  g.gain.linearRampToValueAtTime(vol, startT + attack);
+  g.gain.exponentialRampToValueAtTime(vol * sustain, startT + attack + decay);
+  g.gain.exponentialRampToValueAtTime(0.0001, startT + dur - release);
+  o.connect(g); g.connect(gainNode);
+  o.start(startT); o.stop(startT + dur);
+}
+
+// Hilfsfunktion: Noise mit Filter
+function _noise(ctx, gainNode, startT, dur, vol, filterType='bandpass', freq=800, Q=2) {
+  const buf = _makeNoiseBuffer(ctx, dur, 1.5);
+  const src = ctx.createBufferSource(); src.buffer = buf;
+  const flt = ctx.createBiquadFilter();
+  flt.type = filterType; flt.frequency.value = freq; flt.Q.value = Q;
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(vol, startT);
+  g.gain.exponentialRampToValueAtTime(0.0001, startT + dur);
+  src.connect(flt); flt.connect(g); g.connect(gainNode);
+  src.start(startT); src.stop(startT + dur);
+}
+
 function playSfx(type) {
   if (!sfxEnabled) return;
   try {
     const ctx = getAudioCtx();
-    const now = ctx.currentTime;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain); gain.connect(sfxGain);
+    const t   = ctx.currentTime;
 
+    // ─── HIT — Schwerthieb: metallisches Klirren + dumpfer Aufprall ──
     if (type === 'hit') {
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(180, now);
-      osc.frequency.exponentialRampToValueAtTime(60, now + 0.12);
-      gain.gain.setValueAtTime(0.25, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
-      osc.start(now); osc.stop(now + 0.15);
+      // Aufprall-Thump (tiefes Rauschen)
+      _noise(ctx, sfxGain, t,      0.10, 0.18, 'lowpass',  120, 1.5);
+      // Metallisches Klirren (Bandpass-Rauschen)
+      _noise(ctx, sfxGain, t,      0.08, 0.12, 'bandpass', 2200, 8);
+      // Kurze Tonkomponente (Schwert-Kling)
+      _osc(ctx, 'sawtooth', 180, sfxGain, t, 0.12, 0.10, 0.002, 0.04, 0.01, 0.06);
+      _osc(ctx, 'sine',      90, sfxGain, t, 0.10, 0.08, 0.003, 0.03, 0.02, 0.05);
+
+    // ─── CRIT — Kritischer Treffer: schmetternder Einschlag ──────────
     } else if (type === 'crit') {
-      osc.type = 'square';
-      osc.frequency.setValueAtTime(520, now);
-      osc.frequency.exponentialRampToValueAtTime(300, now + 0.1);
-      gain.gain.setValueAtTime(0.2, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
-      osc.start(now); osc.stop(now + 0.18);
+      // Harter Aufprall (tiefer Punch)
+      _noise(ctx, sfxGain, t,        0.05, 0.25, 'lowpass',   80, 1.0);
+      // Metallischer Crack
+      _noise(ctx, sfxGain, t,        0.12, 0.15, 'highpass', 3000, 4);
+      _noise(ctx, sfxGain, t + 0.02, 0.08, 0.10, 'bandpass', 1800, 6);
+      // Resonierender Ton (Stahl trifft Knochen)
+      _osc(ctx, 'sawtooth', 260, sfxGain, t,      0.18, 0.14, 0.001, 0.08, 0.05, 0.08);
+      _osc(ctx, 'square',   130, sfxGain, t,      0.15, 0.10, 0.001, 0.06, 0.03, 0.08);
+      // Kurzer heller Flash
+      _osc(ctx, 'sine',    1200, sfxGain, t,      0.05, 0.06, 0.001, 0.01, 0.01, 0.02);
+
+    // ─── KILL — Monster stirbt: Aufschlag + dramatischer Fall ────────
     } else if (type === 'kill') {
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(440, now);
-      osc.frequency.setValueAtTime(660, now + 0.08);
-      osc.frequency.setValueAtTime(880, now + 0.16);
-      gain.gain.setValueAtTime(0.2, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
-      osc.start(now); osc.stop(now + 0.3);
+      // Schwerer Aufprall-Boom
+      _noise(ctx, sfxGain, t,        0.20, 0.30, 'lowpass',   60, 0.8);
+      _noise(ctx, sfxGain, t + 0.05, 0.15, 0.15, 'bandpass', 500, 3);
+      // Pitch-Abfall (Monster fällt)
+      const killOsc = ctx.createOscillator();
+      const killG   = ctx.createGain();
+      killOsc.type  = 'sawtooth';
+      killOsc.frequency.setValueAtTime(220, t);
+      killOsc.frequency.exponentialRampToValueAtTime(55, t + 0.35);
+      killG.gain.setValueAtTime(0.18, t);
+      killG.gain.exponentialRampToValueAtTime(0.0001, t + 0.40);
+      killOsc.connect(killG); killG.connect(sfxGain);
+      killOsc.start(t); killOsc.stop(t + 0.40);
+      // Bestätigender kurzer Ton
+      _osc(ctx, 'sine', 440, sfxGain, t + 0.25, 0.12, 0.08, 0.01, 0.05, 0.3, 0.06);
+      _osc(ctx, 'sine', 660, sfxGain, t + 0.30, 0.10, 0.08, 0.01, 0.04, 0.2, 0.05);
+
+    // ─── PLAYER_HIT — Spieler trifft Schaden: dumpfer Körpertreffer ──
+    } else if (type === 'player_hit') {
+      _noise(ctx, sfxGain, t,      0.08, 0.20, 'lowpass',  100, 1.2);
+      _noise(ctx, sfxGain, t,      0.06, 0.10, 'bandpass', 400, 4);
+      _osc(ctx, 'sine', 80, sfxGain, t, 0.12, 0.12, 0.002, 0.05, 0.1, 0.07);
+
+    // ─── LEVELUP — Stufenaufstieg: triumphaler Aufstieg ──────────────
     } else if (type === 'levelup') {
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(523, now);
-      osc.frequency.setValueAtTime(659, now + 0.1);
-      osc.frequency.setValueAtTime(784, now + 0.2);
-      osc.frequency.setValueAtTime(1047, now + 0.3);
-      gain.gain.setValueAtTime(0.25, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
-      osc.start(now); osc.stop(now + 0.5);
+      // Fanfare — aufsteigende Töne
+      const fanNotes = [523, 659, 784, 1047, 1319];
+      fanNotes.forEach((freq, i) => {
+        _osc(ctx, 'triangle', freq,       sfxGain, t + i*0.10, 0.22, 0.18, 0.01, 0.05, 0.6, 0.10);
+        _osc(ctx, 'sine',     freq * 0.5, sfxGain, t + i*0.10, 0.18, 0.08, 0.01, 0.04, 0.3, 0.10);
+      });
+      // Glitzern
+      _noise(ctx, sfxGain, t + 0.3, 0.4, 0.06, 'highpass', 6000, 2);
+      // Tiefer Boom
+      _noise(ctx, sfxGain, t, 0.15, 0.12, 'lowpass', 80, 1);
+
+    // ─── FORGE — Schmieden: Hammer auf Amboss ────────────────────────
     } else if (type === 'forge') {
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(300, now);
-      osc.frequency.exponentialRampToValueAtTime(150, now + 0.2);
-      gain.gain.setValueAtTime(0.18, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
-      osc.start(now); osc.stop(now + 0.25);
+      // Erster Hammerschlag
+      _noise(ctx, sfxGain, t,        0.06, 0.22, 'bandpass', 800,  5);
+      _noise(ctx, sfxGain, t,        0.05, 0.15, 'lowpass',  150,  1.5);
+      _osc(ctx, 'sawtooth', 240, sfxGain, t,        0.14, 0.15, 0.001, 0.03, 0.05, 0.08);
+      // Nachhall (Metall schwingt)
+      _osc(ctx, 'sine',     480, sfxGain, t + 0.06, 0.20, 0.04, 0.001, 0.10, 0.4, 0.12);
+      _osc(ctx, 'sine',     720, sfxGain, t + 0.08, 0.18, 0.02, 0.001, 0.08, 0.3, 0.10);
+
+    // ─── BUY — Kaufen: goldenes Kling ────────────────────────────────
     } else if (type === 'buy') {
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(700, now);
-      osc.frequency.exponentialRampToValueAtTime(900, now + 0.08);
-      gain.gain.setValueAtTime(0.15, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
-      osc.start(now); osc.stop(now + 0.12);
+      _osc(ctx, 'sine',     880, sfxGain, t,        0.12, 0.06, 0.002, 0.02, 0.5, 0.04);
+      _osc(ctx, 'sine',    1100, sfxGain, t + 0.04, 0.10, 0.08, 0.002, 0.02, 0.4, 0.05);
+      _osc(ctx, 'triangle', 660, sfxGain, t,        0.10, 0.10, 0.002, 0.03, 0.3, 0.05);
+
+    // ─── RUNE — Verzauberung: magisches Surren ────────────────────────
+    } else if (type === 'rune') {
+      _noise(ctx, sfxGain, t, 0.5, 0.08, 'bandpass', 4000, 10);
+      [220, 330, 440, 550, 660].forEach((f, i) => {
+        _osc(ctx, 'sine', f, sfxGain, t + i*0.06, 0.30, 0.06, 0.01, 0.08, 0.5, 0.15);
+      });
     }
+
   } catch(e) {}
 }
 
