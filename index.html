@@ -42,14 +42,26 @@ body {
   font-family: 'Crimson Pro', serif;
   min-height: 100vh;
   overflow-x: hidden;
+  /* Subtiles Sternenmuster im Hintergrund */
+  background-image:
+    radial-gradient(1px 1px at 15% 20%, rgba(240,204,85,.25) 0%, transparent 100%),
+    radial-gradient(1px 1px at 72% 8%,  rgba(240,204,85,.18) 0%, transparent 100%),
+    radial-gradient(1px 1px at 44% 55%, rgba(144,96,224,.20) 0%, transparent 100%),
+    radial-gradient(1px 1px at 88% 65%, rgba(240,204,85,.15) 0%, transparent 100%),
+    radial-gradient(1px 1px at 33% 88%, rgba(144,96,224,.15) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 60% 32%, rgba(240,204,85,.22) 0%, transparent 100%),
+    radial-gradient(1px 1px at 92% 44%, rgba(200,200,255,.12) 0%, transparent 100%);
 }
 
 /* ══ HEADER ══ */
 .game-header {
-  background: linear-gradient(to bottom, #0a0812, var(--bg));
+  background: linear-gradient(to bottom, rgba(10,8,18,.97), rgba(7,5,10,.96));
   border-bottom: 1px solid var(--border);
   padding: 0 12px;
   position: sticky; top:0; z-index:100;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 2px 20px rgba(0,0,0,.5);
 }
 
 .header-top {
@@ -73,16 +85,18 @@ body {
 }
 
 .hstat {
-  background: rgba(0,0,0,0.4);
+  background: rgba(0,0,0,.45);
   border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 3px 10px;
+  border-radius: 8px;
+  padding: 4px 10px;
   font-family: 'Cinzel', serif;
   font-size: 0.72rem;
   color: var(--text2);
   display: flex; align-items: center; gap: 5px;
   white-space: nowrap;
+  transition: border-color .15s;
 }
+.hstat:hover { border-color: var(--border2); }
 
 .hstat b { color: var(--text); font-weight: 600; }
 
@@ -126,13 +140,16 @@ body {
   display: flex; flex-direction: column; align-items: center; gap: 2px;
 }
 
-.nav-tab .tab-icon { font-size: 1.2rem; }
-.nav-tab:hover { color: var(--text2); background: rgba(255,255,255,0.02); }
+.nav-tab .tab-icon { font-size: 1.2rem; transition: transform .18s; }
+.nav-tab:hover .tab-icon { transform: scale(1.18); }
+.nav-tab:hover { color: var(--text2); background: rgba(255,255,255,.03); }
+.nav-tab.active .tab-icon { filter: drop-shadow(0 0 4px rgba(240,204,85,.5)); }
 
 .nav-tab.active {
   color: var(--gold2);
-  border-bottom-color: var(--gold);
-  background: rgba(201,162,39,0.06);
+  border-bottom: 2px solid var(--gold);
+  background: linear-gradient(to bottom, rgba(201,162,39,.08), transparent);
+  text-shadow: 0 0 12px rgba(240,204,85,.4);
 }
 
 /* ══ PAGES ══ */
@@ -141,21 +158,22 @@ body {
 
 /* ══ SHARED COMPONENTS ══ */
 .card {
-  background: var(--panel);
+  background: linear-gradient(160deg, var(--panel) 0%, var(--bg2) 100%);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 14px;
   padding: 14px;
   position: relative;
   overflow: hidden;
-  box-shadow: var(--shadow);
+  box-shadow: 0 4px 20px rgba(0,0,0,.55), 0 1px 0 rgba(255,255,255,.03) inset;
+  transition: border-color .2s;
 }
-
+.card:focus-within { border-color: var(--border2); }
 .card + .card { margin-top: 10px; }
 
 .card::before {
   content:'';
   position:absolute; top:0; left:0; right:0; height:1px;
-  background: linear-gradient(to right, transparent, var(--border2), transparent);
+  background: linear-gradient(to right, transparent, rgba(201,162,39,.25), transparent);
 }
 
 .sec-title {
@@ -208,12 +226,15 @@ body {
 .bars { display:flex; flex-direction:column; gap:5px; }
 .stat-pills { display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; }
 .pill {
-  background:rgba(0,0,0,0.35);
+  background:rgba(0,0,0,.38);
   border:1px solid var(--border);
-  border-radius:5px; padding:3px 9px;
+  border-radius:20px; padding:4px 11px;
   font-size:0.7rem; color:var(--text2);
   display:flex; align-items:center; gap:4px;
+  font-family:'Cinzel',serif;
+  transition: border-color .15s;
 }
+.pill:hover { border-color:var(--border2); }
 .pill b { color:var(--text); font-weight:600; }
 .pill.boosted { border-color:var(--green2); color:var(--green2); }
 
@@ -345,9 +366,10 @@ body {
 .forge-controls { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; }
 
 .ctrl-btn {
-  padding:8px 16px; border-radius:8px;
+  padding:8px 16px; border-radius:10px;
   border:1px solid var(--border2);
-  background:var(--panel2); color:var(--text2);
+  background:linear-gradient(180deg,var(--panel2) 0%,rgba(0,0,0,.3) 100%);
+  color:var(--text2);
   font-family:'Cinzel',serif; font-size:0.72rem;
   cursor:pointer; transition:all .2s;
   display:flex; align-items:center; gap:6px;
@@ -377,7 +399,7 @@ body {
   position:relative; overflow:hidden; padding:4px;
 }
 
-.inv-slot:hover { transform:translateY(-2px); box-shadow:0 4px 14px rgba(0,0,0,.5); }
+.inv-slot:hover { transform:translateY(-3px) scale(1.03); box-shadow:0 6px 18px rgba(0,0,0,.6),0 0 8px rgba(201,162,39,.15); }
 .inv-slot .ii { font-size:1.55rem; }
 .inv-slot .in { font-size:0.5rem; text-align:center; line-height:1.2; font-family:'Cinzel',serif; font-weight:700; }
 .inv-slot .is { font-size:0.5rem; font-family:'Cinzel',serif; }
@@ -1462,6 +1484,17 @@ body {
 .tut-dot.done { background:var(--gold); }
 .tut-dot.active { background:var(--gold2); box-shadow:0 0 6px var(--gold); }
 
+/* ══ SCROLL-TO-TOP & FLOATING ELEMENTS ══ */
+#scrollTopBtn {
+  position:fixed; bottom:70px; right:14px; z-index:500;
+  width:38px; height:38px; border-radius:50%;
+  background:rgba(10,8,18,.85); border:1px solid var(--border2);
+  color:var(--text2); font-size:1rem; cursor:pointer;
+  display:none; align-items:center; justify-content:center;
+  transition:all .18s; backdrop-filter:blur(6px);
+}
+#scrollTopBtn:hover { background:rgba(201,162,39,.15); border-color:var(--gold); color:var(--gold2); }
+
 /* ══ WHITE MODE ══ */
 body.white-mode {
   --bg:       #f0eee8;
@@ -2441,6 +2474,9 @@ input[type=range].vol-slider::-webkit-slider-thumb:hover { transform:scale(1.2);
 </div>
 
 <!-- Achievement Toast Notification -->
+<!-- Scroll-to-Top -->
+<button id="scrollTopBtn" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Nach oben">↑</button>
+
 <div id="achToast" style="
   position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(100px);
   background:linear-gradient(135deg,rgba(30,20,10,.97),rgba(20,15,5,.97));
@@ -10826,53 +10862,220 @@ function getAudioCtx() {
   return audioCtx;
 }
 
-// Procedural ambient music loop using oscillators
+// ════════════════════════════════════════════════════════
+// ☀️ SOMMER-MUSIK — Fröhlich, lebendig, 120 BPM C-Dur
+//    Melodie (Ukulele-Stil) + Bassline + Akkorde + Perkussion
+// ════════════════════════════════════════════════════════
+
+// Frequenz-Tabelle (C-Dur Pentatonik + vollständige Dur-Skala)
+const NOTE = {
+  C3:130.81, D3:146.83, E3:164.81, F3:174.61, G3:196.00, A3:220.00, B3:246.94,
+  C4:261.63, D4:293.66, E4:329.63, F4:349.23, G4:392.00, A4:440.00, B4:493.88,
+  C5:523.25, D5:587.33, E5:659.25, G5:783.99, A5:880.00,
+  R:0 // Pause
+};
+
+// 120 BPM → 1 Beat = 500ms
+const BPM = 120;
+const BEAT = 60000 / BPM;
+
+// Melodie-Phrasen (4 Takte, wechseln sich ab für Abwechslung)
+const MELODIES = [
+  // Phrase 1 — fröhlich aufsteigend
+  [NOTE.E4,NOTE.G4,NOTE.A4,NOTE.G4, NOTE.E4,NOTE.C4,NOTE.D4,NOTE.E4,
+   NOTE.G4,NOTE.A4,NOTE.C5,NOTE.A4, NOTE.G4,NOTE.E4,NOTE.R, NOTE.R ],
+  // Phrase 2 — verspielt, Sprünge
+  [NOTE.C5,NOTE.R,NOTE.A4,NOTE.G4,  NOTE.E4,NOTE.G4,NOTE.A4,NOTE.R,
+   NOTE.G4,NOTE.A4,NOTE.G4,NOTE.E4, NOTE.D4,NOTE.E4,NOTE.R, NOTE.R ],
+  // Phrase 3 — synkopiert, lebhaft
+  [NOTE.E4,NOTE.E4,NOTE.G4,NOTE.R,  NOTE.A4,NOTE.G4,NOTE.E4,NOTE.G4,
+   NOTE.C5,NOTE.R, NOTE.A4,NOTE.R,  NOTE.G4,NOTE.A4,NOTE.G4,NOTE.E4 ],
+  // Phrase 4 — Auflösung, sanft
+  [NOTE.C5,NOTE.A4,NOTE.G4,NOTE.E4, NOTE.D4,NOTE.E4,NOTE.G4,NOTE.R,
+   NOTE.A4,NOTE.G4,NOTE.E4,NOTE.D4, NOTE.C4,NOTE.R, NOTE.R, NOTE.R ],
+];
+
+// Akkord-Folge (C-Dur, G-Dur, Am, F) — klassische I-V-vi-IV
+const CHORDS = [
+  [NOTE.C3,NOTE.E3,NOTE.G3],  // C
+  [NOTE.G3,NOTE.B3,NOTE.D4],  // G
+  [NOTE.A3,NOTE.C4,NOTE.E4],  // Am
+  [NOTE.F3,NOTE.A3,NOTE.C4],  // F
+];
+
+// Bassline (abwechselnd Grundton + Quinte)
+const BASSLINES = [
+  [NOTE.C3,NOTE.R,NOTE.G3,NOTE.R],  // C Bass
+  [NOTE.G3,NOTE.R,NOTE.D3,NOTE.R],  // G Bass → D3 statt D4
+  [NOTE.A3,NOTE.R,NOTE.E3,NOTE.R],  // Am Bass
+  [NOTE.F3,NOTE.R,NOTE.C3,NOTE.R],  // F Bass
+];
+
+let _musicOscs = [];
+let _musicBeat  = 0;
+let _musicPhrase = 0;
+let _musicBar    = 0;  // 0-3 innerhalb einer Phrase (4 Takte)
+let _musicChord  = 0;  // 0-3 Akkord-Index
+let _musicScheduler = null;
+
 function startMusic() {
   try {
     const ctx = getAudioCtx();
-    if (musicLoop) { clearInterval(musicLoop); musicLoop = null; }
-    if (musicSource) { try { musicSource.stop(); } catch(e){} musicSource = null; }
+    _stopAllMusicOscs();
+    if (_musicScheduler) { clearInterval(_musicScheduler); _musicScheduler = null; }
 
-    musicGain.gain.value = musicEnabled ? musicVolume : 0;
+    musicGain.gain.value = musicEnabled ? musicVolume * 0.7 : 0;
 
-    // Base drone
-    const drone = ctx.createOscillator();
-    const droneGain = ctx.createGain();
-    drone.type = 'sine';
-    drone.frequency.value = 55;
-    droneGain.gain.value = 0.12;
-    drone.connect(droneGain); droneGain.connect(musicGain);
-    drone.start();
-    musicSource = drone;
+    _musicBeat   = 0;
+    _musicPhrase = 0;
+    _musicBar    = 0;
+    _musicChord  = 0;
 
-    // Melody line – slow arpeggiation
-    const notes = [220, 247, 277, 330, 370, 330, 277, 247];
-    let ni = 0;
-    const melody = ctx.createOscillator();
-    const melGain = ctx.createGain();
-    melody.type = 'triangle';
-    melody.frequency.value = notes[0];
-    melGain.gain.value = 0;
-    melody.connect(melGain); melGain.connect(musicGain);
-    melody.start();
+    // Master-Kompressor für sauberen Sound
+    const comp = ctx.createDynamicsCompressor();
+    comp.threshold.value = -18;
+    comp.knee.value = 6;
+    comp.ratio.value = 4;
+    comp.attack.value = 0.003;
+    comp.release.value = 0.15;
+    comp.connect(musicGain);
 
-    musicLoop = setInterval(() => {
+    // Reverb (einfacher Faltungshall mit Noise)
+    const rev = ctx.createConvolver();
+    try {
+      const rLen = ctx.sampleRate * 1.2;
+      const rBuf = ctx.createBuffer(2, rLen, ctx.sampleRate);
+      for (let ch = 0; ch < 2; ch++) {
+        const d = rBuf.getChannelData(ch);
+        for (let i = 0; i < rLen; i++) d[i] = (Math.random()*2-1) * Math.pow(1-i/rLen, 2.5);
+      }
+      rev.buffer = rBuf;
+    } catch(e) {}
+    const revGain = ctx.createGain(); revGain.gain.value = 0.18;
+    rev.connect(revGain); revGain.connect(comp);
+
+    // Hilfsfunktion: Ukulele-artigen Ton erzeugen
+    const playTone = (freq, startT, dur, vol, type='triangle', detune=0, toComp=true) => {
+      if (!freq || freq === 0) return;
+      const osc  = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = type;
+      osc.frequency.value = freq;
+      if (detune) osc.detune.value = detune;
+      // Attack-Decay-Sustain-Release Hüllkurve
+      gain.gain.setValueAtTime(0, startT);
+      gain.gain.linearRampToValueAtTime(vol, startT + 0.012);
+      gain.gain.exponentialRampToValueAtTime(vol * 0.55, startT + dur * 0.4);
+      gain.gain.exponentialRampToValueAtTime(0.0001, startT + dur * 0.95);
+      osc.connect(gain);
+      if (toComp) gain.connect(comp);
+      gain.connect(revGain);
+      osc.start(startT);
+      osc.stop(startT + dur + 0.05);
+      _musicOscs.push(osc);
+    };
+
+    // Perkussion
+    const playKick = (t) => {
+      const osc = ctx.createOscillator(); const g = ctx.createGain();
+      osc.frequency.setValueAtTime(180, t); osc.frequency.exponentialRampToValueAtTime(30, t+0.18);
+      g.gain.setValueAtTime(0.5, t); g.gain.exponentialRampToValueAtTime(0.001, t+0.22);
+      osc.connect(g); g.connect(comp); osc.start(t); osc.stop(t+0.25);
+      _musicOscs.push(osc);
+    };
+    const playSnare = (t) => {
+      const buf = ctx.createBuffer(1, ctx.sampleRate*0.12, ctx.sampleRate);
+      const d = buf.getChannelData(0);
+      for (let i=0; i<d.length; i++) d[i] = (Math.random()*2-1) * Math.pow(1-i/d.length, 1.5);
+      const src = ctx.createBufferSource(); src.buffer = buf;
+      const g = ctx.createGain(); g.gain.value = 0.18;
+      src.connect(g); g.connect(comp); src.start(t);
+      _musicOscs.push(src);
+    };
+    const playHihat = (t, vol=0.07) => {
+      const buf = ctx.createBuffer(1, ctx.sampleRate*0.04, ctx.sampleRate);
+      const d = buf.getChannelData(0);
+      for (let i=0; i<d.length; i++) d[i] = (Math.random()*2-1) * Math.pow(1-i/d.length, 3);
+      const src = ctx.createBufferSource(); src.buffer = buf;
+      const f = ctx.createBiquadFilter(); f.type='highpass'; f.frequency.value=8000;
+      const g = ctx.createGain(); g.gain.value = vol;
+      src.connect(f); f.connect(g); g.connect(comp); src.start(t);
+      _musicOscs.push(src);
+    };
+
+    // ── Scheduler: plant 1 Beat voraus ──────────────────────
+    const beatDur = BEAT / 1000;  // in Sekunden
+    let nextBeatTime = ctx.currentTime + 0.05;
+
+    _musicScheduler = setInterval(() => {
       if (!musicEnabled) return;
       try {
-        const now = ctx.currentTime;
-        melody.frequency.setTargetAtTime(notes[ni % notes.length], now, 0.05);
-        melGain.gain.setTargetAtTime(0.06, now, 0.05);
-        melGain.gain.setTargetAtTime(0, now + 0.7, 0.15);
-        ni++;
+        while (nextBeatTime < ctx.currentTime + 0.4) {
+          const t   = nextBeatTime;
+          const beat = _musicBeat % 16;     // 4 Takte à 4 Beats
+          const bar  = Math.floor(beat / 4); // Takt 0-3
+          const sub  = beat % 4;             // Sub-Beat 0-3
+
+          // ── Schlagzeug ──
+          if (sub === 0) playKick(t);           // Beat 1 jedes Takts
+          if (sub === 2) { playKick(t); playSnare(t); } // Beat 3
+          playHihat(t, sub % 2 === 0 ? 0.08 : 0.05);   // Hi-Hat jeden Beat
+
+          // ── Akkord (Ukulele-Strumm am Beat 1 jedes Takts) ──
+          if (sub === 0) {
+            const chord = CHORDS[bar % CHORDS.length];
+            chord.forEach((f, i) => playTone(f, t + i*0.018, beatDur*3.5, 0.10, 'triangle', i*5));
+          }
+          // Leichter Strumm auf Beat 3
+          if (sub === 2) {
+            const chord = CHORDS[bar % CHORDS.length];
+            chord.forEach((f, i) => playTone(f, t + i*0.012, beatDur*1.5, 0.06, 'triangle', -i*3));
+          }
+
+          // ── Bassline ──
+          const bassNote = BASSLINES[bar % BASSLINES.length][sub];
+          if (bassNote) playTone(bassNote, t, beatDur*0.85, 0.18, 'sine');
+
+          // ── Melodie (alle 2 Beats eine Note) ──
+          if (sub % 2 === 0) {
+            const melBeat = Math.floor(beat / 2);  // 0-7
+            const phrase  = MELODIES[_musicPhrase % MELODIES.length];
+            const noteIdx = (_musicPhrase * 8 + melBeat) % phrase.length;
+            const freq    = phrase[noteIdx % phrase.length];
+            if (freq) playTone(freq, t, beatDur*1.6, 0.14, 'triangle', 0);
+            // Oktave tiefer leise mitspiele
+            if (freq) playTone(freq/2, t+0.02, beatDur*1.2, 0.04, 'sine', 0);
+          }
+
+          // ── Glöckchen-Ornament auf dem letzten Beat einer Phrase ──
+          if (beat === 15 && sub === 3) {
+            playTone(NOTE.C5*2, t, beatDur*0.3, 0.05, 'sine', 0);
+          }
+
+          nextBeatTime += beatDur;
+          _musicBeat++;
+
+          // Phrase wechseln alle 4 Takte (16 Beats)
+          if (_musicBeat % 16 === 0) {
+            _musicPhrase = (_musicPhrase + 1) % MELODIES.length;
+          }
+        }
       } catch(e) {}
-    }, 900);
+    }, 50);  // Alle 50ms planen
+
   } catch(e) { console.warn('Music init failed:', e); }
+}
+
+function _stopAllMusicOscs() {
+  _musicOscs.forEach(osc => { try { osc.stop(); } catch(e){} });
+  _musicOscs = [];
 }
 
 function stopMusic() {
   try {
-    if (musicGain) musicGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.3);
-    if (musicLoop) { clearInterval(musicLoop); musicLoop = null; }
+    if (musicGain) musicGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.5);
+    if (_musicScheduler) { clearInterval(_musicScheduler); _musicScheduler = null; }
+    setTimeout(_stopAllMusicOscs, 600);
   } catch(e) {}
 }
 
