@@ -580,10 +580,30 @@ body {
 .era-trans p  { color:var(--text); font-size:1rem; margin-top:8px; font-style:italic; }
 
 /* ══ NEW SYSTEMS CSS ══ */
-.pvp-opp{background:rgba(0,0,0,.3);border:1px solid var(--border);border-radius:8px;padding:9px 12px;display:flex;align-items:center;gap:10px;margin-bottom:5px;cursor:pointer;transition:all .2s;}
-.pvp-opp:hover{border-color:var(--red2);transform:translateX(2px);}
+.pvp-opp{background:rgba(0,0,0,.28);border:1px solid var(--border);border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:10px;margin-bottom:6px;cursor:pointer;transition:all .18s;position:relative;overflow:hidden;}
+.pvp-opp:hover{border-color:var(--purple2);transform:translateX(3px);background:rgba(140,60,220,.07);}
+.pvp-opp.real-player{border-color:rgba(140,60,220,.3);}
 .pvp-opp-name{font-family:'Cinzel',serif;font-size:.8rem;font-weight:700;}
-.pvp-opp-stats{font-size:.68rem;color:var(--text2);margin-top:2px;}
+.pvp-opp-stats{font-size:.65rem;color:var(--text2);margin-top:2px;}
+.pvp-rank-badge{font-size:.58rem;padding:1px 5px;border-radius:4px;background:rgba(140,60,220,.15);border:1px solid rgba(140,60,220,.3);color:var(--purple2);font-family:'Cinzel',serif;display:inline-block;margin-top:2px;}
+.pvp-win-badge{font-size:.6rem;padding:2px 7px;border-radius:6px;font-family:'Cinzel',serif;font-weight:700;}
+.pvp-win-badge.win{background:rgba(64,192,112,.12);border:1px solid var(--green);color:var(--green2);}
+.pvp-win-badge.loss{background:rgba(220,60,60,.1);border:1px solid var(--red2);color:var(--red2);}
+.pvp-win-badge.even{background:rgba(201,162,39,.1);border:1px solid var(--gold);color:var(--gold2);}
+/* Battle simulation */
+.pvp-battle-line{padding:3px 0;border-bottom:1px solid rgba(255,255,255,.04);}
+.pvp-battle-line.hit{color:var(--orange2);}
+.pvp-battle-line.crit{color:var(--gold2);font-weight:700;}
+.pvp-battle-line.opp-hit{color:var(--red2);}
+.pvp-battle-line.win{color:var(--green2);font-size:.85rem;font-weight:700;border:none;}
+.pvp-battle-line.lose{color:var(--red2);font-size:.85rem;font-weight:700;border:none;}
+/* Season rank colors */
+.pvp-rank-bronze  {color:#cd7f32;}
+.pvp-rank-silver  {color:#aaa;}
+.pvp-rank-gold    {color:var(--gold2);}
+.pvp-rank-plat    {color:#66ddff;}
+.pvp-rank-diamond {color:#aa88ff;}
+.pvp-rank-legend  {color:#ff8800;}
 
 .guild-chat-msg{font-size:.73rem;padding:2px 0;border-bottom:1px solid rgba(255,255,255,.03);line-height:1.5;}
 .guild-chat-msg .cn{font-family:'Cinzel',serif;font-weight:700;font-size:.7rem;}
@@ -1965,27 +1985,78 @@ input[type=range].vol-slider::-webkit-slider-thumb:hover { transform:scale(1.2);
 
 <!-- ═══ PVP PAGE ═══ -->
 <div class="page" id="page-pvp">
-  <div class="card">
-    <div class="sec-title">🥊 PVP Arena</div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
-      <div class="pill">🏆 Punkte: <b id="pvpPoints" style="color:var(--gold2);">0</b></div>
-      <div class="pill">🎖️ Rang: <b id="pvpRank" style="color:var(--purple2);">Unbewertet</b></div>
-      <div class="pill">W/L: <b id="pvpWL" style="color:var(--green2);">0/0</b></div>
+
+  <!-- Saison-Banner -->
+  <div class="card" id="pvpSeasonBanner" style="position:relative;overflow:hidden;padding:14px;">
+    <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(140,60,220,.12),transparent 70%);pointer-events:none;"></div>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+      <div>
+        <div style="font-family:'Cinzel',serif;font-size:1rem;font-weight:900;color:var(--purple2);" id="pvpSeasonName">⚔️ Saison 1</div>
+        <div style="font-size:.65rem;color:var(--text3);margin-top:1px;" id="pvpSeasonTimer">Endet in: —</div>
+      </div>
+      <div style="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap;">
+        <div class="pill" style="border-color:var(--purple2);color:var(--purple2);">🏆 <b id="pvpPoints">0</b> Pkt</div>
+        <div class="pill" style="font-size:.72rem;" id="pvpRankPill">🥉 Bronze</div>
+        <div class="pill" style="font-size:.72rem;">W/L: <b id="pvpWL" style="color:var(--green2);">0/0</b></div>
+      </div>
     </div>
-    <div style="font-size:.75rem;color:var(--text2);font-style:italic;margin-bottom:12px;">Kämpfe gegen andere Spieler! Deine Kraft (ATK × DEF) entscheidet. Sieg gibt Punkte und Gold!</div>
-    <div class="sec-title" style="font-size:.75rem;">⚔️ Herausforderer wählen</div>
-    <div id="pvpOpponents"></div>
-    <button class="ctrl-btn" onclick="refreshPVP()" style="width:100%;margin-top:6px;">🔄 Gegner aktualisieren</button>
+    <!-- Fortschritt zum nächsten Rang -->
+    <div style="margin-top:10px;">
+      <div style="display:flex;justify-content:space-between;font-size:.62rem;color:var(--text3);font-family:'Cinzel',serif;margin-bottom:3px;">
+        <span id="pvpRankLabel">Bronze</span><span id="pvpRankNext">→ Silber (400 Pkt)</span>
+      </div>
+      <div style="height:6px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;">
+        <div id="pvpRankBar" style="height:100%;border-radius:3px;background:linear-gradient(to right,#8844ee,#aa66ff);transition:width .5s;width:0%;"></div>
+      </div>
+    </div>
   </div>
+
+  <!-- Herausforderer -->
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+      <div class="sec-title" style="margin-bottom:0;">⚔️ Herausforderer</div>
+      <div style="display:flex;gap:5px;align-items:center;">
+        <div style="font-size:.62rem;color:var(--text3);" id="pvpOppsInfo">Echte Spieler aus der DB</div>
+        <button class="ctrl-btn" onclick="refreshPVP()" style="font-size:.6rem;padding:3px 8px;">🔄</button>
+      </div>
+    </div>
+    <div id="pvpOpponents">
+      <div style="text-align:center;padding:20px;color:var(--text2);font-size:.75rem;font-style:italic;">Lade Gegner...</div>
+    </div>
+  </div>
+
+  <!-- Kampf-Simulation Overlay -->
+  <div class="card" id="pvpBattleCard" style="display:none;">
+    <div class="sec-title">⚔️ Kampf läuft...</div>
+    <div id="pvpBattleLog" style="font-family:'Cinzel',serif;font-size:.7rem;line-height:1.8;color:var(--text2);max-height:200px;overflow-y:auto;"></div>
+    <div id="pvpBattleResult" style="display:none;margin-top:10px;text-align:center;"></div>
+  </div>
+
+  <!-- Kampf-Protokoll -->
   <div class="card">
     <div class="sec-title">📋 Kampfprotokoll</div>
     <div class="log-box" id="pvpLog" style="height:140px;"><div class="log-e n">Noch keine PVP-Kämpfe.</div></div>
   </div>
+
+  <!-- Saison-Rangliste -->
   <div class="card">
-    <div class="sec-title">🌍 Saison-Rangliste</div>
-    <div id="pvpLeaderboard"><div style="color:var(--text2);font-size:.75rem;font-style:italic;padding:8px;">Klicke Laden um die Rangliste zu sehen.</div></div>
-    <button class="ctrl-btn" onclick="loadPVPLeaderboard()" style="width:100%;margin-top:6px;">🔄 Laden</button>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+      <div class="sec-title" style="margin-bottom:0;">🌍 Saison-Rangliste</div>
+      <div style="display:flex;gap:4px;">
+        <button class="ctrl-btn" id="pvpLbTabPvp" onclick="setPVPLbTab('pvp')" style="font-size:.6rem;padding:3px 8px;border-color:var(--purple2);color:var(--purple2);">PVP Punkte</button>
+        <button class="ctrl-btn" id="pvpLbTabLv" onclick="setPVPLbTab('level')" style="font-size:.6rem;padding:3px 8px;">Level</button>
+        <button class="ctrl-btn" onclick="loadPVPLeaderboard()" style="font-size:.6rem;padding:3px 8px;">🔄</button>
+      </div>
+    </div>
+    <!-- Saison-Info -->
+    <div style="background:rgba(140,60,220,.06);border:1px solid rgba(140,60,220,.2);border-radius:7px;padding:8px 10px;margin-bottom:10px;font-size:.66rem;color:var(--text2);">
+      🏆 Saisonende-Belohnungen: <b style="color:var(--gold2);">Legende 5000G · Diamant 2000G · Gold 800G · Silber 300G</b>
+    </div>
+    <div id="pvpLeaderboard">
+      <div style="color:var(--text2);font-size:.75rem;font-style:italic;padding:8px;">Klicke 🔄 um die Rangliste zu laden.</div>
+    </div>
   </div>
+
 </div>
 
 <!-- ═══ GILDE PAGE ═══ -->
@@ -5484,6 +5555,7 @@ async function _doSave() {
       pvp_points: G.pvpPoints  || 0,
       pvp_wins:   G.pvpWins    || 0,
       pvp_losses: G.pvpLosses  || 0,
+      pvp_streak: G.pvpStreak  || 0,
       // Guild
       guild_id:   G.guildId   || null,
       guild_role: G.guildRole || 'member',
@@ -5570,7 +5642,7 @@ async function _doSave() {
 
     // 6. Leaderboard — PATCH if exists, skip if conflict
     try {
-      const lbRow = { player_id: pid, player_name: getPlayerName(), hero_level: h.level, total_kills: G.kills, hero_gold: h.gold, wave: G.wave, updated_at: new Date().toISOString() };
+      const lbRow = { player_id: pid, player_name: getPlayerName(), hero_level: h.level, total_kills: G.kills, hero_gold: h.gold, wave: G.wave, pvp_points: G.pvpPoints||0, hero_base_atk: h.baseAtk, hero_base_def: h.baseDef, updated_at: new Date().toISOString() };
       const pResp = await sbFetch(`${SUPA_URL}/rest/v1/sm_leaderboard?player_id=eq.${pid}`, {
         method: 'PATCH', headers: { ...SUPA_HDR, 'Prefer': 'return=minimal' }, body: JSON.stringify(lbRow)
       });
@@ -5642,6 +5714,7 @@ async function loadFromSupabase() {
     G.pvpPoints  = p.pvp_points  || 0;
     G.pvpWins    = p.pvp_wins    || 0;
     G.pvpLosses  = p.pvp_losses  || 0;
+    G.pvpStreak  = p.pvp_streak  || 0;
 
     // Guild
     G.guildId   = p.guild_id   || null;
@@ -5956,7 +6029,7 @@ function switchTab(name) {
   if(name==='held'){renderEquipSlots();renderEquipBonus();renderInventory();renderSkills();renderEraTimeline();}
   if(name==='forge'){renderInventory();renderUpgrades();renderForgedGrid();try{renderMaterials();}catch(e){}try{renderFurnace();}catch(e){}try{renderRecipes();}catch(e){}try{renderAutoSellRules();}catch(e){}}
   if(name==='dungeon'){renderDungeon();}
-  if(name==='pvp'){renderPVP();}
+  if(name==='pvp'){renderPVP();loadPVPOpponents();loadPVPLeaderboard();}
   if(name==='pets'){renderPets();}
   if(name==='gilde'){renderGuild();setTimeout(()=>{try{loadRaidFromSupabase().then(()=>renderRaid());}catch(e){}},500);}
   if(name==='rang'){renderRang();}
@@ -6532,68 +6605,372 @@ setInterval(() => {
 
 
 // ════════════════════════════════════════════
-// ── PVP SYSTEM
 // ════════════════════════════════════════════
-if(!G.pvpPoints)G.pvpPoints=0;if(!G.pvpWins)G.pvpWins=0;if(!G.pvpLosses)G.pvpLosses=0;
+// ── PVP SYSTEM — Echte Spieler + Saisons
+// ════════════════════════════════════════════
+if(!G.pvpPoints)G.pvpPoints=0;
+if(!G.pvpWins)G.pvpWins=0;
+if(!G.pvpLosses)G.pvpLosses=0;
+if(!G.pvpStreak)G.pvpStreak=0;
 
-function getPVPRank(){
-  if(G.pvpPoints>=2000)return'👑 Legende';if(G.pvpPoints>=1200)return'💎 Diamant';
-  if(G.pvpPoints>=800)return'🥇 Gold';if(G.pvpPoints>=400)return'🥈 Silber';return'🥉 Bronze';
-}
-
-function renderPVP(){
-  if(document.getElementById('pvpPoints'))document.getElementById('pvpPoints').textContent=G.pvpPoints;
-  if(document.getElementById('pvpRank'))document.getElementById('pvpRank').textContent=getPVPRank();
-  if(document.getElementById('pvpWL'))document.getElementById('pvpWL').textContent=G.pvpWins+'/'+G.pvpLosses;
-  renderPVPOpponents();
-}
-
-function renderPVPOpponents(){
-  const div=document.getElementById('pvpOpponents');if(!div)return;div.innerHTML='';
-  const lv=G.hero.level;const s=getStats();
-  const names=['Drachentöter','Nachtschatten','Eisenherz','Sturmjäger','Mondklinge','Schattenlord','Feuerfaust','Runenmeister','Wolfsblut','Schicksalsklinge'];
-  for(let i=0;i<5;i++){
-    const oppLv=Math.max(1,lv+rng(-3,4));const oppAtk=Math.max(1,s.atk+rng(-8,10));const oppDef=Math.max(1,s.def+rng(-5,6));
-    const oppPts=Math.max(0,G.pvpPoints+rng(-200,300));const oppName=names[rng(0,names.length-1)]+rng(100,999);
-    const myPow=s.atk*s.def;const oppPow=oppAtk*oppDef;
-    const winChance=Math.min(90,Math.max(10,50+(myPow-oppPow)/Math.max(myPow,oppPow)*40));
-    const d=document.createElement('div');d.className='pvp-opp';
-    const icons=['⚔️','🗡️','🛡️','🏹','🔮'];
-    d.innerHTML=`<div style="font-size:1.6rem;">${icons[rng(0,4)]}</div><div style="flex:1;"><div class="pvp-opp-name">${oppName}</div><div class="pvp-opp-stats">Lv ${oppLv} · ATK ${oppAtk} · DEF ${oppDef} · ${oppPts} Pkt</div></div><div style="font-family:'Cinzel',serif;font-size:.68rem;color:${winChance>55?'var(--green2)':winChance>40?'var(--gold)':'var(--red2)'};">${Math.round(winChance)}% Sieg</div>`;
-    d.onclick=()=>doPVP(oppName,oppAtk,oppDef,oppPts,winChance);
-    div.appendChild(d);
+// Saison-Konfiguration
+const PVP_SEASON = {
+  number: 1,
+  name: 'Saison 1 — Dämmerung',
+  // Saisonende: Monatserster um Mitternacht
+  endDate: new Date(new Date().getFullYear(), new Date().getMonth()+1, 1, 0, 0, 0),
+  rewards: {
+    legend:  { gold: 5000, label: '👑 Legende' },
+    diamond: { gold: 2000, label: '💎 Diamant' },
+    plat:    { gold: 1000, label: '🌟 Platin'  },
+    gold:    { gold: 500,  label: '🥇 Gold'    },
+    silver:  { gold: 200,  label: '🥈 Silber'  },
+    bronze:  { gold: 50,   label: '🥉 Bronze'  },
   }
+};
+
+// Rang-System
+const PVP_RANKS = [
+  { id:'bronze',  label:'🥉 Bronze',  min:0,    max:399,  color:'#cd7f32', cls:'pvp-rank-bronze' },
+  { id:'silver',  label:'🥈 Silber',  min:400,  max:799,  color:'#aaaaaa', cls:'pvp-rank-silver' },
+  { id:'gold',    label:'🥇 Gold',    min:800,  max:1399, color:'#f0cc55', cls:'pvp-rank-gold'   },
+  { id:'plat',    label:'🌟 Platin',  min:1400, max:1999, color:'#66ddff', cls:'pvp-rank-plat'   },
+  { id:'diamond', label:'💎 Diamant', min:2000, max:2999, color:'#aa88ff', cls:'pvp-rank-diamond'},
+  { id:'legend',  label:'👑 Legende', min:3000, max:99999,color:'#ff8800', cls:'pvp-rank-legend' },
+];
+
+function getPVPRank(pts) {
+  const p = pts ?? G.pvpPoints;
+  return PVP_RANKS.find(r => p >= r.min && p <= r.max) || PVP_RANKS[0];
 }
 
-function refreshPVP(){renderPVPOpponents();log('🔄 PVP-Gegner aktualisiert','n');}
+function getPVPRankProgress() {
+  const rank = getPVPRank();
+  const next  = PVP_RANKS[PVP_RANKS.indexOf(rank) + 1];
+  if (!next) return { pct: 100, label: 'MAX', rank, next: null };
+  const pct = Math.min(100, (G.pvpPoints - rank.min) / (next.min - rank.min) * 100);
+  return { pct, label: next.label + ' (' + next.min + ' Pkt)', rank, next };
+}
 
-function doPVP(name,oppAtk,oppDef,oppPts,winChance){
-  const won=Math.random()*100<winChance;
-  if(won){
-    const pts=Math.floor(20+oppPts/100+rng(5,15));G.pvpPoints+=pts;G.pvpWins++;
-    const gold=rng(50,300)+Math.floor(G.pvpPoints/10);G.hero.gold+=gold;
-    const msg='🏆 Sieg vs '+name+'! +'+pts+' Pkt +'+gold+'G';
-    log(msg,'l');const ld=document.getElementById('pvpLog');if(ld){const e=document.createElement('div');e.className='log-e l';e.textContent=msg;ld.prepend(e);}
-  }else{
-    const pts=Math.max(0,Math.floor(10+rng(0,8)));G.pvpPoints=Math.max(0,G.pvpPoints-pts);G.pvpLosses++;
-    const msg='💔 Niederlage vs '+name+'. -'+pts+' Pkt';
-    log(msg,'c');const ld=document.getElementById('pvpLog');if(ld){const e=document.createElement('div');e.className='log-e c';e.textContent=msg;ld.prepend(e);}
+// ── Gegner aus Supabase laden ───────────────
+let _pvpOpponents = [];  // Cache: echte Spieler
+let _pvpLbTab = 'pvp';
+
+async function loadPVPOpponents() {
+  const div = document.getElementById('pvpOpponents');
+  const info = document.getElementById('pvpOppsInfo');
+  if (!div) return;
+  div.innerHTML = '<div style="text-align:center;padding:14px;color:var(--text2);font-size:.72rem;font-style:italic;">⏳ Suche Gegner...</div>';
+
+  const pid = getPlayerId();
+  const myPts = G.pvpPoints;
+
+  // Lade Spieler aus sm_leaderboard in ähnlichem Punktebereich
+  // Sortiert nach pvp_points nähe zu meinen Punkten
+  const margin = Math.max(300, myPts * 0.5);
+  const minPts = Math.max(0, myPts - margin);
+  const maxPts = myPts + margin;
+
+  let data = await sbGet('sm_leaderboard',
+    `pvp_points=gte.${Math.floor(minPts)}&pvp_points=lte.${Math.floor(maxPts)}&order=pvp_points.desc&limit=20`
+  );
+
+  // Filter: nicht mich selbst, und nicht Spieler mit denen ich gerade gekämpft habe
+  const recent = (G._pvpRecentOpps || []);
+  data = (data || []).filter(p => p.player_id !== pid && !recent.includes(p.player_id));
+
+  // Falls zu wenige echte Spieler — Fallback auf alle Spieler
+  if (data.length < 3) {
+    const fallback = await sbGet('sm_leaderboard', `order=pvp_points.desc&limit=30`);
+    const extra = (fallback || []).filter(p =>
+      p.player_id !== pid && !data.find(x => x.player_id === p.player_id)
+    );
+    data = [...data, ...extra];
   }
-  renderPVP();updateAll();saveToSupabase();
+
+  // Mische und wähle 5
+  data = data.sort(() => Math.random() - 0.5).slice(0, 5);
+  _pvpOpponents = data;
+
+  if (info) info.textContent = data.length > 0
+    ? data.length + ' echte Spieler gefunden'
+    : 'Keine Spieler in deiner Reichweite';
+
+  renderPVPOpponentCards(data);
 }
 
-async function loadPVPLeaderboard(){
-  const div=document.getElementById('pvpLeaderboard');if(!div)return;
-  div.innerHTML='<div style="color:var(--text2);font-size:.75rem;padding:6px;">Lade...</div>';
-  const data=await sbGet('sm_leaderboard','order=hero_level.desc&limit=10');
-  if(!data||!data.length){div.innerHTML='<div style="color:var(--text2);font-size:.75rem;padding:8px;font-style:italic;">Noch keine Spieler.</div>';return;}
-  div.innerHTML='';
-  data.forEach((p,i)=>{
-    const isMe=p.player_id===getPlayerId();const medals=['🥇','🥈','🥉'];
-    const d=document.createElement('div');d.className='rank-row';if(isMe)d.style.borderColor='var(--gold)';
-    d.innerHTML=`<div style="font-family:'Cinzel',serif;font-size:.78rem;color:${i<3?'var(--gold2)':'var(--text2)'};width:24px;">${medals[i]||'#'+(i+1)}</div><div class="rank-info"><div class="rank-name"${isMe?' style="color:var(--gold2);"':''}>${p.player_name||'Krieger'}${isMe?' 👈':''}</div><div class="rank-req">Lv ${p.hero_level} · ${(p.total_kills||0).toLocaleString()} Kills</div></div><div style="font-family:'Cinzel',serif;font-size:.7rem;color:var(--gold);">💰 ${(p.hero_gold||0).toLocaleString()}</div>`;
+function renderPVPOpponentCards(opponents) {
+  const div = document.getElementById('pvpOpponents');
+  if (!div) return;
+  div.innerHTML = '';
+  const s = getStats();
+
+  if (!opponents || !opponents.length) {
+    div.innerHTML = '<div style="text-align:center;padding:16px;color:var(--text2);font-size:.72rem;font-style:italic;">Keine Gegner gefunden. Versuche es erneut.</div>';
+    return;
+  }
+
+  opponents.forEach(opp => {
+    const oppPts  = opp.pvp_points || 0;
+    const oppAtk  = opp.hero_base_atk ? Math.round(opp.hero_base_atk * 1.5) : Math.max(5, s.atk + rng(-8, 12));
+    const oppDef  = opp.hero_base_def ? Math.round(opp.hero_base_def * 1.5) : Math.max(2, s.def + rng(-4, 8));
+    const oppLv   = opp.hero_level || 1;
+    const oppName = opp.player_name || 'Unbekannt';
+    const oppRank = getPVPRank(oppPts);
+
+    // Win-Chance: basiert auf ATK×HP×LV Verhältnis
+    const myPow  = s.atk * 0.6 + s.def * 0.4 + G.hero.level * 2;
+    const oppPow = oppAtk * 0.6 + oppDef * 0.4 + oppLv * 2;
+    const winChance = Math.min(88, Math.max(12, 50 + (myPow - oppPow) / Math.max(myPow, oppPow) * 35));
+
+    const ptsDiff = oppPts - G.pvpPoints;
+    const ptsBadge = ptsDiff > 0 ? `+${ptsDiff}` : `${ptsDiff}`;
+    const wincls = winChance > 60 ? 'win' : winChance > 40 ? 'even' : 'loss';
+
+    const d = document.createElement('div');
+    d.className = 'pvp-opp real-player';
+    d.innerHTML = `
+      <div style="font-size:1.5rem;flex-shrink:0;">⚔️</div>
+      <div style="flex:1;min-width:0;">
+        <div class="pvp-opp-name" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${oppName}</div>
+        <div class="pvp-opp-stats">Lv ${oppLv} · ATK ${oppAtk} · DEF ${oppDef}</div>
+        <div style="display:flex;gap:4px;margin-top:3px;flex-wrap:wrap;">
+          <span class="pvp-rank-badge" style="color:${oppRank.color};">${oppRank.label}</span>
+          <span style="font-size:.58rem;color:var(--text3);font-family:'Cinzel',serif;">${oppPts} Pkt (${ptsBadge})</span>
+        </div>
+      </div>
+      <div style="text-align:right;flex-shrink:0;">
+        <div class="pvp-win-badge ${wincls}">${Math.round(winChance)}% Sieg</div>
+        <div style="font-size:.58rem;color:var(--text3);margin-top:3px;font-family:'Cinzel',serif;">klicken zum Kämpfen</div>
+      </div>`;
+    d.onclick = () => startPVPBattle(opp, oppAtk, oppDef, oppPts, winChance);
     div.appendChild(d);
   });
+}
+
+// ── PVP Kampfsimulator ──────────────────────
+function startPVPBattle(opp, oppAtk, oppDef, oppPts, winChance) {
+  const battleCard = document.getElementById('pvpBattleCard');
+  const battleLog  = document.getElementById('pvpBattleLog');
+  const battleRes  = document.getElementById('pvpBattleResult');
+  if (!battleCard || !battleLog) return;
+
+  battleCard.style.display = 'block';
+  battleLog.innerHTML = '';
+  battleRes.style.display = 'none';
+  battleCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+  const s = getStats();
+  const myName = getPlayerName();
+  const oppName = opp.player_name || 'Gegner';
+
+  // Simuliere rundenbasierter Kampf (max 10 Runden)
+  let myHp  = G.hero.maxHp;
+  let oppHp = Math.round((20 + (opp.hero_level||1) * 9) * 2.2);
+  const lines = [];
+
+  lines.push({ cls:'', text: `⚔️ ${myName} (${myHp} HP) vs ${oppName} (${oppHp} HP)` });
+
+  for (let round = 1; round <= 10 && myHp > 0 && oppHp > 0; round++) {
+    // Mein Angriff
+    const isCrit = Math.random() * 100 < s.crit;
+    let myDmg = Math.max(1, s.atk - Math.floor(oppDef * 0.4) + rng(-2, 4));
+    if (isCrit) { myDmg = Math.floor(myDmg * 1.8); }
+    oppHp -= myDmg;
+    lines.push({ cls: isCrit ? 'crit' : 'hit', text: `Runde ${round}: Du triffst${isCrit?' (KRIT!)':''} für ${myDmg} Schaden.` });
+
+    if (oppHp <= 0) break;
+
+    // Gegner-Angriff
+    let oppDmg = Math.max(1, oppAtk - Math.floor(s.def * 0.4) + rng(-2, 4));
+    const oppCrit = Math.random() < 0.12;
+    if (oppCrit) oppDmg = Math.floor(oppDmg * 1.6);
+    myHp -= oppDmg;
+    lines.push({ cls: 'opp-hit', text: `${oppName} trifft${oppCrit?' (KRIT!)':''} für ${oppDmg} Schaden.` });
+  }
+
+  const won = myHp > oppHp;
+
+  // Punkte berechnen
+  const rankDiff = oppPts - G.pvpPoints;
+  let ptsGain, ptsLoss;
+  if (won) {
+    ptsGain = Math.max(10, Math.min(80, 25 + Math.floor(rankDiff / 30)));
+    if (G.pvpStreak >= 3) ptsGain = Math.floor(ptsGain * 1.25); // Streak-Bonus
+  } else {
+    ptsLoss = Math.max(5, Math.min(40, 15 - Math.floor(rankDiff / 30)));
+  }
+
+  lines.push({ cls: won ? 'win' : 'lose', text: won ? `🏆 Sieg! +${ptsGain} Punkte` : `💔 Niederlage. -${ptsLoss} Punkte` });
+
+  // Animiert anzeigen
+  let i = 0;
+  const showNext = () => {
+    if (i >= lines.length) {
+      // Ergebnis anzeigen
+      finalizePVPBattle(won, ptsGain, ptsLoss, opp, oppPts, battleRes);
+      return;
+    }
+    const line = lines[i++];
+    const el = document.createElement('div');
+    el.className = 'pvp-battle-line ' + (line.cls || '');
+    el.textContent = line.text;
+    battleLog.appendChild(el);
+    battleLog.scrollTop = battleLog.scrollHeight;
+    setTimeout(showNext, i === 1 ? 50 : 300);
+  };
+  showNext();
+}
+
+function finalizePVPBattle(won, ptsGain, ptsLoss, opp, oppPts, resultEl) {
+  const oppName = opp.player_name || 'Gegner';
+
+  if (won) {
+    G.pvpPoints += ptsGain;
+    G.pvpWins++;
+    G.pvpStreak = (G.pvpStreak || 0) + 1;
+    // Gold: wenig — PVP soll nicht Hauptgoldquelle sein
+    const gold = Math.floor(10 + G.pvpPoints * 0.02 + rng(0, 15));
+    G.hero.gold += gold;
+    const streakTxt = G.pvpStreak >= 3 ? ` (${G.pvpStreak}er Siegesserie! +25% Bonus)` : '';
+    const msg = `🏆 Sieg vs ${oppName}! +${ptsGain} Pkt +${gold}G${streakTxt}`;
+    log(msg, 'l');
+    const ld = document.getElementById('pvpLog');
+    if (ld) { const e = document.createElement('div'); e.className='log-e l'; e.textContent=msg; ld.prepend(e); }
+    if (resultEl) {
+      resultEl.style.display = 'block';
+      resultEl.innerHTML = `<div style="color:var(--green2);font-family:'Cinzel',serif;font-size:.95rem;font-weight:700;">🏆 Sieg!</div><div style="font-size:.72rem;color:var(--text2);margin-top:4px;">+${ptsGain} Punkte · +${gold} Gold${streakTxt}</div><button class="ctrl-btn" onclick="document.getElementById('pvpBattleCard').style.display='none';refreshPVP();" style="margin-top:8px;">⚔️ Nächster Kampf</button>`;
+    }
+  } else {
+    G.pvpPoints = Math.max(0, G.pvpPoints - ptsLoss);
+    G.pvpLosses++;
+    G.pvpStreak = 0;
+    const msg = `💔 Niederlage vs ${oppName}. -${ptsLoss} Pkt`;
+    log(msg, 'c');
+    const ld = document.getElementById('pvpLog');
+    if (ld) { const e = document.createElement('div'); e.className='log-e c'; e.textContent=msg; ld.prepend(e); }
+    if (resultEl) {
+      resultEl.style.display = 'block';
+      resultEl.innerHTML = `<div style="color:var(--red2);font-family:'Cinzel',serif;font-size:.95rem;font-weight:700;">💔 Niederlage</div><div style="font-size:.72rem;color:var(--text2);margin-top:4px;">-${ptsLoss} Punkte</div><button class="ctrl-btn" onclick="document.getElementById('pvpBattleCard').style.display='none';refreshPVP();" style="margin-top:8px;">🔄 Nochmal</button>`;
+    }
+  }
+
+  // Recent opponents cache (verhindert gleichen Gegner 2× hintereinander)
+  if (!G._pvpRecentOpps) G._pvpRecentOpps = [];
+  G._pvpRecentOpps.unshift(opp.player_id);
+  if (G._pvpRecentOpps.length > 10) G._pvpRecentOpps.pop();
+
+  renderPVP(); updateAll(); saveToSupabase();
+}
+
+// ── Render PVP Hauptseite ───────────────────
+function renderPVP() {
+  // Punkte & Rang
+  const el = document.getElementById('pvpPoints');
+  if (el) el.textContent = G.pvpPoints.toLocaleString();
+
+  const rankEl = document.getElementById('pvpRankPill');
+  const rank = getPVPRank();
+  if (rankEl) { rankEl.textContent = rank.label; rankEl.style.color = rank.color; rankEl.style.borderColor = rank.color + '44'; }
+
+  const wlEl = document.getElementById('pvpWL');
+  if (wlEl) wlEl.textContent = G.pvpWins + '/' + G.pvpLosses;
+
+  // Rang-Fortschrittsbalken
+  const prog = getPVPRankProgress();
+  const bar = document.getElementById('pvpRankBar');
+  const rlbl = document.getElementById('pvpRankLabel');
+  const rnxt = document.getElementById('pvpRankNext');
+  if (bar) bar.style.width = prog.pct + '%';
+  if (rlbl) { rlbl.textContent = rank.label; rlbl.style.color = rank.color; }
+  if (rnxt) rnxt.textContent = prog.next ? '→ ' + prog.label : '🏆 Maximaler Rang!';
+
+  // Saison-Timer
+  const timerEl = document.getElementById('pvpSeasonTimer');
+  if (timerEl) {
+    const diff = PVP_SEASON.endDate - new Date();
+    if (diff > 0) {
+      const d = Math.floor(diff / 86400000);
+      const h = Math.floor((diff % 86400000) / 3600000);
+      timerEl.textContent = `Endet in: ${d}T ${h}h · Saisonende-Belohnungen warten!`;
+    } else {
+      timerEl.textContent = 'Saison beendet — neue Saison startet bald!';
+    }
+  }
+
+  const snEl = document.getElementById('pvpSeasonName');
+  if (snEl) snEl.textContent = `⚔️ ${PVP_SEASON.name}`;
+}
+
+async function refreshPVP() {
+  renderPVP();
+  await loadPVPOpponents();
+}
+
+// ── Rangliste ───────────────────────────────
+function setPVPLbTab(tab) {
+  _pvpLbTab = tab;
+  document.getElementById('pvpLbTabPvp').style.borderColor = tab==='pvp' ? 'var(--purple2)' : '';
+  document.getElementById('pvpLbTabPvp').style.color      = tab==='pvp' ? 'var(--purple2)' : '';
+  document.getElementById('pvpLbTabLv').style.borderColor  = tab==='level' ? 'var(--gold)' : '';
+  document.getElementById('pvpLbTabLv').style.color        = tab==='level' ? 'var(--gold2)' : '';
+  loadPVPLeaderboard();
+}
+
+async function loadPVPLeaderboard() {
+  const div = document.getElementById('pvpLeaderboard');
+  if (!div) return;
+  div.innerHTML = '<div style="color:var(--text2);font-size:.75rem;padding:8px;">⏳ Lade Rangliste...</div>';
+
+  const orderField = _pvpLbTab === 'pvp' ? 'pvp_points' : 'hero_level';
+  const data = await sbGet('sm_leaderboard', `order=${orderField}.desc&limit=15`);
+
+  if (!data || !data.length) {
+    div.innerHTML = '<div style="color:var(--text2);font-size:.75rem;padding:8px;font-style:italic;">Keine Spieler gefunden.</div>';
+    return;
+  }
+
+  div.innerHTML = '';
+  const pid = getPlayerId();
+  let myRankPos = -1;
+
+  data.forEach((p, i) => {
+    const isMe = p.player_id === pid;
+    if (isMe) myRankPos = i + 1;
+    const pPts   = p.pvp_points || 0;
+    const pRank  = getPVPRank(pPts);
+    const medals = ['🥇','🥈','🥉'];
+
+    const d = document.createElement('div');
+    d.className = 'rank-row';
+    if (isMe) d.style.cssText = 'border-color:var(--gold);background:rgba(201,162,39,.05);';
+
+    d.innerHTML = `
+      <div style="font-family:'Cinzel',serif;font-size:.76rem;color:${i<3?'var(--gold2)':'var(--text2)'};width:22px;flex-shrink:0;">${medals[i] || '#'+(i+1)}</div>
+      <div class="rank-info" style="flex:1;min-width:0;">
+        <div class="rank-name" style="${isMe?'color:var(--gold2);':''}">${p.player_name||'Krieger'}${isMe?' 👈':''}</div>
+        <div class="rank-req">Lv ${p.hero_level||1} · ${(p.total_kills||0).toLocaleString()} Kills</div>
+      </div>
+      <div style="text-align:right;flex-shrink:0;">
+        <div style="font-family:'Cinzel',serif;font-size:.68rem;color:${pRank.color};">${pRank.label}</div>
+        <div style="font-family:'Cinzel',serif;font-size:.65rem;color:var(--text3);">${pPts.toLocaleString()} Pkt</div>
+      </div>`;
+    div.appendChild(d);
+  });
+
+  // Meine Position falls nicht in Top 15
+  if (myRankPos === -1 && G.pvpPoints > 0) {
+    const sep = document.createElement('div');
+    sep.style.cssText = 'border-top:1px dashed var(--border);margin:6px 0;text-align:center;font-size:.62rem;color:var(--text3);padding:4px;';
+    sep.textContent = '· · ·';
+    div.appendChild(sep);
+    const myRow = document.createElement('div');
+    myRow.className = 'rank-row';
+    myRow.style.borderColor = 'var(--gold)';
+    const myRk = getPVPRank();
+    myRow.innerHTML = `<div style="font-family:'Cinzel',serif;font-size:.76rem;color:var(--text3);width:22px;">?</div><div class="rank-info"><div class="rank-name" style="color:var(--gold2);">${getPlayerName()} 👈</div><div class="rank-req">Lv ${G.hero.level}</div></div><div style="text-align:right;"><div style="color:${myRk.color};font-family:'Cinzel',serif;font-size:.68rem;">${myRk.label}</div><div style="font-size:.65rem;color:var(--text3);">${G.pvpPoints.toLocaleString()} Pkt</div></div>`;
+    div.appendChild(myRow);
+  }
 }
 
 // ════════════════════════════════════════════
