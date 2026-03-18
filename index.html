@@ -4041,7 +4041,7 @@ function updateArena() {
   }
   document.getElementById('monSprite').textContent=m.emoji;
   document.getElementById('monName').innerHTML = m.name + ' ' + getMonsterTypeTag(m);
-  const armorTxt = m.armor > 0
+  const armorTxt = m.armor >= 5
     ? ' <span style="font-size:.55rem;color:#aaa;font-family:Cinzel,serif;">🛡️' + m.armor + '%</span>'
     : '';
   document.getElementById('monHpTxt').textContent = Math.ceil(m.hp) + '/' + m.maxHp;
@@ -5232,7 +5232,7 @@ function spawnWave() {
     const pool = eligible.slice(Math.max(0, eligible.length - 5));
     const proto = pool[rng(0, pool.length - 1)];
     // Event monsters already have hp/atk set; regular ones need scaling
-    const hp  = proto.hp  || Math.round((15 + lv * 9)  * proto.hpM);
+    const hp  = proto.hp  || Math.round((10 + lv * 7)  * proto.hpM);
     const atk = proto.atk || Math.round((2  + lv * 1.3) * proto.atkM);
     // ── Rüstung berechnen ────────────────────────────────
     // Basis-Rüstung je Monster-Typ
@@ -5263,14 +5263,14 @@ function startCombat() {
   G.combatInterval = setInterval(tick, 250);
 }
 
-let hCD = 0, pCD = 0;
+let hCD = -0.5, pCD = 0.8;  // Negative hCD → sofort erster Angriff
 
 function tick() {
   if (!G.monsters || G.monsters.length === 0) {
     if (G.monstersInWave >= G.monstersPerWave) {
       G.wave++; G.monstersInWave = 0;
       G.monstersPerWave = 3 + Math.floor(G.wave / 3);
-      log('🌊 Welle ' + G.wave + ' — ' + currentZone().name, 'n');
+      if (G.wave % 5 === 0 || G.wave <= 3) log('🌊 Welle ' + G.wave + ' — ' + currentZone().name, 'n');
       setTimeout(spawnWave, 1500);
     } else {
       setTimeout(spawnWave, 700);
@@ -5322,32 +5322,25 @@ function tick() {
         floatDmgEl('mon_' + target.id, d2, '#f0cc55');
       }
       if (G.skills.has('bloodRage') && h.hp < h.maxHp * 0.4) dmg = Math.floor(dmg * 1.2);
-      // ── Rüstung absorbiert Schaden ────────────
+      // ── Item-Effekte (vor Rüstung) ────────────
       const fxNow = ds.fx || getEffectMods();
+      // Execute: Gegner unter 20% HP → +80% Schaden (VOR Rüstung berechnen)
+      if (fxNow.execute && target.hp / target.maxHp < 0.20) dmg = Math.floor(dmg * 1.8);
+      // ── Rüstung absorbiert Schaden ────────────
+      // BUG FIX: war sDebuffed.def → muss ds.def sein
       if (target.armor && target.armor > 0) {
-        // Rüstungsdurchdringung: DEF und Items reduzieren Rüstung
         const armorPen = Math.min(target.armor,
-          Math.floor(sDebuffed.def * 0.3) +     // DEF durchdringt etwas
-          (fxNow.crit_dmg  ? 10 : 0) +          // Krit-Items durchdringen mehr
-          (isCrit          ? 8  : 0)             // Krits selbst auch
+          Math.floor(ds.def * 0.3) +      // DEF durchdringt Rüstung
+          (fxNow.crit_dmg ? 10 : 0) +     // Krit-Items penetrieren mehr
+          (isCrit         ?  8 : 0)        // Krits selbst auch
         );
         const effectiveArmor = Math.max(0, target.armor - armorPen);
-        const absorbed = Math.floor(dmg * effectiveArmor / 100);
-        if (absorbed > 0) {
-          dmg -= absorbed;
-          // Zeige Rüstungs-Absorption subtil (kleines graues +Zahl)
-          if (absorbed >= 3) floatDmgEl('mon_' + target.id, absorbed, '#888');
-        }
-        dmg = Math.max(1, dmg); // mindestens 1 Schaden immer
+        dmg = Math.max(1, dmg - Math.floor(dmg * effectiveArmor / 100));
       }
-      // Schaden-Obergrenze: max 40% der Monster-HP pro Treffer
-      // Verhindert 1-Hits auch ohne Rüstung (z.B. frühe Wellen)
-      const maxDmgCap = Math.floor(target.maxHp * 0.40);
-      if (dmg > maxDmgCap) dmg = maxDmgCap;
-      // ── Item-Effekte ─────────────────────────
-      // Execute: Gegner unter 20/30% HP
-      if (fxNow.execute && target.hp / target.maxHp < 0.20) dmg = Math.floor(dmg * 1.8);
-      target._hitsReceived = (target._hitsReceived || 0) + 1;  // Für Gold-Skalierung tracken
+      // Schaden-Cap: max 40% Monster-HP pro Treffer (kein 1-Hit)
+      dmg = Math.min(dmg, Math.floor(target.maxHp * 0.40));
+      dmg = Math.max(1, dmg);
+      target._hitsReceived = (target._hitsReceived || 0) + 1;
       target.hp -= dmg;
       // Lifesteal (Items + Skill)
       const lifeStealPct = (fxNow.lifesteal || 0) + (G.skills.has('vampirism') ? 0.08 : 0);
@@ -5469,8 +5462,10 @@ function tick() {
   G.monsters.forEach(m => {
     if (m._poisonItem && m._poisonItem.turns > 0) {
       m.hp -= m._poisonItem.dmg;
+      floatDmgEl('mon_' + m.id, m._poisonItem.dmg, '#88cc44');
       m._poisonItem.turns--;
-      if (m._poisonItem.turns <= 0) m._poisonItem = null;
+      if (m._poisonItem.turns <= 0) { m._poisonItem = null; }
+      if (m.hp <= 0) { try { monsterKilled(m); } catch(e) {} }
     }
     // Frost: frozen monsters can't attack
     if (m._frozen > 0) {
@@ -5498,7 +5493,10 @@ function monsterKilled(m) {
   G.hero.xp += xp; G.hero.gold += gold + pickpocketBonus; G.kills++;
   try { checkAchievements(); } catch(e) {}
   const hardnessStr = hits >= 5 ? ' 💪×' + hardnessMult.toFixed(1) : '';
-  log('💀 ' + m.name + ' besiegt! +' + xp + ' XP  +' + (gold+pickpocketBonus) + ' Gold' + hardnessStr + (pickpocketBonus?'  (+'+pickpocketBonus+'G Taschendiebstahl!)':''), 'c');
+  // Log nur jeden 10. Kill oder wenn Bonus-Event (spart Performance)
+  if (G.kills % 10 === 0 || pickpocketBonus > 0 || hardnessMult >= 2.5) {
+    log('💀 ' + m.name + ' ×' + G.kills + ' | +' + xp + ' XP  +' + (gold+pickpocketBonus) + 'G' + hardnessStr + (pickpocketBonus?' 🎭':''), 'c');
+  }
   try { playSfx('kill'); } catch(e) {}
   try { dropMaterials(m); } catch(e) {}
   try { if(m.isEventMonster) giveEventCurrency(m); } catch(e) {}
@@ -5517,7 +5515,10 @@ function monsterKilled(m) {
     if (G.monstersInWave >= G.monstersPerWave) {
       G.wave++; G.monstersInWave = 0;
       G.monstersPerWave = 3 + Math.floor(G.wave / 3);
-      log('🌊 Welle ' + G.wave + ' beginnt!', 'n');
+      // Kleine HP-Regeneration am Wellenende (QoL)
+      const waveHealPct = G.skills.has('ironSkin') ? 0.08 : 0.04;
+      G.hero.hp = Math.min(G.hero.maxHp, G.hero.hp + Math.floor(G.hero.maxHp * waveHealPct));
+      if (G.wave % 5 === 0 || G.wave <= 3) log('🌊 Welle ' + G.wave + ' beginnt!', 'n');
       setTimeout(spawnWave, 1200);
     } else {
       setTimeout(spawnWave, 600);
@@ -6452,10 +6453,10 @@ function checkIdle() {
   if (diff < 90) return;
   const mins = Math.min(Math.floor(diff / 60), 480);
   const mult = idleMult();
-  // Idle = 25% von Online-Einnahmen — motiviert aktives Spielen
-  const gold  = Math.floor(mins * (0.5 + G.hero.level * 0.12) * mult);
-  const xp    = Math.floor(mins * (0.3 + G.hero.level * 0.08) * mult);
-  const items = Math.min(4, Math.floor(mins / 20));
+  // Idle = ~30% von Online-Einnahmen (etwas großzügiger, Spieler sollen zurückkommen)
+  const gold  = Math.floor(mins * (0.8 + G.hero.level * 0.15) * mult);
+  const xp    = Math.floor(mins * (0.5 + G.hero.level * 0.10) * mult);
+  const items = Math.min(5, Math.floor(mins / 15));
   const pop = document.getElementById('idleOverlay');
   const hh = Math.floor(mins/60), mm = mins%60;
   document.getElementById('idleTimeTxt').innerHTML = `Du warst <b>${hh>0?hh+'h ':''} ${mm}min</b> weg.`;
@@ -8486,7 +8487,7 @@ function updateHeaderStats() {
   try {
     if (document.getElementById('hHp')) document.getElementById('hHp').textContent = Math.ceil(h.hp);
     if (document.getElementById('hMaxHp')) document.getElementById('hMaxHp').textContent = h.maxHp;
-    if (document.getElementById('hGold')) document.getElementById('hGold').textContent = h.gold;
+    if (document.getElementById('hGold')) document.getElementById('hGold').textContent = h.gold >= 10000 ? Math.floor(h.gold/1000)+'k' : h.gold;
     if (document.getElementById('hLv')) document.getElementById('hLv').textContent = h.level;
     if (document.getElementById('hKills')) document.getElementById('hKills').textContent = G.kills;
   } catch(e) {}
