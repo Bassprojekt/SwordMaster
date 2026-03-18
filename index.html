@@ -3032,30 +3032,101 @@ const RARITIES = [
 ];
 
 // ITEM SLOTS: weapon, helmet, chest, gloves, boots, ring
+// ── Item-Sondereffekte ─────────────────────────────────────────
+// eff: 'lifesteal'    — heilt % des Schadens
+//      'aoe'          — 30% Chance: Schaden an alle Monster
+//      'thorns'       — reflektiert % des eingehenden Schadens
+//      'crit_dmg'     — Krit-Schaden Multiplikator erhöht
+//      'execute'      — Gegner unter 20% HP: +80% Schaden
+//      'poison_on_hit'— vergiftet Monster bei jedem Treffer
+//      'shield_on_hit'— Chance auf temporären Schadensschild
+//      'berserker'    — ATK steigt je verlorener HP
+//      'mana_drain'   — Mana fließt in Schaden
+//      'chain'        — Treffer springt auf 2. Monster
+//      'frost'        — 20% Chance: Monster verlangsamt
+//      'regen'        — regeneriert HP pro Sekunde
+//      'gold_find'    — erhöht Gold-Drop
+//      'xp_boost'     — erhöht XP-Drop
+//      'dodge'        — passive Ausweich-Chance
+//      'reflect_crit' — Krit reflektiert Schaden an Angreifer
+//      none           — kein Sondereffekt (reine Stats)
+
 const ITEM_DEFS = [
-  { name:'Holzknüppel',     emoji:'🪵', slot:'weapon', sk:'atk', sv:2,   desc:'Primitiv, aber schmerzhaft.' },
-  { name:'Lederkappe',      emoji:'🎓', slot:'helmet', sk:'def', sv:1,   desc:'Minimal Schutz.' },
-  { name:'Lederhemd',       emoji:'🧥', slot:'chest',  sk:'def', sv:2,   desc:'Schützt den Torso.' },
-  { name:'Faustlinge',      emoji:'🧤', slot:'gloves', sk:'atk', sv:1,   desc:'Erhöht Griffstärke.' },
-  { name:'Lederstiefel',    emoji:'👢', slot:'boots',  sk:'spd', sv:0.05,desc:'Leichtere Schritte.' },
-  { name:'Eisenring',       emoji:'💍', slot:'ring',   sk:'crit',sv:2,   desc:'Ein alter Ring.' },
-  { name:'Eisenschwert',    emoji:'⚔️', slot:'weapon', sk:'atk', sv:5,   desc:'Solide Klinge.' },
-  { name:'Kettenhemd',      emoji:'🛡️', slot:'chest',  sk:'def', sv:5,   desc:'Guter Schutz.' },
-  { name:'Eisenhelm',       emoji:'⛑️', slot:'helmet', sk:'def', sv:3,   desc:'Schützt den Kopf.' },
-  { name:'Feuerhandschuh',  emoji:'🔥', slot:'gloves', sk:'atk', sv:4,   desc:'Brennende Kraft.' },
-  { name:'Windstiefel',     emoji:'💨', slot:'boots',  sk:'spd', sv:0.1, desc:'Schnell wie Wind.' },
-  { name:'Runenring',       emoji:'🔮', slot:'ring',   sk:'crit',sv:5,   desc:'Magische Präzision.' },
-  { name:'Runenschwert',    emoji:'🗡️', slot:'weapon', sk:'atk', sv:12,  desc:'Mit Runen graviert.' },
-  { name:'Drachenpanzer',   emoji:'🦎', slot:'chest',  sk:'def', sv:10,  desc:'Unzerstörbar.' },
-  { name:'Drachenhelm',     emoji:'🐲', slot:'helmet', sk:'def', sv:8,   desc:'Kaum zu zerbrechen.' },
-  { name:'Titanfaust',      emoji:'🤜', slot:'gloves', sk:'atk', sv:9,   desc:'Titanverstärkt.' },
-  { name:'Geisterstiefel',  emoji:'👻', slot:'boots',  sk:'spd', sv:0.18,desc:'Unsichtbar bewegen.' },
-  { name:'Seelenstein',     emoji:'💎', slot:'ring',   sk:'crit',sv:10,  desc:'Trifft immer.' },
-  { name:'Götterschwerter', emoji:'⚡', slot:'weapon', sk:'atk', sv:25,  desc:'Geformt von Göttern.' },
-  { name:'Gottesrüstung',   emoji:'✨', slot:'chest',  sk:'def', sv:20,  desc:'Göttlicher Schutz.' },
-  { name:'Engelhelm',       emoji:'🪽', slot:'helmet', sk:'def', sv:15,  desc:'Aus Engelknochen.' },
-  { name:'Seelenzerstörer', emoji:'💫', slot:'weapon', sk:'atk', sv:40,  desc:'Vernichtet Seelen.' },
-  { name:'Ewigkeitsring',   emoji:'♾️', slot:'ring',   sk:'crit',sv:15,  desc:'Existiert ewig.' },
+  // ─── WAFFEN ─────────────────────────────────────────────
+  // Common
+  { name:'Holzknüppel',     emoji:'🪵', slot:'weapon', sk:'atk', sv:2,   eff:null,           desc:'Primitiv, aber schmerzhaft.' },
+  { name:'Stein-Dolch',     emoji:'🗿', slot:'weapon', sk:'atk', sv:3,   eff:null,           desc:'Geschärfter Kieselstein.' },
+  // Uncommon
+  { name:'Eisenschwert',    emoji:'⚔️', slot:'weapon', sk:'atk', sv:6,   eff:null,           desc:'Solide Klinge aus gutem Stahl.' },
+  { name:'Jäger-Speer',     emoji:'🏹', slot:'weapon', sk:'atk', sv:5,   eff:'poison_on_hit',desc:'Vergiftet Gegner bei jedem Treffer.' },
+  { name:'Flammenklinge',   emoji:'🔥', slot:'weapon', sk:'atk', sv:7,   eff:'aoe',          desc:'30% Chance: Feuer trifft alle Monster.' },
+  // Rare
+  { name:'Runenschwert',    emoji:'🗡️', slot:'weapon', sk:'atk', sv:14,  eff:'crit_dmg',     desc:'Krit-Schaden +40%.' },
+  { name:'Vampirklinge',    emoji:'🧛', slot:'weapon', sk:'atk', sv:12,  eff:'lifesteal',    desc:'Heilt 12% des verursachten Schadens.' },
+  { name:'Kettenbrecher',   emoji:'⛓️', slot:'weapon', sk:'atk', sv:13,  eff:'chain',        desc:'Treffer springt auf ein zweites Monster über.' },
+  { name:'Frostklinge',     emoji:'❄️', slot:'weapon', sk:'atk', sv:11,  eff:'frost',        desc:'20% Chance: verlangsamt Monster für 2 Runden.' },
+  // Epic
+  { name:'Schattenmesser',  emoji:'🌑', slot:'weapon', sk:'atk', sv:22,  eff:'execute',      desc:'Gegner unter 20% HP: +80% Schaden.' },
+  { name:'Kriegshammer',    emoji:'🔨', slot:'weapon', sk:'atk', sv:25,  eff:'aoe',          desc:'Erschütterung — 45% Chance Flächenschaden.' },
+  { name:'Drachentöter',    emoji:'🐉', slot:'weapon', sk:'atk', sv:28,  eff:'crit_dmg',     desc:'Krit-Schaden +60%. Erschaffen für Endgegner.' },
+  { name:'Berserkerklinge', emoji:'🩸', slot:'weapon', sk:'atk', sv:20,  eff:'berserker',    desc:'ATK steigt je 10% fehlender HP um +8%.' },
+  // Legendary
+  { name:'Götterschwerter', emoji:'⚡', slot:'weapon', sk:'atk', sv:38,  eff:'mana_drain',   desc:'Volles Mana: +20% Schaden. Mana wird verbraucht.' },
+  { name:'Seelenzerstörer', emoji:'💫', slot:'weapon', sk:'atk', sv:45,  eff:'lifesteal',    desc:'Lebensraub 18% — die Seelen der Gefallenen.' },
+  { name:'Sternensense',    emoji:'🌟', slot:'weapon', sk:'atk', sv:42,  eff:'execute',      desc:'Execute trifft unter 30% HP. Götterwaffe.' },
+  // Mythic
+  { name:'Weltvernichter',  emoji:'🌍', slot:'weapon', sk:'atk', sv:70,  eff:'aoe',          desc:'60% Flächenschaden. Nichts überlebt.' },
+  { name:'Ursprungsklinge', emoji:'🔱', slot:'weapon', sk:'atk', sv:65,  eff:'chain',        desc:'Kettenangriff auf alle Monster gleichzeitig.' },
+
+  // ─── HELME ──────────────────────────────────────────────
+  { name:'Lederkappe',      emoji:'🎓', slot:'helmet', sk:'def', sv:1,   eff:null,           desc:'Minimal Schutz.' },
+  { name:'Kupferhelm',      emoji:'🪖', slot:'helmet', sk:'def', sv:3,   eff:null,           desc:'Besser als nichts.' },
+  { name:'Eisenhelm',       emoji:'⛑️', slot:'helmet', sk:'def', sv:5,   eff:null,           desc:'Schützt den Kopf.' },
+  { name:'Dornenhelm',      emoji:'🌵', slot:'helmet', sk:'def', sv:6,   eff:'thorns',       desc:'Reflektiert 20% des eingehenden Schadens.' },
+  { name:'Scherbenmaske',   emoji:'💀', slot:'helmet', sk:'def', sv:8,   eff:'reflect_crit', desc:'Gegner-Krits reflektieren 30% zurück.' },
+  { name:'Drachenhelm',     emoji:'🐲', slot:'helmet', sk:'def', sv:12,  eff:'thorns',       desc:'Dornen reflektieren 35% Schaden.' },
+  { name:'Aegis-Helm',      emoji:'🛡️', slot:'helmet', sk:'def', sv:18,  eff:'shield_on_hit',desc:'15% Chance auf Schadensschild (50 HP) bei Treffer.' },
+  { name:'Engelhelm',       emoji:'🪽', slot:'helmet', sk:'def', sv:22,  eff:'regen',        desc:'Regeneriert 2% Max-HP pro Sekunde.' },
+  { name:'Götterkrone',     emoji:'👑', slot:'helmet', sk:'def', sv:35,  eff:'reflect_crit', desc:'Reflektiert 50% aller Krit-Treffer.' },
+
+  // ─── RÜSTUNGEN ──────────────────────────────────────────
+  { name:'Lederhemd',       emoji:'🧥', slot:'chest',  sk:'def', sv:2,   eff:null,           desc:'Schützt den Torso.' },
+  { name:'Ringpanzer',      emoji:'🔗', slot:'chest',  sk:'def', sv:4,   eff:null,           desc:'Vernietete Ringe aus Eisen.' },
+  { name:'Kettenhemd',      emoji:'🛡️', slot:'chest',  sk:'def', sv:7,   eff:null,           desc:'Guter Schutz.' },
+  { name:'Dornenpanzer',    emoji:'🌺', slot:'chest',  sk:'def', sv:9,   eff:'thorns',       desc:'Feinde die dich treffen nehmen 25% Schaden.' },
+  { name:'Mithrilrüstung',  emoji:'💠', slot:'chest',  sk:'def', sv:14,  eff:'shield_on_hit',desc:'Automatischer Schild (80 HP) alle 10 Sekunden.' },
+  { name:'Drachenpanzer',   emoji:'🦎', slot:'chest',  sk:'def', sv:18,  eff:'regen',        desc:'Heilt 1.5% HP pro Sekunde passiv.' },
+  { name:'Titanrüstung',    emoji:'⚙️', slot:'chest',  sk:'def', sv:28,  eff:'thorns',       desc:'Dornen: 40% Rückschaden. Unzerstörbar.' },
+  { name:'Gottesrüstung',   emoji:'✨', slot:'chest',  sk:'def', sv:38,  eff:'regen',        desc:'Regeneriert 3% HP/s. Göttlich geschmiedet.' },
+
+  // ─── HANDSCHUHE ─────────────────────────────────────────
+  { name:'Faustlinge',      emoji:'🧤', slot:'gloves', sk:'atk', sv:1,   eff:null,           desc:'Erhöht Griffstärke.' },
+  { name:'Lederhandschuhe', emoji:'🤛', slot:'gloves', sk:'atk', sv:3,   eff:null,           desc:'Besserer Griff.' },
+  { name:'Feuerhandschuh',  emoji:'🔥', slot:'gloves', sk:'atk', sv:5,   eff:'poison_on_hit',desc:'Brennende Faust: vergiftet Gegner dauerhaft.' },
+  { name:'Titanfaust',      emoji:'🤜', slot:'gloves', sk:'atk', sv:10,  eff:'aoe',          desc:'Erschütterung beim Aufprall — 35% Flächenschaden.' },
+  { name:'Blitzhandschuh',  emoji:'⚡', slot:'gloves', sk:'atk', sv:14,  eff:'chain',        desc:'Blitz springt auf Nachbarziele über.' },
+  { name:'Schattenklaue',   emoji:'🖤', slot:'gloves', sk:'atk', sv:18,  eff:'lifesteal',    desc:'Stiehlt 10% Lebenskraft bei jedem Treffer.' },
+  { name:'Sternengreifer',  emoji:'✨', slot:'gloves', sk:'atk', sv:30,  eff:'crit_dmg',     desc:'Krit-Treffer machen +70% Schaden.' },
+
+  // ─── STIEFEL ────────────────────────────────────────────
+  { name:'Lederstiefel',    emoji:'👢', slot:'boots',  sk:'spd', sv:0.05,eff:null,           desc:'Leichtere Schritte.' },
+  { name:'Rennstiefel',     emoji:'🏃', slot:'boots',  sk:'spd', sv:0.08,eff:null,           desc:'Optimiert für Geschwindigkeit.' },
+  { name:'Windstiefel',     emoji:'💨', slot:'boots',  sk:'spd', sv:0.12,eff:'dodge',        desc:'+10% Ausweich-Chance. Schnell wie Wind.' },
+  { name:'Schattenstiefel', emoji:'🌑', slot:'boots',  sk:'spd', sv:0.15,eff:'dodge',        desc:'+15% Ausweichen. Du bist kaum sichtbar.' },
+  { name:'Geisterstiefel',  emoji:'👻', slot:'boots',  sk:'spd', sv:0.18,eff:'dodge',        desc:'+20% Ausweichen. Phasiert durch Angriffe.' },
+  { name:'Hermesstiefel',   emoji:'🪶', slot:'boots',  sk:'spd', sv:0.22,eff:'xp_boost',    desc:'+25% XP aus Kämpfen. Göttliche Schnelligkeit.' },
+  { name:'Weltläufer',      emoji:'🌍', slot:'boots',  sk:'spd', sv:0.28,eff:'gold_find',   desc:'+30% Gold. Überall zugleich.' },
+
+  // ─── RINGE ──────────────────────────────────────────────
+  { name:'Eisenring',       emoji:'💍', slot:'ring',   sk:'crit',sv:2,   eff:null,           desc:'Ein alter Ring.' },
+  { name:'Kupferring',      emoji:'🟫', slot:'ring',   sk:'crit',sv:3,   eff:null,           desc:'Schwach, aber solide.' },
+  { name:'Runenring',       emoji:'🔮', slot:'ring',   sk:'crit',sv:6,   eff:'crit_dmg',    desc:'Krit-Schaden +30%.' },
+  { name:'Blutring',        emoji:'🩸', slot:'ring',   sk:'crit',sv:8,   eff:'lifesteal',   desc:'Heilt 8% des Krit-Schadens.' },
+  { name:'Giftring',        emoji:'☠️', slot:'ring',   sk:'crit',sv:7,   eff:'poison_on_hit',desc:'Jeder Treffer vergiftet zusätzlich.' },
+  { name:'Seelenstein',     emoji:'💎', slot:'ring',   sk:'crit',sv:12,  eff:'crit_dmg',    desc:'Krit-Schaden +50%. Trifft immer.' },
+  { name:'Plündererring',   emoji:'💰', slot:'ring',   sk:'crit',sv:10,  eff:'gold_find',   desc:'+40% Gold von Monstern.' },
+  { name:'Ewigkeitsring',   emoji:'♾️', slot:'ring',   sk:'crit',sv:18,  eff:'crit_dmg',    desc:'Krit-Schaden +80%. Existiert seit Anbeginn.' },
+  { name:'Schicksalsring',  emoji:'🌀', slot:'ring',   sk:'crit',sv:22,  eff:'execute',     desc:'Execute-Effekt bei Kritischen Treffern.' },
 ];
 
 const UPGRADES = [
@@ -3365,6 +3436,39 @@ function getWeaknessTag(m) {
   return '<span style="font-family:Cinzel,serif;font-size:.48rem;color:var(--text3);margin-left:3px;">⚡ ' + m.weak.charAt(0).toUpperCase() + m.weak.slice(1) + '-Schwäche</span>';
 }
 
+// ── Item-Sondereffekte auslesen ─────────────
+function getEquipEffects() {
+  const effects = {};
+  for (const item of Object.values(G.equipped)) {
+    if (!item || !item.eff) continue;
+    effects[item.eff] = (effects[item.eff] || 0) + 1;
+  }
+  return effects;
+}
+
+// Passive Effekte die Stats beeinflussen (dodge, crit_dmg, berserker)
+function getEffectMods() {
+  const fx = getEquipEffects();
+  return {
+    dodge:      (fx.dodge      || 0) * 0.10,  // +10% je Item
+    crit_dmg:   (fx.crit_dmg  || 0) * 0.40,  // +40% Krit-Multiplikator je Item
+    lifesteal:  (fx.lifesteal  || 0) * 0.06,  // +6% Lifesteal je Item
+    thorns:     (fx.thorns     || 0) * 0.20,  // 20% Thorns-Schaden je Item
+    berserker:  !!(fx.berserker),              // bool
+    execute:    !!(fx.execute),                // bool
+    aoe:        (fx.aoe        || 0) * 0.15,  // +15% AOE-Chance je Item
+    chain:      !!(fx.chain),
+    frost:      !!(fx.frost),
+    poison_on_hit:!!(fx.poison_on_hit),
+    shield_on_hit:!!(fx.shield_on_hit),
+    reflect_crit: (fx.reflect_crit || 0) * 0.25,
+    regen:      (fx.regen      || 0) * 0.015, // +1.5% HP/s je Item
+    gold_find:  (fx.gold_find  || 0) * 0.20,  // +20% Gold je Item
+    xp_boost:   (fx.xp_boost  || 0) * 0.15,  // +15% XP je Item
+    mana_drain: !!(fx.mana_drain),
+  };
+}
+
 function getStats() {
   const h = G.hero;
   let atk = h.baseAtk, def = h.baseDef, spd = h.spd, crit = h.baseCrit;
@@ -3415,7 +3519,15 @@ function getStats() {
   def = Math.floor(def * eventDefMult());
 
   spd = Math.max(0.25, parseFloat(spd.toFixed(2)));
-  return { atk, def, spd, crit: Math.min(75, crit) };
+  const fx = getEffectMods();
+  // Berserker-Item: ATK skaliert mit verlorener HP
+  if (fx.berserker) {
+    const hpMissing = 1 - (h.hp / h.maxHp);
+    atk = Math.floor(atk * (1 + hpMissing * 0.8));
+  }
+  // Mana Drain: voll Mana gibt +20% Schaden
+  if (fx.mana_drain && h.mana >= h.maxMana * 0.9) atk = Math.floor(atk * 1.2);
+  return { atk, def, spd, crit: Math.min(75, crit), fx };
 }
 
 function guildBonus() {
@@ -3429,8 +3541,8 @@ function guildBonus() {
     level: lv
   };
 }
-function xpMult()     { return 1 + ((G.shopBoosts&&G.shopBoosts.xpBoost||0)>Date.now()?0.5:0) + guildBonus().xp; }
-function goldMult()   { return Math.min(2.0, 1 + (G.upgrades.gold_mult||0)*0.06 + (G.skills.has('goldSense')?0.08:0) + ((G.shopBoosts&&G.shopBoosts.goldBoost||0)>Date.now()?0.25:0) + guildBonus().gold + (G.skills.has('golden_touch')?0.10:0) + (G.skills.has('phantom')?0.20:0)); }
+function xpMult()     { const fxX = getEffectMods(); return 1 + ((G.shopBoosts&&G.shopBoosts.xpBoost||0)>Date.now()?0.5:0) + guildBonus().xp + fxX.xp_boost; }
+function goldMult()   { const fxG = getEffectMods(); return Math.min(2.0, 1 + (G.upgrades.gold_mult||0)*0.06 + fxG.gold_find + (G.skills.has('goldSense')?0.08:0) + ((G.shopBoosts&&G.shopBoosts.goldBoost||0)>Date.now()?0.25:0) + guildBonus().gold + (G.skills.has('golden_touch')?0.10:0) + (G.skills.has('phantom')?0.20:0)); }
 function dropBonus()  { return (G.upgrades.drop_rate||0)*0.08 + (G.skills.has('treasureHunt')?0.2:0); }
 function idleMult()   { return 1 + (G.upgrades.idle_mul||0)*0.6; }
 function rarBonus()   { return (G.upgrades.item_qual||0)*0.15; }
@@ -3704,7 +3816,7 @@ function equipItem(item) {
   if(prev){ prev.equipped=false; }
   G.equipped[item.slot]=item;
   item.equipped=true;
-  log(`🗡️ Ausgerüstet: ${item.emoji} ${item.name} (+${item.sv} ${item.sk.toUpperCase()})`,'i');
+  const effStr = item.eff ? ' [' + (EFF_LABELS[item.eff]||item.eff) + ']' : ''; log(`🗡️ Ausgerüstet: ${item.emoji} ${item.name} (+${item.sv} ${item.sk.toUpperCase()}${effStr})`,'i');
   updateAll();
   renderInventory();
   saveToSupabase(); // sofort speichern!
@@ -3741,12 +3853,14 @@ function renderInvGrid(id, items, showEquip) {
     const slot=document.createElement('div');
     slot.className=`inv-slot rarity-${item.rarity}`;
     const RCOL={'common':'#888','uncommon':'#40c070','rare':'#50a0e0','epic':'#9060e0','legendary':'#c9a227','mythic':'#f07070'};
+    const effTag = item.eff ? `<div style="font-size:.42rem;color:#f0cc55;font-family:'Cinzel',serif;line-height:1;">${(EFF_LABELS[item.eff]||item.eff).split(' ')[0]}</div>` : '';
     slot.innerHTML=`
       ${item.equipped?'<div class="eq-badge">EQ</div>':''}
       ${item.isNew&&!item.equipped?'<div class="item-new-dot"></div>':''}
       <div class="ii">${item.emoji}</div>
       <div class="in">${item.name.length>7?item.name.slice(0,6)+'…':item.name}</div>
       <div class="is" style="color:${RCOL[item.rarity]}">+${item.sv} ${item.sk.toUpperCase()}</div>
+      ${effTag}
     `;
     slot.addEventListener('mouseenter',e=>showTT(e,item,showEquip&&!item.equipped?'Klicken zum Ausrüsten':item.equipped?'Klicken zum Ablegen':''));
     slot.addEventListener('mouseleave',hideTT);
@@ -4837,7 +4951,8 @@ function tick() {
       const _deathMult = (G.skills.has('deathMark') && target.hp < target.maxHp * 0.3) ? 1.4 : 1.0;
       let dmg = Math.max(1, Math.floor((ds.atk + rng(-1, 3) - Math.floor(target.atk * 0.08)) * _assassinMult * _deathMult * _chronoMult));
       const isCrit = Math.random() * 100 < ds.crit;
-      if (isCrit) dmg = Math.floor(dmg * (G.research && G.research.has('combat1') ? 2.1 : 1.8));
+      const critMult = 1.8 * (1 + (ds.fx ? ds.fx.crit_dmg : 0)) * (G.research && G.research.has('combat1') ? 1.17 : 1);
+      if (isCrit) dmg = Math.floor(dmg * critMult);
       // Weakness multiplier
       const wm = getWeaknessMult(target);
       if (wm > 1) { dmg = Math.floor(dmg * wm); }
@@ -4858,8 +4973,37 @@ function tick() {
         floatDmgEl('mon_' + target.id, d2, '#f0cc55');
       }
       if (G.skills.has('bloodRage') && h.hp < h.maxHp * 0.4) dmg = Math.floor(dmg * 1.2);
+      // ── Item-Effekte ─────────────────────────
+      // Execute: Gegner unter 20/30% HP
+      const fxNow = ds.fx || getEffectMods();
+      if (fxNow.execute && target.hp / target.maxHp < 0.20) dmg = Math.floor(dmg * 1.8);
       target.hp -= dmg;
-      if (G.skills.has('vampirism')) { const heal = Math.floor(dmg * 0.08); h.hp = Math.min(h.maxHp, h.hp + heal); }
+      // Lifesteal (Items + Skill)
+      const lifeStealPct = (fxNow.lifesteal || 0) + (G.skills.has('vampirism') ? 0.08 : 0);
+      if (lifeStealPct > 0) { const heal = Math.floor(dmg * lifeStealPct); h.hp = Math.min(h.maxHp, h.hp + heal); }
+      // Mana Drain: verbraucht Mana
+      if (fxNow.mana_drain) h.mana = Math.max(0, h.mana - 5);
+      // Poison on Hit
+      if (fxNow.poison_on_hit && !target._poisonItem) {
+        target._poisonItem = { dmg: Math.max(1, Math.floor(ds.atk * 0.04)), turns: 5 };
+      }
+      // Chain: springt auf 2. Monster
+      if (fxNow.chain && G.monsters.length > 1 && Math.random() < 0.50) {
+        const chainT = G.monsters.find(m2 => m2.id !== target.id);
+        if (chainT) { const cd = Math.floor(dmg * 0.45); chainT.hp -= cd; floatDmgEl('mon_' + chainT.id, cd, '#88aaff'); }
+      }
+      // AOE: Flächenschaden (zusätzlich zum Chain vom Skill)
+      const aoeChance = (fxNow.aoe || 0) + (G.skills.has('chainLightning') ? 0 : 0);
+      if (fxNow.aoe > 0 && Math.random() < fxNow.aoe && G.monsters.length > 1) {
+        const aoeDmg = Math.floor(dmg * 0.35);
+        G.monsters.forEach(m2 => { if (m2.id !== target.id) { m2.hp -= aoeDmg; floatDmgEl('mon_' + m2.id, aoeDmg, '#ff8844'); } });
+      }
+      // Frost
+      if (fxNow.frost && Math.random() < 0.20) target._frozen = (target._frozen || 0) + 2;
+      // Shield on Hit
+      if (fxNow.shield_on_hit && Math.random() < 0.15) {
+        h._itemShield = Math.floor(h.maxHp * 0.08);
+      }
       floatDmgEl('mon_' + target.id, dmg, wm > 1 ? '#ff8800' : isCrit ? '#f0cc55' : '#e05050');
       try { playSfx(isCrit ? 'crit' : 'hit'); } catch(e) {}
       const el = document.getElementById('mon_' + target.id);
@@ -4898,10 +5042,30 @@ function tick() {
     if (m.atkCd <= 0) {
       const sDebuffed = getDebuffedStats(s);
       m.atkCd = (1.1 + Math.random() * 0.7) * (sDebuffed.slow ? 1.5 : 1);
-      // Research combat3: 10% full dodge
-      if (G.research && G.research.has('combat3') && Math.random() < 0.10) { updateArenaHpBar(); return; }
+      // Research combat3 + Item dodge: full dodge chance
+      const dodgeChance = (G.research && G.research.has('combat3') ? 0.10 : 0) + (sDebuffed.fx ? sDebuffed.fx.dodge : 0) + (G.skills.has('shadow_step') ? 0.10 : 0);
+      if (dodgeChance > 0 && Math.random() < dodgeChance) { updateArenaHpBar(); return; }
       let mDmg = Math.max(1, m.atk - Math.floor(sDebuffed.def * 0.6));
       if (G.skills.has('ironSkin')) mDmg = Math.floor(mDmg * 0.85);
+      // Item Shield absorb
+      const fxM = sDebuffed.fx || getEffectMods();
+      if (h._itemShield > 0) {
+        const absorbed = Math.min(h._itemShield, mDmg);
+        h._itemShield -= absorbed; mDmg -= absorbed;
+        if (h._itemShield <= 0) h._itemShield = 0;
+      }
+      // Thorns: Rückschaden
+      if (fxM.thorns > 0 && mDmg > 0) {
+        const thornsDmg = Math.floor(mDmg * fxM.thorns);
+        m.hp -= thornsDmg;
+        if (thornsDmg > 0) floatDmgEl('mon_' + m.id, thornsDmg, '#aa44aa');
+      }
+      // Reflect Crit
+      if (fxM.reflect_crit > 0 && Math.random() < 0.12) {
+        const rDmg = Math.floor(mDmg * fxM.reflect_crit);
+        m.hp -= rDmg;
+        floatDmgEl('mon_' + m.id, rDmg, '#ff44ff');
+      }
       // Shadow step: 10% dodge
       if (G.skills.has('shadowStep') && Math.random() < 0.10) { log('👣 Schattenschritt! Ausgewichen!','n'); return; }
       // Phase special: 30% chance to negate
@@ -4924,6 +5088,25 @@ function tick() {
   });
 
   if (h.mana < h.maxMana) h.mana = Math.min(h.maxMana, h.mana + 0.4);
+  // Item: HP-Regeneration (regen items)
+  const fxTick = getEffectMods();
+  if (fxTick.regen > 0 && h.hp < h.maxHp) {
+    h.hp = Math.min(h.maxHp, h.hp + h.maxHp * fxTick.regen * 0.25);
+  }
+  // Gold/XP boost from items — applied in monsterKilled via goldMult/xpMult
+  // Poison tick (item-applied)
+  G.monsters.forEach(m => {
+    if (m._poisonItem && m._poisonItem.turns > 0) {
+      m.hp -= m._poisonItem.dmg;
+      m._poisonItem.turns--;
+      if (m._poisonItem.turns <= 0) m._poisonItem = null;
+    }
+    // Frost: frozen monsters can't attack
+    if (m._frozen > 0) {
+      m.atkCd += 0.5;
+      m._frozen--;
+    }
+  });
   updateHeaderStats();
 }
 
@@ -5981,15 +6164,40 @@ setInterval(updateNameUI, 60000);
 // ── TOOLTIP ─────────────────────────────────
 // ════════════════════════════════════════════
 
+// Item-Effekt Labels für Tooltip
+const EFF_LABELS = {
+  lifesteal:    '🧛 Lebensraub',
+  aoe:          '💥 Flächenschaden',
+  thorns:       '🌵 Dornen',
+  crit_dmg:     '⚡ Krit-Schaden+',
+  execute:      '☠️ Hinrichten',
+  poison_on_hit:'☠️ Vergiften',
+  shield_on_hit:'🛡️ Schadensschild',
+  berserker:    '🩸 Berserker',
+  mana_drain:   '💙 Manaschlag',
+  chain:        '⛓️ Kettenangriff',
+  frost:        '❄️ Einfrieren',
+  regen:        '💚 Regeneration',
+  gold_find:    '💰 Goldsuche',
+  xp_boost:     '⭐ XP-Boost',
+  dodge:        '💨 Ausweichen',
+  reflect_crit: '🔮 Krit-Reflex',
+};
+
 function showTT(e,item,hint='') {
   const tt=document.getElementById('tt');
   document.getElementById('ttN').textContent=item.emoji+' '+item.name;
   document.getElementById('ttN').style.color=item.rarityColor;
   document.getElementById('ttR').textContent=item.rarityLabel;
   document.getElementById('ttR').style.color=item.rarityColor;
-  const SNAMES={atk:'Angriff',def:'Verteidigung',spd:'Geschwindigkeit (-s)',crit:'Kritische Chance (%)'};
+  const SNAMES={atk:'Angriff',def:'Verteidigung',spd:'Geschwindigkeit (-s)',crit:'Krit-Chance (%)'};
   document.getElementById('ttS').textContent='+'+item.sv+' '+( SNAMES[item.sk]||item.sk );
-  document.getElementById('ttD').textContent=item.desc;
+  // Sondereffekt
+  const effEl = document.getElementById('ttD');
+  if (effEl) {
+    const effLabel = item.eff ? (EFF_LABELS[item.eff] || item.eff) : '';
+    effEl.innerHTML = (effLabel ? '<span style="display:inline-block;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:5px;padding:1px 6px;font-size:.62rem;margin-bottom:3px;color:var(--gold2);">' + effLabel + '</span><br>' : '') + item.desc;
+  }
   document.getElementById('ttE').textContent=hint;
   tt.classList.add('show'); moveTT(e);
 }
