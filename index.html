@@ -4284,7 +4284,21 @@ function getEffectMods() {
   };
 }
 
+// ── getStats() Cache ─────────────────────────────────────
+// Wird bei Equipment/Skill/Level-Änderungen invalidiert
+let _statsCache = null;
+let _statsCacheTick = -1;
+let _combatTickCount = 0;  // inkrementiert jedes tick()
+
+function invalidateStatsCache() {
+  _statsCache = null;
+}
+
 function getStats() {
+  // Im Kampf: Cache für 1 tick gültig (250ms)
+  if (_statsCache && _statsCacheTick === _combatTickCount) {
+    return _statsCache;
+  }
   const h = G.hero;
   let atk = h.baseAtk, def = h.baseDef, spd = h.spd, crit = h.baseCrit;
 
@@ -4375,6 +4389,8 @@ function getStats() {
     }
   } else { G._setMaxHpBonus = 0; }
 
+  _statsCache     = statsObj;
+  _statsCacheTick = _combatTickCount;
   return statsObj;
 }
 
@@ -4486,7 +4502,17 @@ function floatDmg(el,dmg,col='#e05050') {
 // ── UI UPDATE ───────────────────────────────
 // ════════════════════════════════════════════
 
+let _updateAllTimer = null;
+let _updateAllPending = false;
+
 function updateAll() {
+  // Debounce: 100ms — mehrere schnelle Aufrufe werden gebündelt
+  if (_updateAllTimer) return;  // bereits geplant
+  _updateAllTimer = setTimeout(_doUpdateAll, 100);
+}
+
+function _doUpdateAll() {
+  _updateAllTimer = null;
   try { updateHeaderStats(); } catch(e) {}
   try { updateHeroPage(); } catch(e) {}
   try { renderGuildBonuses(); } catch(e) {}
@@ -4500,6 +4526,12 @@ function updateAll() {
     const ah=document.getElementById('arenaHeroHp');
     if(ah) ah.textContent=Math.ceil(h.hp)+'/'+h.maxHp;
   } catch(e) {}
+}
+
+function updateAllNow() {
+  // Sofortiges Update ohne Debounce (für kritische UI-Updates)
+  if (_updateAllTimer) { clearTimeout(_updateAllTimer); _updateAllTimer = null; }
+  _doUpdateAll();
 }
 
 function updateHeaderStats() {
@@ -4755,6 +4787,7 @@ function equipItem(item) {
   if(prev){ prev.equipped=false; }
   G.equipped[item.slot]=item;
   item.equipped=true;
+  invalidateStatsCache();
   const effStr = item.eff ? ' [' + (EFF_LABELS[item.eff]||item.eff) + ']' : ''; log(`🗡️ Ausgerüstet: ${item.emoji} ${item.name} (+${item.sv} ${item.sk.toUpperCase()}${effStr})`,'i');
   // Set-Bonus prüfen und anzeigen
   try {
@@ -4775,6 +4808,7 @@ function unequipItem(slot) {
   if(!item)return;
   item.equipped=false;
   G.equipped[slot]=null;
+  invalidateStatsCache();
   log(`📦 Abgelegt: ${item.emoji} ${item.name}`,'n');
   updateAll();
   renderInventory();
@@ -5918,7 +5952,7 @@ function buyPet(id) {
   if (G.activePets.size < MAX_ACTIVE_PETS) G.activePets.add(id);
   log('🐾 ' + pet.emoji + ' ' + pet.name + ' gekauft! ' + (G.activePets.has(id) ? '(Aktiv)' : '(Kein Slot frei — manuell aktivieren)'), 'i');
   try { checkAchievements(); } catch(e) {}
-  updateAll(); renderPets(); saveToSupabase();
+  updateAllNow(); renderPets(); saveNow();
 }
 
 function togglePet(id) {
@@ -6046,6 +6080,7 @@ function startCombat() {
 let hCD = -0.5, pCD = 0.8;  // Negative hCD → sofort erster Angriff
 
 function tick() {
+  _combatTickCount++;  // Cache-Invalidierung pro Tick
   if (!G.monsters || G.monsters.length === 0) {
     if (G.monstersInWave >= G.monstersPerWave) {
       G.wave++; G.monstersInWave = 0;
@@ -6412,6 +6447,7 @@ function checkLevelUp() {
   let leveled = false;
   while (G.hero.xp >= xpNeed()) {
     G.hero.xp -= xpNeed(); G.hero.level++;
+  invalidateStatsCache();
     G.hero.baseAtk += rng(1, 3); G.hero.baseDef += rng(0, 2);
     G.hero.maxHp += rng(12, 20); G.hero.hp = G.hero.maxHp;
     G.hero.maxMana += rng(5, 10); G.hero.mana = G.hero.maxMana;
@@ -6489,7 +6525,7 @@ function updateArenaHpBar() {
   if(hb) hb.style.width = Math.max(0, main.hp / main.maxHp * 100) + '%';
 }
 
-function updateArena() { renderArena(); }
+// updateArena() → renderArena() (alias entfernt)
 
 function floatDmgEl(elId, dmg, color) {
   const el = document.getElementById(elId);
@@ -6537,10 +6573,13 @@ function forge() {
   try { playSfx('forge'); } catch(e) {}
   forgeWithFurnace();
   G.forgeCount++;
-  updateHeaderStats();
+  // Nur Header-Stats updaten, kein teures updateAll()
+  try { updateHeaderStats(); } catch(e) {}
   const fi = document.getElementById('fItems');
   if (fi) fi.textContent = 'Inventar: ' + G.inventory.length + ' Items';
   try { trackQuestProgress('forge', 1); checkQuestBadge(); } catch(e) {}
+  // Cache invalidieren da Stats durch Skills/Forge-Boni beeinflusst sein können
+  invalidateStatsCache();
 }
 
 function forgeX5() { forgeN(5); }
@@ -6962,14 +7001,14 @@ function saveToSupabase() {
       autoSellEarned: G.autoSellEarned || 0,
     }));
   } catch(e) {}
-  // Echter Save wird gebündelt — max 1x alle 10 Sekunden
+  // Echter Save wird gebündelt — max 1× alle 60 Sekunden
   if (_saveTimer) return;
   _saveQueued = true;
   _saveTimer = setTimeout(async () => {
     _saveTimer = null;
     _saveQueued = false;
     await _doSave();
-  }, 10000);
+  }, 60000);  // 60s Throttle
 }
 
 async function saveNow() {
@@ -9566,17 +9605,8 @@ setInterval(() => {
 // ════════════════════════════════════════════
 // ── MAIN LOOP
 // ════════════════════════════════════════════
-function updateHeaderStats() {
-  const h = G.hero;
-  try {
-    if (document.getElementById('hHp')) document.getElementById('hHp').textContent = Math.ceil(h.hp);
-    if (document.getElementById('hMaxHp')) document.getElementById('hMaxHp').textContent = h.maxHp;
-    if (document.getElementById('hGold')) document.getElementById('hGold').textContent = h.gold >= 10000 ? Math.floor(h.gold/1000)+'k' : h.gold;
-    if (document.getElementById('hLv')) document.getElementById('hLv').textContent = h.level;
-    if (document.getElementById('hKills')) document.getElementById('hKills').textContent = G.kills;
-  } catch(e) {}
-  try { updatePrestigeHeader(); } catch(e) {}
-}
+// updateHeaderStats() — Duplikat entfernt (erste Version aktiv)
+
 
 setInterval(() => {
   if (G.hero.mana < G.hero.maxMana) G.hero.mana = Math.min(G.hero.maxMana, G.hero.mana + 0.2);
