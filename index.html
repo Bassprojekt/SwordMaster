@@ -2458,6 +2458,35 @@ input[type=range].vol-slider::-webkit-slider-thumb:hover { transform:scale(1.2);
   </div>
 </div>
 
+<!-- ═══ PETS PAGE ═══ -->
+<div class="page" id="page-pets">
+
+  <!-- Header -->
+  <div class="card" style="padding:12px 16px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+      <div>
+        <div class="sec-title" style="margin-bottom:2px;">🐾 Haustiere</div>
+        <div style="font-size:.66rem;color:var(--text2);">Kaufe Begleiter die dir im Kampf helfen. Bis zu 3 gleichzeitig aktiv.</div>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;" id="petActiveSummary"></div>
+    </div>
+  </div>
+
+  <!-- Tier-Filter -->
+  <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:4px;" id="petTierBtns"></div>
+
+  <!-- Pets Grid -->
+  <div id="petsGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;"></div>
+
+  <!-- Aktive Pets im Kampf (Anzeige) -->
+  <div class="card" style="margin-top:4px;">
+    <div class="sec-title" style="font-size:.75rem;margin-bottom:6px;">⚡ Im Kampf aktiv</div>
+    <div style="font-size:.68rem;color:var(--text3);margin-bottom:6px;">Max. 3 Pets gleichzeitig. Klicke auf ein gekauftes Pet zum Aktivieren/Deaktivieren.</div>
+    <div id="petActiveList" style="display:flex;gap:6px;flex-wrap:wrap;min-height:32px;"></div>
+  </div>
+
+</div>
+
 <!-- ═══ RANG PAGE ═══ -->
 <div class="page" id="page-rang">
   <div class="card">
@@ -3528,18 +3557,61 @@ const BRANCH_DESCS = {
 
 
 const PETS = [
-  { id:'wolf',    name:'Eiswolf',       emoji:'🐺', skill:'Beißt für 30% ATK',     desc:'Greift alle 1.5s an.',                    atkPct:0.30, special:'',      cost:22000,  color:'#88ccff' },
-  { id:'cat',     name:'Schutzkatze',   emoji:'🐱', skill:'+20% DEF',               desc:'Erhöht Verteidigung dauerhaft.',           atkPct:0,    special:'def',   cost:4000,  color:'#aaaaaa' },
-  { id:'eagle',   name:'Sturmadler',    emoji:'🦅', skill:'+15% Angriffsgeschw.',   desc:'Dein Held greift 15% schneller an.',       atkPct:0,    special:'spd',   cost:800,  color:'#f0cc55' },
-  { id:'fox',     name:'Fuchsgeist',    emoji:'🦊', skill:'+25% Gold & XP',         desc:'Mehr Belohnungen aus jedem Kampf.',        atkPct:0,    special:'luck',  cost:300,  color:'#f0903a' },
-  { id:'phoenix', name:'Phönix',        emoji:'🔥', skill:'Heilt 8% HP/Kill',       desc:'Nach jedem Kill: regeneriert HP.',         atkPct:0,    special:'heal',  cost:2000,  color:'#ff6030' },
-  { id:'snake',   name:'Giftschlange',  emoji:'🐍', skill:'Vergiftet Monster',      desc:'Monster verliert 2% HP/s (stackt).',      atkPct:0,    special:'poison',cost:2800,  color:'#40c070' },
-  { id:'dragon',  name:'Feuerdrache',   emoji:'🐲', skill:'Beißt für 70% ATK',      desc:'Mächtiger Flammenstoß.',                  atkPct:0.70, special:'',      cost:500,  color:'#ff4400' },
-  { id:'fairy',   name:'Glücksfee',     emoji:'🧚', skill:'+30% Gold & Drops',      desc:'Mehr Gold, XP und Item-Drops.',           atkPct:0,    special:'luck2', cost:6000,  color:'#ff80ff' },
-  { id:'bear',    name:'Eisbär',        emoji:'🐻', skill:'Beißt für 80% ATK',      desc:'Starker Schlag + verlangsamt Monster.',   atkPct:0.80, special:'slow',  cost:9000,  color:'#aaddff' },
-  { id:'golem',   name:'Steingolem',    emoji:'🗿', skill:'Beißt für 100% ATK',     desc:'Massiver Schlag alle 2s.',                atkPct:1.0,  special:'',      cost:14000, color:'#888888' },
-  { id:'demon',   name:'Schattendämon', emoji:'😈', skill:'+15% Crit-Chance',       desc:'Crit-Chance permanent erhöht.',           atkPct:0,    special:'crit',  cost:1500, color:'#9060e0' },
-  { id:'void',    name:'Leeregeist',    emoji:'👻', skill:'Beißt für 150% ATK',     desc:'Vernichtet alles auf seinem Weg.',        atkPct:1.5,  special:'',      cost:40000, color:'#cc00ff' },
+  // ── Tier 1: Starter (500–2000G) ─────────────────────────────
+  { id:'fox',     name:'Fuchsgeist',    emoji:'🦊',
+    skill:'+12% Gold & XP',    desc:'Lässt jeder Kampf etwas mehr einbringen.',
+    atkPct:0,    special:'luck',   cost:500,   color:'#f0903a',
+    tier:1, reqLv:1  },
+  { id:'eagle',   name:'Sturmadler',    emoji:'🦅',
+    skill:'+12% Angriffsgesch.',desc:'Dein Held greift schneller an (SPD -12%).',
+    atkPct:0,    special:'spd',    cost:900,   color:'#f0cc55',
+    tier:1, reqLv:1  },
+  { id:'phoenix', name:'Phönix',        emoji:'🔥',
+    skill:'Heilt 6% HP/Kill',   desc:'Nach jedem Kill kleine HP-Regeneration.',
+    atkPct:0,    special:'heal',   cost:1500,  color:'#ff6030',
+    tier:1, reqLv:3  },
+  { id:'demon',   name:'Schattendämon', emoji:'😈',
+    skill:'+8% Krit-Chance',    desc:'Erhöht die Chance auf kritische Treffer.',
+    atkPct:0,    special:'crit',   cost:2000,  color:'#9060e0',
+    tier:1, reqLv:5  },
+
+  // ── Tier 2: Mittel (4000–12000G) ────────────────────────────
+  { id:'snake',   name:'Giftschlange',  emoji:'🐍',
+    skill:'Vergiftet Monster',  desc:'Jeder Pet-Angriff vergiftet das Ziel (3% HP/s).',
+    atkPct:0.15, special:'poison', cost:4000,  color:'#40c070',
+    tier:2, reqLv:8  },
+  { id:'cat',     name:'Schutzkatze',   emoji:'🐱',
+    skill:'+20% DEF',           desc:'Erhöht deine Verteidigung dauerhaft um 20%.',
+    atkPct:0,    special:'def',   cost:5500,  color:'#aaaaaa',
+    tier:2, reqLv:10 },
+  { id:'wolf',    name:'Eiswolf',       emoji:'🐺',
+    skill:'Beißt für 25% ATK',  desc:'Greift eigenständig an und verlangsamt.',
+    atkPct:0.25, special:'slow',  cost:7000,  color:'#88ccff',
+    tier:2, reqLv:12 },
+  { id:'fairy',   name:'Glücksfee',     emoji:'🧚',
+    skill:'+25% Gold & Drops',  desc:'Erhöht Gold, XP und Item-Drop-Chance.',
+    atkPct:0,    special:'luck2', cost:10000, color:'#ff80ff',
+    tier:2, reqLv:15 },
+
+  // ── Tier 3: Selten (18000–50000G) ───────────────────────────
+  { id:'bear',    name:'Eisbär',        emoji:'🐻',
+    skill:'Beißt für 50% ATK',  desc:'Mächtiger Schlag + friert Monster kurz ein.',
+    atkPct:0.50, special:'slow',  cost:18000, color:'#aaddff',
+    tier:3, reqLv:20 },
+  { id:'dragon',  name:'Feuerdrache',   emoji:'🐲',
+    skill:'Beißt für 80% ATK',  desc:'Flammenangriff auf alle Monster (AOE).',
+    atkPct:0.80, special:'aoe',   cost:28000, color:'#ff4400',
+    tier:3, reqLv:30 },
+  { id:'golem',   name:'Steingolem',    emoji:'🗿',
+    skill:'Beißt für 110% ATK', desc:'Massiver Schlag, setzt Rüstung des Gegners herab.',
+    atkPct:1.10, special:'',      cost:40000, color:'#888888',
+    tier:3, reqLv:40 },
+
+  // ── Tier 4: Legendär (80000G+) ──────────────────────────────
+  { id:'void',    name:'Leeregeist',    emoji:'👻',
+    skill:'Beißt für 180% ATK', desc:'Vernichtet alles — ignoriert Rüstung vollständig.',
+    atkPct:1.80, special:'armor_shred', cost:80000, color:'#cc00ff',
+    tier:4, reqLv:60 },
 ];
 
 // ════════════════════════════════════════════
@@ -3798,6 +3870,13 @@ function getStats() {
   const gb = guildBonus();
   if (gb.atk > 0) atk = Math.floor(atk * (1 + gb.atk));
   if (gb.def > 0) def = Math.floor(def * (1 + gb.def));
+  // Pet special: def (+20% DEF)
+  if ([...G.activePets].some(pid => { const p=PETS.find(x=>x.id===pid); return p&&p.special==='def'; }))
+    def = Math.floor(def * 1.20);
+  // Pet special: crit (+8% crit)
+  const critBonus = [...G.activePets].reduce((s, pid) => {
+    const p = PETS.find(x=>x.id===pid); return s + (p&&p.special==='crit' ? 8 : 0); }, 0);
+  if (critBonus > 0) crit = Math.min(75, crit + critBonus);
   // Prestige ATK-Multiplikator
   try { atk = Math.floor(atk * prestigeAtkMult()); } catch(e) {}
   // Event buffs
@@ -3830,8 +3909,22 @@ function guildBonus() {
   };
 }
 function xpMult()     { const fxX = getEffectMods(); const px = (typeof prestigeXpMult==='function') ? prestigeXpMult()-1 : 0; return 1 + ((G.shopBoosts&&G.shopBoosts.xpBoost||0)>Date.now()?0.5:0) + guildBonus().xp + fxX.xp_boost + px; }
-function goldMult()   { const fxG = getEffectMods(); const pg = (typeof prestigeGoldMult==='function') ? prestigeGoldMult()-1 : 0; return Math.min(3.0, 1 + (G.upgrades.gold_mult||0)*0.06 + fxG.gold_find + (G.skills.has('goldSense')?0.08:0) + ((G.shopBoosts&&G.shopBoosts.goldBoost||0)>Date.now()?0.25:0) + guildBonus().gold + (G.skills.has('golden_touch')?0.10:0) + (G.skills.has('phantom')?0.20:0) + pg); }
-function dropBonus()  { const pd = (typeof prestigeDropBonus==='function') ? prestigeDropBonus() : 0; return (G.upgrades.drop_rate||0)*0.08 + (G.skills.has('treasureHunt')?0.2:0) + pd; }
+function goldMult()   {
+  const fxG = getEffectMods();
+  const pg = (typeof prestigeGoldMult==='function') ? prestigeGoldMult()-1 : 0;
+  // luck2 pet: +25% gold
+  const luck2bonus = [...G.activePets].some(pid => { const p=PETS.find(x=>x.id===pid); return p&&p.special==='luck2'; }) ? 0.25 : 0;
+  return Math.min(3.0, 1 + (G.upgrades.gold_mult||0)*0.06 + fxG.gold_find
+    + (G.skills.has('goldSense')?0.08:0)
+    + ((G.shopBoosts&&G.shopBoosts.goldBoost||0)>Date.now()?0.25:0)
+    + guildBonus().gold + (G.skills.has('golden_touch')?0.10:0)
+    + (G.skills.has('phantom')?0.20:0) + pg + luck2bonus);
+}
+function dropBonus()  {
+  const pd = (typeof prestigeDropBonus==='function') ? prestigeDropBonus() : 0;
+  const luck2drop = [...G.activePets].some(pid => { const p=PETS.find(x=>x.id===pid); return p&&p.special==='luck2'; }) ? 0.15 : 0;
+  return (G.upgrades.drop_rate||0)*0.08 + (G.skills.has('treasureHunt')?0.2:0) + pd + luck2drop;
+}
 function idleMult()   { return 1 + (G.upgrades.idle_mul||0)*0.6; }
 function rarBonus()   { return (G.upgrades.item_qual||0)*0.10; }
 function forgeMs() {
@@ -5115,57 +5208,174 @@ function renderAutoSellRules() {
 // ── PETS ────────────────────────────────────
 // ════════════════════════════════════════════
 
+let _petTierFilter = 'Alle';
+const PET_TIER_NAMES = ['Alle','Starter','Mittel','Selten','Legendär'];
+const MAX_ACTIVE_PETS = 3;
+
 function renderPets() {
-  const grid=document.getElementById('petsGrid');
-  if(!grid) return;
-  grid.innerHTML='';
-  PETS.forEach(pet=>{
-    const owned=G.pets[pet.id];
-    const active=G.activePets.has(pet.id);
-    const card=document.createElement('div');
-    const col=pet.color||'var(--gold)';
-    card.style.cssText=`background:rgba(0,0,0,.3);border:2px solid ${active?col:owned?'var(--green)':'var(--border)'};border-radius:10px;padding:10px;text-align:center;cursor:pointer;transition:all .2s;${active?'box-shadow:0 0 14px '+col+'44;':''}`;
-    card.innerHTML=`
-      <div style="font-size:2rem;margin-bottom:3px;animation:monFloat 3s ease-in-out infinite;">${pet.emoji}</div>
-      <div style="font-family:'Cinzel',serif;font-size:.76rem;font-weight:700;color:${owned?col:'var(--text)'};">${pet.name}</div>
-      <div style="font-size:.68rem;color:var(--gold2);margin:2px 0;">${pet.skill}</div>
-      <div style="font-size:.6rem;color:var(--text2);font-style:italic;margin-bottom:5px;line-height:1.3;">${pet.desc||''}</div>
-      ${owned
-        ?`<div style="font-family:'Cinzel',serif;font-size:.64rem;padding:2px 8px;border-radius:8px;border:1px solid ${active?col:'var(--green)'};color:${active?col:'var(--green2)'};">${active?'⚡ Aktiv':'💤 Klicken zum Aktivieren'}</div>`
-        :`<div style="font-family:'Cinzel',serif;font-size:.68rem;color:var(--gold);">💰 ${pet.cost} Gold</div>`
+  const grid = document.getElementById('petsGrid');
+  if (!grid) return;
+
+  // Tier-Filter Buttons
+  const tierBtns = document.getElementById('petTierBtns');
+  if (tierBtns && tierBtns.innerHTML === '') {
+    PET_TIER_NAMES.forEach(t => {
+      const b = document.createElement('button');
+      b.className = 'cat-btn' + (_petTierFilter === t ? ' active' : '');
+      b.textContent = t;
+      b.onclick = () => { _petTierFilter = t; renderPets(); };
+      tierBtns.appendChild(b);
+    });
+  } else if (tierBtns) {
+    tierBtns.querySelectorAll('.cat-btn').forEach((b,i) => {
+      b.className = 'cat-btn' + (PET_TIER_NAMES[i] === _petTierFilter ? ' active' : '');
+    });
+  }
+
+  // Filter Pets
+  const tierNum = PET_TIER_NAMES.indexOf(_petTierFilter);
+  const visible = PETS.filter(p => _petTierFilter === 'Alle' || p.tier === tierNum);
+
+  grid.innerHTML = '';
+  const lv = G.hero.level;
+
+  visible.forEach(pet => {
+    const owned  = !!G.pets[pet.id];
+    const active = G.activePets.has(pet.id);
+    const locked = !owned && lv < (pet.reqLv || 1);
+    const canAfford = G.hero.gold >= pet.cost;
+    const col = pet.color || 'var(--gold)';
+
+    const tierColors = ['','#cd7f32','#aaaaaa','#f0cc55','#cc00ff'];
+    const tierNames  = ['','Starter','Mittel','Selten','Legendär'];
+    const tierCol = tierColors[pet.tier] || '#888';
+    const tierNm  = tierNames[pet.tier]  || '';
+
+    const card = document.createElement('div');
+    card.style.cssText = `
+      background: rgba(0,0,0,.28);
+      border: 2px solid ${active ? col : owned ? 'var(--green)' : locked ? 'rgba(255,255,255,.1)' : 'var(--border)'};
+      border-radius: 12px; padding: 12px 10px; text-align: center;
+      cursor: ${locked ? 'default' : 'pointer'}; transition: all .18s; position:relative;
+      ${active ? 'box-shadow:0 0 16px ' + col + '55;' : ''}
+      ${locked ? 'opacity:.5;' : ''}
+    `;
+
+    const statLines = [];
+    if (pet.atkPct > 0)           statLines.push(`⚔️ +${Math.round(pet.atkPct*100)}% ATK`);
+    if (pet.special==='spd')      statLines.push('⚡ Geschwindigkeit');
+    if (pet.special==='heal')     statLines.push('💚 Heilt bei Kill');
+    if (pet.special==='luck')     statLines.push('🍀 Gold & XP');
+    if (pet.special==='luck2')    statLines.push('🍀🍀 Gold & Drops');
+    if (pet.special==='def')      statLines.push('🛡️ +20% DEF');
+    if (pet.special==='crit')     statLines.push('💥 Krit-Chance');
+    if (pet.special==='poison')   statLines.push('☠️ Vergiftet');
+    if (pet.special==='slow')     statLines.push('❄️ Verlangsamt');
+    if (pet.special==='aoe')      statLines.push('💥 Flächenschaden');
+    if (pet.special==='armor_shred') statLines.push('🔓 Rüstung bricht');
+
+    card.innerHTML = `
+      <div style="position:absolute;top:6px;left:6px;font-size:.5rem;font-family:Cinzel,serif;
+        color:${tierCol};background:${tierCol}22;border:1px solid ${tierCol}44;
+        border-radius:6px;padding:1px 5px;">${tierNm}</div>
+      <div style="font-size:2.2rem;margin:8px 0 4px;animation:monFloat 3s ease-in-out infinite;">${pet.emoji}</div>
+      <div style="font-family:'Cinzel',serif;font-size:.78rem;font-weight:700;
+        color:${active?col:owned?'var(--green2)':'var(--text)'};">${pet.name}</div>
+      <div style="font-size:.62rem;color:var(--gold2);margin:3px 0 2px;">${pet.skill}</div>
+      <div style="font-size:.58rem;color:var(--text3);margin-bottom:5px;line-height:1.4;">${pet.desc}</div>
+      ${statLines.length ? '<div style="font-size:.56rem;color:var(--text2);margin-bottom:5px;">'
+        + statLines.join(' · ') + '</div>' : ''}
+      ${locked
+        ? `<div style="font-size:.6rem;color:var(--text3);font-family:Cinzel,serif;">🔒 Ab Level ${pet.reqLv}</div>`
+        : owned
+          ? `<div style="font-family:Cinzel,serif;font-size:.64rem;padding:3px 10px;
+              border-radius:8px;border:1px solid ${active?col:'var(--green)'};
+              color:${active?col:'var(--green2)'};">${active?'⚡ Aktiv':'💤 Aktivieren'}</div>`
+          : `<div style="font-family:Cinzel,serif;font-size:.7rem;
+              color:${canAfford?'var(--gold)':'var(--text3)'};">💰 ${pet.cost.toLocaleString()}</div>`
       }
     `;
-    card.onclick=()=>owned?togglePet(pet.id):buyPet(pet.id);
+
+    if (!locked) {
+      card.onclick = () => owned ? togglePet(pet.id) : buyPet(pet.id);
+      if (!owned) card.onmouseenter = () => { if(!locked) card.style.borderColor = col; };
+      if (!owned) card.onmouseleave = () => { card.style.borderColor = 'var(--border)'; };
+    }
+
     grid.appendChild(card);
   });
 
-  const row=document.getElementById('arenaActivePets');
-  row.innerHTML='';
-  G.activePets.forEach(pid=>{
-    const p=PETS.find(x=>x.id===pid);
-    if(!p)return;
-    const c=document.createElement('div');
-    c.className='pet-chip';
-    c.textContent=p.emoji+' '+p.name;
-    row.appendChild(c);
+  // Aktive Pets Zusammenfassung
+  _renderActivePetsList();
+
+  // Arena-Chips updaten
+  const row = document.getElementById('arenaActivePets');
+  if (row) {
+    row.innerHTML = '';
+    G.activePets.forEach(pid => {
+      const p = PETS.find(x => x.id === pid);
+      if (!p) return;
+      const chip = document.createElement('div');
+      chip.className = 'pet-chip';
+      chip.textContent = p.emoji + ' ' + p.name;
+      row.appendChild(chip);
+    });
+  }
+}
+
+function _renderActivePetsList() {
+  const el = document.getElementById('petActiveList');
+  const sum = document.getElementById('petActiveSummary');
+  if (!el) return;
+  el.innerHTML = '';
+  if (G.activePets.size === 0) {
+    el.innerHTML = '<div style="font-size:.7rem;color:var(--text3);font-style:italic;">Noch keine Pets aktiv.</div>';
+    if (sum) sum.innerHTML = '';
+    return;
+  }
+  G.activePets.forEach(pid => {
+    const p = PETS.find(x => x.id === pid);
+    if (!p) return;
+    const chip = document.createElement('div');
+    chip.style.cssText = `display:flex;align-items:center;gap:5px;background:rgba(0,0,0,.3);
+      border:1px solid ${p.color};border-radius:20px;padding:4px 10px;cursor:pointer;`;
+    chip.innerHTML = `<span style="font-size:1rem;">${p.emoji}</span>
+      <span style="font-family:Cinzel,serif;font-size:.65rem;color:${p.color};">${p.name}</span>
+      <span style="font-size:.55rem;color:var(--red2);">✕</span>`;
+    chip.onclick = () => { G.activePets.delete(pid); renderPets(); saveToSupabase(); };
+    el.appendChild(chip);
   });
+  if (sum) {
+    sum.innerHTML = `<div class="pill" style="border-color:var(--green);color:var(--green2);font-size:.65rem;">
+      🐾 ${G.activePets.size}/${MAX_ACTIVE_PETS} Pets aktiv</div>`;
+  }
 }
 
 function buyPet(id) {
-  const pet=PETS.find(p=>p.id===id);
-  if(!pet||G.pets[id])return;
-  if(G.hero.gold<pet.cost){log('❌ Zu wenig Gold für '+pet.name,'c');return;}
-  G.hero.gold-=pet.cost;
-  G.pets[id]=true;
-  G.activePets.add(id);
-  log(`🐾 Haustier: ${pet.emoji} ${pet.name} gekauft!`,'i');
-  updateAll();
-  renderPets();
+  const pet = PETS.find(p => p.id === id);
+  if (!pet || G.pets[id]) return;
+  if (G.hero.level < (pet.reqLv || 1)) { log('❌ Level ' + pet.reqLv + ' benötigt!', 'c'); return; }
+  if (G.hero.gold < pet.cost) { log('❌ Zu wenig Gold für ' + pet.name + '!', 'c'); return; }
+  G.hero.gold -= pet.cost;
+  G.pets[id] = true;
+  // Automatisch aktivieren wenn noch Slot frei
+  if (G.activePets.size < MAX_ACTIVE_PETS) G.activePets.add(id);
+  log('🐾 ' + pet.emoji + ' ' + pet.name + ' gekauft! ' + (G.activePets.has(id) ? '(Aktiv)' : '(Kein Slot frei — manuell aktivieren)'), 'i');
+  try { checkAchievements(); } catch(e) {}
+  updateAll(); renderPets(); saveToSupabase();
 }
 
 function togglePet(id) {
-  G.activePets.has(id)?G.activePets.delete(id):G.activePets.add(id);
-  renderPets();
+  if (G.activePets.has(id)) {
+    G.activePets.delete(id);
+  } else {
+    if (G.activePets.size >= MAX_ACTIVE_PETS) {
+      log('❌ Max. ' + MAX_ACTIVE_PETS + ' Pets gleichzeitig aktiv! Deaktiviere erst eines.', 'c');
+      return;
+    }
+    G.activePets.add(id);
+  }
+  updateAll(); renderPets(); saveToSupabase();
 }
 
 // Pet combat helpers
@@ -5406,10 +5616,25 @@ function tick() {
   if (pCD <= 0 && G.activePets.size > 0 && G.monsters.length > 0) {
     pCD = 1.4;
     const pd = petATKBonus();
+    const t  = G.monsters[0];
     if (pd > 0) {
-      const t = G.monsters[0];
+      // AOE pet: trifft alle Monster
+      const hasAoe = [...G.activePets].some(pid => { const p=PETS.find(x=>x.id===pid); return p&&p.special==='aoe'; });
+      if (hasAoe && G.monsters.length > 1) {
+        const aoeDmg = Math.floor(pd * 0.5);
+        G.monsters.forEach(m2 => { if (m2.id !== t.id) { m2.hp -= aoeDmg; floatDmgEl('mon_'+m2.id, aoeDmg, '#ff8844'); } });
+      }
+      // armor_shred: reduziert Monster-Rüstung
+      const hasShred = [...G.activePets].some(pid => { const p=PETS.find(x=>x.id===pid); return p&&p.special==='armor_shred'; });
+      if (hasShred && t.armor > 0) t.armor = Math.max(0, t.armor - 5);
       t.hp -= pd;
       floatDmgEl('mon_' + t.id, pd, '#f39c12');
+      // Poison pet: vergiftet
+      const hasPoison = [...G.activePets].some(pid => { const p=PETS.find(x=>x.id===pid); return p&&p.special==='poison'; });
+      if (hasPoison && !t._poisonPet) t._poisonPet = { dmg: Math.max(1, Math.floor(pd * 0.3)), turns: 4 };
+      // Slow pet: verlangsamt
+      const hasSlow = [...G.activePets].some(pid => { const p=PETS.find(x=>x.id===pid); return p&&p.special==='slow'; });
+      if (hasSlow) t._frozen = (t._frozen || 0) + 1;
       if (t.hp <= 0) { monsterKilled(t); return; }
       updateArenaHpBar();
     }
@@ -5479,6 +5704,14 @@ function tick() {
       floatDmgEl('mon_' + m.id, m._poisonItem.dmg, '#88cc44');
       m._poisonItem.turns--;
       if (m._poisonItem.turns <= 0) { m._poisonItem = null; }
+      if (m.hp <= 0) { try { monsterKilled(m); } catch(e) {} }
+    }
+    // Pet-Poison Tick
+    if (m._poisonPet && m._poisonPet.turns > 0) {
+      m.hp -= m._poisonPet.dmg;
+      floatDmgEl('mon_' + m.id, m._poisonPet.dmg, '#44ff88');
+      m._poisonPet.turns--;
+      if (m._poisonPet.turns <= 0) m._poisonPet = null;
       if (m.hp <= 0) { try { monsterKilled(m); } catch(e) {} }
     }
     // Frost: frozen monsters can't attack
@@ -6683,7 +6916,10 @@ function switchTab(name) {
   if(name==='forge'){renderInventory();renderUpgrades();renderForgedGrid();try{renderMaterials();}catch(e){}try{renderFurnace();}catch(e){}try{renderRecipes();}catch(e){}try{renderAutoSellRules();}catch(e){}}
   if(name==='dungeon'){renderDungeon();}
   if(name==='pvp'){renderPVP();loadPVPOpponents();loadPVPLeaderboard();}
-  if(name==='pets'){renderPets();}
+  if(name==='pets'){
+    document.getElementById('petTierBtns').innerHTML='';
+    renderPets();
+  }
   if(name==='gilde'){renderGuild();setTimeout(()=>{try{loadRaidFromSupabase().then(()=>renderRaid());}catch(e){}},500);}
   if(name==='rang'){renderRang();}
   if(name==='shop'){renderShop();}
