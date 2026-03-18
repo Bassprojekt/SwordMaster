@@ -7626,20 +7626,22 @@ async function loadPVPOpponents() {
     `pvp_points=gte.${Math.floor(minPts)}&pvp_points=lte.${Math.floor(maxPts)}&order=pvp_points.desc&limit=20`
   );
 
-  // Filter: nicht mich selbst, und nicht Spieler mit denen ich gerade gekämpft habe
-  const recent = (G._pvpRecentOpps || []);
-  data = (data || []).filter(p => p.player_id !== pid && !recent.includes(p.player_id));
+  // Filter: nicht ich selbst, nicht kürzlich bekämpfte Gegner
+  const recent = new Set(G._pvpRecentOpps || []);
+  data = (data || []).filter(p => p.player_id !== pid && !recent.has(p.player_id));
 
-  // Falls zu wenige echte Spieler — Fallback auf alle Spieler
+  // Falls zu wenige — Fallback, aber GLEICHER recent-Filter gilt auch hier
   if (data.length < 3) {
-    const fallback = await sbGet('sm_leaderboard', `order=pvp_points.desc&limit=30`);
+    const fallback = await sbGet('sm_leaderboard', `order=pvp_points.desc&limit=50`);
     const extra = (fallback || []).filter(p =>
-      p.player_id !== pid && !data.find(x => x.player_id === p.player_id)
+      p.player_id !== pid &&
+      !recent.has(p.player_id) &&           // ← auch Fallback filtert recent
+      !data.find(x => x.player_id === p.player_id)
     );
     data = [...data, ...extra];
   }
 
-  // Mische und wähle 5
+  // Mische und wähle max 5
   data = data.sort(() => Math.random() - 0.5).slice(0, 5);
   _pvpOpponents = data;
 
@@ -7694,13 +7696,49 @@ function renderPVPOpponentCards(opponents) {
         <div class="pvp-win-badge ${wincls}">${Math.round(winChance)}% Sieg</div>
         <div style="font-size:.58rem;color:var(--text3);margin-top:3px;font-family:'Cinzel',serif;">klicken zum Kämpfen</div>
       </div>`;
-    d.onclick = () => startPVPBattle(opp, oppAtk, oppDef, oppPts, winChance);
+    // Gegner sperren wenn schon zu oft bekämpft (repeat penalty > 2)
+    const fightCount2 = (G._pvpFightRecord && G._pvpFightRecord[opp.player_id]) || 0;
+    const isExhausted = fightCount2 >= 3; // nach 3 Kämpfen gesperrt
+    if (isExhausted) {
+      d.style.opacity = '0.4';
+      d.style.cursor  = 'not-allowed';
+      d.innerHTML += '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.5);border-radius:10px;font-size:.65rem;color:var(--text3);font-family:Cinzel,serif;">🔒 Bereits 3× bekämpft</div>';
+    } else {
+      d.onclick = () => startPVPBattle(opp, oppAtk, oppDef, oppPts, winChance);
+    }
     div.appendChild(d);
   });
 }
 
 // ── PVP Kampfsimulator ──────────────────────
 function startPVPBattle(opp, oppAtk, oppDef, oppPts, winChance) {
+  // ── Tageslimit prüfen ──────────────────────────────────────
+  if (!G._pvpDailyReset || G._pvpDailyReset < new Date().setHours(0,0,0,0)) {
+    G._pvpDailyFights = 0;
+    G._pvpDailyReset  = Date.now();
+  }
+  const PVP_DAILY_LIMIT = 20;
+  if ((G._pvpDailyFights || 0) >= PVP_DAILY_LIMIT) {
+    log('⏰ Tageslimit erreicht! Max. ' + PVP_DAILY_LIMIT + ' PVP-Kämpfe pro Tag. Morgen wieder!', 'c');
+    const battleCard2 = document.getElementById('pvpBattleCard');
+    if (battleCard2) {
+      battleCard2.style.display = 'block';
+      battleCard2.querySelector('#pvpBattleLog').innerHTML =
+        '<div style="text-align:center;padding:20px;color:var(--gold2);font-family:Cinzel,serif;">' +
+        '⏰ Tageslimit erreicht<br><span style="font-size:.7rem;color:var(--text2);">Max. ' +
+        PVP_DAILY_LIMIT + ' Kämpfe/Tag · Morgen gibt es neue Gegner!</span></div>';
+    }
+    return;
+  }
+
+  // ── Cooldown: 3 Sekunden zwischen Kämpfen ─────────────────
+  const now = Date.now();
+  if (G._pvpLastFightTime && now - G._pvpLastFightTime < 3000) {
+    log('⏳ Kurz warten vor dem nächsten Kampf...', 'n');
+    return;
+  }
+  G._pvpLastFightTime = now;
+
   const battleCard = document.getElementById('pvpBattleCard');
   const battleLog  = document.getElementById('pvpBattleLog');
   const battleRes  = document.getElementById('pvpBattleResult');
@@ -7746,7 +7784,12 @@ function startPVPBattle(opp, oppAtk, oppDef, oppPts, winChance) {
   const rankDiff = oppPts - G.pvpPoints;
   let ptsGain, ptsLoss;
   if (won) {
-    ptsGain = Math.max(10, Math.min(80, 25 + Math.floor(rankDiff / 30)));
+    // Wiederholungs-Malus: immer weniger Punkte für denselben Gegner
+    const fightCount = (G._pvpFightRecord && G._pvpFightRecord[opp.player_id]) || 0;
+    const repeatPenalty = Math.pow(0.5, Math.max(0, fightCount - 1)); // 1. Mal=100%, 2.=50%, 3.=25%...
+    ptsGain = Math.max(1, Math.round(
+      Math.max(10, Math.min(80, 25 + Math.floor(rankDiff / 30))) * repeatPenalty
+    ));
     if (G.pvpStreak >= 3) ptsGain = Math.floor(ptsGain * 1.25); // Streak-Bonus
   } else {
     ptsLoss = Math.max(5, Math.min(40, 15 - Math.floor(rankDiff / 30)));
@@ -7807,16 +7850,52 @@ function finalizePVPBattle(won, ptsGain, ptsLoss, opp, oppPts, resultEl) {
     }
   }
 
-  // Recent opponents cache (verhindert gleichen Gegner 2× hintereinander)
-  if (!G._pvpRecentOpps) G._pvpRecentOpps = [];
-  G._pvpRecentOpps.unshift(opp.player_id);
-  if (G._pvpRecentOpps.length > 10) G._pvpRecentOpps.pop();
+  // ── Anti-Abuse: gleichen Gegner für diese Session sperren ──
+  if (!G._pvpRecentOpps)  G._pvpRecentOpps  = [];
+  if (!G._pvpFightRecord) G._pvpFightRecord  = {}; // player_id → fight count
+
+  // Zähle wie oft wir diesen Gegner schon bekämpft haben
+  const oppId = opp.player_id;
+  G._pvpFightRecord[oppId] = (G._pvpFightRecord[oppId] || 0) + 1;
+
+  // Füge zu recent hinzu — bleibt für GESAMTE Session
+  if (!G._pvpRecentOpps.includes(oppId)) {
+    G._pvpRecentOpps.push(oppId);
+  }
+  // Begrenze auf 30 um Speicher zu schonen
+  if (G._pvpRecentOpps.length > 30) G._pvpRecentOpps.shift();
+
+  // ── Tageslimit: max 20 PVP-Kämpfe pro Tag ─────────────────
+  if (!G._pvpDailyReset || G._pvpDailyReset < new Date().setHours(0,0,0,0)) {
+    G._pvpDailyFights = 0;
+    G._pvpDailyReset  = Date.now();
+  }
+  G._pvpDailyFights = (G._pvpDailyFights || 0) + 1;
 
   renderPVP(); updateAll(); saveToSupabase();
 }
 
 // ── Render PVP Hauptseite ───────────────────
 function renderPVP() {
+  // Tageslimit Reset prüfen
+  if (!G._pvpDailyReset || G._pvpDailyReset < new Date().setHours(0,0,0,0)) {
+    G._pvpDailyFights = 0; G._pvpDailyReset = Date.now();
+  }
+  // Tageslimit im UI anzeigen
+  const fightsDone  = G._pvpDailyFights || 0;
+  const fightsLeft  = Math.max(0, 20 - fightsDone);
+  const timerInfo   = document.getElementById('pvpSeasonTimer');
+  if (timerInfo) {
+    const diff = PVP_SEASON.endDate - new Date();
+    const d = Math.floor(diff / 86400000), h = Math.floor((diff % 86400000) / 3600000);
+    const limitStr = fightsDone > 0
+      ? ` · ⚔️ Heute: ${fightsDone}/20 Kämpfe${fightsLeft === 0 ? ' (Limit erreicht!)' : ''}`
+      : '';
+    timerInfo.textContent = diff > 0
+      ? `Endet in: ${d}T ${h}h${limitStr}`
+      : 'Saison beendet';
+  }
+
   // Punkte & Rang
   const el = document.getElementById('pvpPoints');
   if (el) el.textContent = G.pvpPoints.toLocaleString();
