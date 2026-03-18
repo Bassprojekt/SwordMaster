@@ -11466,6 +11466,8 @@ function _renderTutStep() {
   const total = TUT_STEPS.length;
   const idx   = G.tutorialStep;
 
+  // _t: Kurzform für getElementById + textContent
+  const _t = (id, val) => { const el=document.getElementById(id); if(el) el.textContent=val; };
   _t('tutStep',  `SCHRITT ${idx + 1} / ${total}`);
   _t('tutTitle', step.title);
   _t('tutBody',  step.body);
