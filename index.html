@@ -1505,6 +1505,55 @@ body {
 }
 #scrollTopBtn:hover { background:rgba(201,162,39,.15); border-color:var(--gold); color:var(--gold2); }
 
+/* ══ ENCHANTING SYSTEM ══ */
+.rune-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+  gap: 7px; margin-bottom: 8px;
+}
+.rune-slot {
+  background: rgba(0,0,0,.3);
+  border: 1px solid var(--border);
+  border-radius: 10px; padding: 8px 6px;
+  text-align: center; cursor: pointer;
+  transition: all .18s; position: relative;
+}
+.rune-slot:hover { border-color: var(--purple2); background: rgba(144,96,224,.08); transform: translateY(-2px); }
+.rune-slot.selected { border-color: var(--gold); background: rgba(201,162,39,.1); box-shadow: 0 0 10px rgba(201,162,39,.2); }
+.rune-slot.empty { opacity: .35; cursor: default; }
+.rune-slot.empty:hover { transform: none; border-color: var(--border); background: rgba(0,0,0,.3); }
+.rune-emoji  { font-size: 1.4rem; margin-bottom: 2px; }
+.rune-name   { font-family: Cinzel,serif; font-size: .52rem; font-weight: 700; color: var(--text2); }
+.rune-count  { font-size: .58rem; color: var(--gold2); font-family: Cinzel,serif; margin-top: 1px; }
+.rune-tier   { font-size: .48rem; padding: 1px 4px; border-radius: 4px; margin-top: 2px; display: inline-block; }
+
+.enchant-slot-grid {
+  display: grid; grid-template-columns: repeat(3,1fr); gap: 7px; margin-bottom: 10px;
+}
+.enchant-item-slot {
+  background: rgba(0,0,0,.28); border: 1px solid var(--border);
+  border-radius: 10px; padding: 10px 8px; text-align: center;
+  cursor: pointer; transition: all .18s; min-height: 80px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+}
+.enchant-item-slot:hover { border-color: var(--purple2); }
+.enchant-item-slot.has-item { border-color: var(--border2); }
+.enchant-item-slot.selected { border-color: var(--gold); background: rgba(201,162,39,.07); }
+.enchant-item-slot.enchanted { border-color: var(--purple2); box-shadow: 0 0 8px rgba(144,96,224,.3); }
+.enchant-glow {
+  animation: enchantPulse 2s ease-in-out infinite;
+}
+@keyframes enchantPulse {
+  0%,100% { box-shadow: 0 0 8px rgba(144,96,224,.3); }
+  50%      { box-shadow: 0 0 18px rgba(144,96,224,.6); }
+}
+.rune-effect-badge {
+  display: inline-block; font-size: .55rem; padding: 1px 6px;
+  border-radius: 8px; font-family: Cinzel,serif; font-weight: 700;
+  background: rgba(144,96,224,.15); border: 1px solid rgba(144,96,224,.4);
+  color: var(--purple2); margin-top: 3px;
+}
+
 /* ══ WHITE MODE ══ */
 body.white-mode {
   --bg:       #f0eee8;
@@ -2155,6 +2204,39 @@ input[type=range].vol-slider::-webkit-slider-thumb:hover { transform:scale(1.2);
     </div>
     <div id="prestigeHeldInfo" style="font-size:.72rem;color:var(--text2);line-height:1.8;"></div>
   </div>
+
+  <!-- ── ENCHANTING KARTE ── -->
+  <div class="card" id="enchantCard">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:10px;">
+      <div class="sec-title" style="margin-bottom:0;">✨ Verzauberung</div>
+      <div style="font-size:.62rem;color:var(--text3);font-style:italic;">Runen verleihen Items einzigartige Kräfte</div>
+    </div>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-start;">
+
+      <!-- Linke Seite: Rune auswählen -->
+      <div style="flex:1;min-width:200px;">
+        <div style="font-family:Cinzel,serif;font-size:.68rem;color:var(--gold);margin-bottom:6px;">① Rune wählen</div>
+        <div class="rune-grid" id="runeGrid"></div>
+        <div id="runeSelectedInfo" style="font-size:.68rem;color:var(--text2);min-height:32px;padding:4px 0;"></div>
+      </div>
+
+      <!-- Rechte Seite: Item auswählen + Verzaubern -->
+      <div style="flex:1;min-width:180px;">
+        <div style="font-family:Cinzel,serif;font-size:.68rem;color:var(--gold);margin-bottom:6px;">② Ausgerüstetes Item wählen</div>
+        <div class="enchant-slot-grid" id="enchantSlotGrid"></div>
+        <button class="ctrl-btn" id="enchantBtn" onclick="doEnchant()"
+          style="width:100%;border-color:var(--purple2);color:var(--purple2);display:none;">
+          ✨ Jetzt verzaubern
+        </button>
+        <div id="enchantResult" style="font-size:.68rem;color:var(--text2);margin-top:6px;min-height:20px;"></div>
+      </div>
+    </div>
+
+    <!-- Aktive Verzauberungen anzeigen -->
+    <div id="activeEnchants" style="margin-top:10px;"></div>
+  </div>
+
 </div>
 
 <!-- ═══ DUNGEON PAGE ═══ -->
@@ -3838,6 +3920,18 @@ function getWeaknessTag(m) {
   return '<span style="font-family:Cinzel,serif;font-size:.48rem;color:var(--text3);margin-left:3px;">⚡ ' + m.weak.charAt(0).toUpperCase() + m.weak.slice(1) + '-Schwäche</span>';
 }
 
+// ── Verzauberungseffekte auslesen ────────────
+function getEnchantMods() {
+  const mods = { burn_dot:0, freeze_chance:0, chain_all:0, first_strike:0, extra_lifesteal:0, all_stats:0 };
+  Object.entries(G.enchants || {}).forEach(([slot, runeId]) => {
+    if (!G.equipped[slot]) return;  // Item nicht mehr ausgerüstet
+    const rune = getRuneDef(runeId);
+    if (!rune) return;
+    mods[rune.effect.type] = (mods[rune.effect.type] || 0) + rune.effect.value;
+  });
+  return mods;
+}
+
 // ── Item-Sondereffekte auslesen ─────────────
 function getEquipEffects() {
   const effects = {};
@@ -3940,6 +4034,15 @@ function getStats() {
   const armorPenBonus = Math.floor(def * 0.3) + (fx.crit_dmg ? 10 : 0);
   // Mana Drain: voll Mana gibt +20% Schaden
   if (fx.mana_drain && h.mana >= h.maxMana * 0.9) atk = Math.floor(atk * 1.2);
+  // Kosmosrune: +15% alle Stats
+  try {
+    const em = getEnchantMods();
+    if (em.all_stats > 0) {
+      atk  = Math.floor(atk  * (1 + em.all_stats));
+      def  = Math.floor(def  * (1 + em.all_stats));
+      crit = Math.min(75, crit + Math.round(em.all_stats * 30));
+    }
+  } catch(e) {}
   return { atk, def, spd, crit: Math.min(75, crit), fx, armorPen: armorPenBonus || 0 };
 }
 
@@ -5621,6 +5724,33 @@ function tick() {
       if (fxNow.poison_on_hit && !target._poisonItem) {
         target._poisonItem = { dmg: Math.max(1, Math.floor(ds.atk * 0.04)), turns: 5 };
       }
+      // ── Rune-Effekte ─────────────────────────
+      try {
+        const em = getEnchantMods();
+        // Feuerrune: Burn DoT
+        if (em.burn_dot > 0 && !target._burnRune) {
+          target._burnRune = { dmg: Math.max(1, Math.floor(dmg * em.burn_dot)), turns: 3 };
+        }
+        // Eisrune: Freeze-Chance
+        if (em.freeze_chance > 0 && Math.random() < em.freeze_chance) {
+          target._frozen = (target._frozen || 0) + 1;
+        }
+        // Sturmrune: Kettenblitz auf ALLE
+        if (em.chain_all > 0 && Math.random() < em.chain_all && G.monsters.length > 1) {
+          const chainD = Math.floor(dmg * 0.3);
+          G.monsters.forEach(m2 => { if (m2.id !== target.id) { m2.hp -= chainD; floatDmgEl('mon_'+m2.id, chainD, '#f0cc55'); } });
+        }
+        // Schattensrune: First Strike (+20% erster Treffer pro Monster)
+        if (em.first_strike > 0 && !target._shadowStruck) {
+          dmg = Math.floor(dmg * (1 + em.first_strike));
+          target._shadowStruck = true;
+        }
+        // Blutrune: Extra Lifesteal
+        if (em.extra_lifesteal > 0) {
+          const bl = Math.floor(dmg * em.extra_lifesteal);
+          h.hp = Math.min(h.maxHp, h.hp + bl);
+        }
+      } catch(e) {}
       // Chain: springt auf 2. Monster
       if (fxNow.chain && G.monsters.length > 1 && Math.random() < 0.50) {
         const chainT = G.monsters.find(m2 => m2.id !== target.id);
@@ -5745,6 +5875,14 @@ function tick() {
   // Gold/XP boost from items — applied in monsterKilled via goldMult/xpMult
   // Poison tick (item-applied)
   G.monsters.forEach(m => {
+    // Feuerrune Burn-Tick
+    if (m._burnRune && m._burnRune.turns > 0) {
+      m.hp -= m._burnRune.dmg;
+      floatDmgEl('mon_' + m.id, m._burnRune.dmg, '#ff6030');
+      m._burnRune.turns--;
+      if (m._burnRune.turns <= 0) m._burnRune = null;
+      if (m.hp <= 0) { try { monsterKilled(m); } catch(e) {} }
+    }
     if (m._poisonItem && m._poisonItem.turns > 0) {
       m.hp -= m._poisonItem.dmg;
       floatDmgEl('mon_' + m.id, m._poisonItem.dmg, '#88cc44');
@@ -5792,6 +5930,7 @@ function monsterKilled(m) {
   }
   try { playSfx('kill'); } catch(e) {}
   try { dropMaterials(m); } catch(e) {}
+  try { dropRune(m); } catch(e) {}
   try { if(m.isEventMonster) giveEventCurrency(m); } catch(e) {}
   // Research combat4: 3% HP regen on kill
   if (G.research && G.research.has('combat4')) { const healR = Math.floor(G.hero.maxHp * 0.03); G.hero.hp = Math.min(G.hero.maxHp, G.hero.hp + healR); }
@@ -6499,6 +6638,8 @@ async function _doSave() {
       shop_boosts:     JSON.stringify(G.shopBoosts      || {}),
       // Forge: Materialien, Ofenlevel, Auto-Sell
       forge_materials:   JSON.stringify(G.materials       || {}),
+      runes:             JSON.stringify(G.runes             || {}),
+      enchants:          JSON.stringify(G.enchants          || {}),
       furnace_level:     G.furnaceLevel   || 1,
       auto_sell_rules:   JSON.stringify(G.autoSellRules   || {}),
       auto_sell_earned:  G.autoSellEarned || 0,
@@ -6699,6 +6840,12 @@ async function loadFromSupabase() {
 
     // Forge: Materialien + Ofenlevel + Auto-Sell
     try { G.materials      = JSON.parse(p.forge_materials  || '{}'); } catch(e) { G.materials = {}; }
+    try { G.runes          = JSON.parse(p.runes            || '{}'); } catch(e) { G.runes    = {}; }
+    try { G.enchants       = JSON.parse(p.enchants         || '{}'); } catch(e) { G.enchants = {}; }
+    // Verzauberungen auf Items wiederherstellen
+    Object.entries(G.enchants || {}).forEach(([slot, runeId]) => {
+      if (G.equipped[slot]) G.equipped[slot]._enchant = runeId;
+    });
     G.furnaceLevel  = p.furnace_level   || 1;
     try { G.autoSellRules  = JSON.parse(p.auto_sell_rules  || '{}'); } catch(e) { G.autoSellRules = {}; }
     G.autoSellEarned = p.auto_sell_earned || 0;
@@ -6979,11 +7126,18 @@ function showTT(e,item,hint='') {
   document.getElementById('ttR').style.color=item.rarityColor;
   const SNAMES={atk:'Angriff',def:'Verteidigung',spd:'Geschwindigkeit (-s)',crit:'Krit-Chance (%)'};
   document.getElementById('ttS').textContent='+'+item.sv+' '+( SNAMES[item.sk]||item.sk );
-  // Sondereffekt
+  // Sondereffekt + Verzauberung
   const effEl = document.getElementById('ttD');
   if (effEl) {
     const effLabel = item.eff ? (EFF_LABELS[item.eff] || item.eff) : '';
-    effEl.innerHTML = (effLabel ? '<span style="display:inline-block;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:5px;padding:1px 6px;font-size:.62rem;margin-bottom:3px;color:var(--gold2);">' + effLabel + '</span><br>' : '') + item.desc;
+    // Enchant-Info
+    const enchSlot = Object.entries(G.equipped||{}).find(([s,it]) => it && it.id === item.id)?.[0];
+    const enchId   = enchSlot ? (G.enchants||{})[enchSlot] : null;
+    const enchRune = enchId ? getRuneDef(enchId) : null;
+    const enchStr  = enchRune
+      ? '<div style="display:inline-block;background:rgba(144,96,224,.1);border:1px solid rgba(144,96,224,.35);border-radius:5px;padding:1px 6px;font-size:.62rem;margin-bottom:3px;color:var(--purple2);">✨ ' + enchRune.emoji + ' ' + enchRune.name + '</div><br>'
+      : '';
+    effEl.innerHTML = (effLabel ? '<span style="display:inline-block;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:5px;padding:1px 6px;font-size:.62rem;margin-bottom:3px;color:var(--gold2);">' + effLabel + '</span><br>' : '') + enchStr + item.desc;
   }
   document.getElementById('ttE').textContent=hint;
   tt.classList.add('show'); moveTT(e);
@@ -7022,7 +7176,7 @@ function switchTab(name) {
   document.getElementById('tab-'+name)?.classList.add('active');
   if(name==='arena'){renderArena();updateArenaPanel();}
   if(name==='held'){renderEquipSlots();renderEquipBonus();renderInventory();renderSkills();renderEraTimeline();updatePrestigeHeldCard();}
-  if(name==='forge'){renderInventory();renderUpgrades();renderForgedGrid();try{renderMaterials();}catch(e){}try{renderFurnace();}catch(e){}try{renderRecipes();}catch(e){}try{renderAutoSellRules();}catch(e){}}
+  if(name==='forge'){renderInventory();renderUpgrades();renderForgedGrid();try{renderMaterials();}catch(e){}try{renderFurnace();}catch(e){}try{renderRecipes();}catch(e){}try{renderAutoSellRules();}catch(e){}try{renderEnchanting();}catch(e){}}
   if(name==='dungeon'){renderDungeon();}
   if(name==='pvp'){
     // Anti-Abuse neu laden falls nicht frisch (z.B. Tab-Wechsel)
@@ -7541,6 +7695,10 @@ function dungeonVictory() {
     log('⚔️ Dungeon-Etage ' + G.dungeonFloor + ' besiegt!', 'i');
   }
   try { trackQuestProgress('dung', 1); checkQuestBadge(); } catch(e) {}
+  // Dungeon gibt doppelte Rune-Drop-Chance
+  if (Math.random() < 0.08 + dropBonus() * 0.5) {
+    try { dropRune({ isEventMonster: false }); } catch(e) {}
+  }
   if (isBoss) { try { trackAch('dung_boss', 1); } catch(e) {} }
   try { checkAchievements(); } catch(e) {}
   showDungeonReward(rows);
@@ -11043,6 +11201,316 @@ function _tutClearPulse() {
 
 // ── Public API ────────────────────────────────
 function openTutorial() { G.tutorialDone = false; G.tutorialStep = 0; startTutorial(); }
+
+// ════════════════════════════════════════════
+// ── ENCHANTING SYSTEM
+// ════════════════════════════════════════════
+
+// 6 Runen-Typen, je mit einzigartigen Effekten die NICHT durch normale Items erreichbar sind
+const RUNES = [
+  {
+    id: 'fire',    name: 'Feuerrune',    emoji: '🔥', color: '#ff6030',
+    tier: 'gewöhnlich', tierColor: '#cd7f32',
+    dropChance: 0.08,  // 8% base
+    minLv: 1,
+    desc: 'Verbrennt Gegner: +5% Schaden als Feuerschaden über 3 Runden',
+    effect: { type: 'burn_dot', value: 0.05 },
+    enchantDesc: item => `${item.name} brennt: +5% Schaden als DoT`,
+  },
+  {
+    id: 'ice',     name: 'Eisrune',      emoji: '❄️', color: '#88ccff',
+    tier: 'gewöhnlich', tierColor: '#cd7f32',
+    dropChance: 0.08,
+    minLv: 1,
+    desc: 'Frostbiss: 12% Chance Monster für 1 Runde einzufrieren',
+    effect: { type: 'freeze_chance', value: 0.12 },
+    enchantDesc: item => `${item.name} friert ein: 12% Freeze-Chance`,
+  },
+  {
+    id: 'storm',   name: 'Sturmrune',    emoji: '⚡', color: '#f0cc55',
+    tier: 'selten', tierColor: '#50a0e0',
+    dropChance: 0.04,
+    minLv: 10,
+    desc: 'Kettenblitz: 18% Chance Schaden auf alle Monster zu verteilen',
+    effect: { type: 'chain_all', value: 0.18 },
+    enchantDesc: item => `${item.name} leitet Blitz: 18% Kettenblitz`,
+  },
+  {
+    id: 'shadow',  name: 'Schattensrune', emoji: '🌑', color: '#9060e0',
+    tier: 'selten', tierColor: '#50a0e0',
+    dropChance: 0.04,
+    minLv: 15,
+    desc: 'Schattenbiss: +20% Schaden aus dem Hinterhalt beim ersten Treffer',
+    effect: { type: 'first_strike', value: 0.20 },
+    enchantDesc: item => `${item.name} schlägt zuerst: +20% erster Treffer`,
+  },
+  {
+    id: 'blood',   name: 'Blutrune',     emoji: '🩸', color: '#cc2244',
+    tier: 'episch', tierColor: '#9060e0',
+    dropChance: 0.015,
+    minLv: 25,
+    desc: 'Vampirisch: +10% Lebensraub zusätzlich zum normalen Lifesteal',
+    effect: { type: 'extra_lifesteal', value: 0.10 },
+    enchantDesc: item => `${item.name} saugt Leben: +10% Lifesteal`,
+  },
+  {
+    id: 'cosmos',  name: 'Kosmosrune',   emoji: '🌌', color: '#aa88ff',
+    tier: 'legendär', tierColor: '#c9a227',
+    dropChance: 0.004,
+    minLv: 40,
+    desc: 'Sternenkraft: +15% aller Stats und +5% Krit-Schaden permanent',
+    effect: { type: 'all_stats', value: 0.15 },
+    enchantDesc: item => `${item.name} leuchtet: +15% alle Stats`,
+  },
+];
+
+// State
+if (!G.runes)    G.runes    = {};  // { runeId: count }
+if (!G.enchants) G.enchants = {};  // { slot: runeId }  — welches Item hat welche Rune
+
+let _enchantSelectedRune = null;
+let _enchantSelectedSlot = null;
+
+// ── Rune aus Item-ID holen ────────────────
+function getEnchant(slot) {
+  return G.enchants[slot] || null;
+}
+function getRuneDef(runeId) {
+  return RUNES.find(r => r.id === runeId) || null;
+}
+
+// ── Drop-System ──────────────────────────
+function dropRune(monster) {
+  if (!monster) return;
+  const lv = G.hero.level;
+  // Basis-Drop-Chance: 3% + dropBonus
+  const baseChance = 0.03 + dropBonus() * 0.5;
+  if (Math.random() > baseChance) return;
+
+  // Wähle eine Rune die der Spieler freischalten kann
+  const eligible = RUNES.filter(r => lv >= r.minLv);
+  if (!eligible.length) return;
+
+  // Gewichtete Auswahl nach dropChance
+  const totalW = eligible.reduce((s, r) => s + r.dropChance, 0);
+  let rv = Math.random() * totalW;
+  let chosen = eligible[0];
+  for (const r of eligible) {
+    rv -= r.dropChance;
+    if (rv <= 0) { chosen = r; break; }
+  }
+
+  G.runes[chosen.id] = (G.runes[chosen.id] || 0) + 1;
+  log(`✨ ${chosen.emoji} ${chosen.name} gefunden! (${chosen.tier})`, 'i');
+  try { renderRuneGrid(); } catch(e) {}
+}
+
+// ── Verzaubern ────────────────────────────
+function doEnchant() {
+  if (!_enchantSelectedRune || !_enchantSelectedSlot) {
+    log('❌ Wähle eine Rune und ein Item!', 'c'); return;
+  }
+  const rune = getRuneDef(_enchantSelectedRune);
+  if (!rune || (G.runes[rune.id] || 0) < 1) {
+    log('❌ Keine ' + rune?.name + ' mehr vorhanden!', 'c'); return;
+  }
+  const item = G.equipped[_enchantSelectedSlot];
+  if (!item) {
+    log('❌ Kein Item in diesem Slot!', 'c'); return;
+  }
+
+  // Alte Rune entfernen (falls vorhanden) — keine Stapelung
+  const oldRune = G.enchants[_enchantSelectedSlot];
+  if (oldRune) {
+    G.runes[oldRune] = (G.runes[oldRune] || 0) + 1; // Rune zurückgeben (halbiert)
+    G.runes[oldRune] = Math.floor(G.runes[oldRune] * 0.5);
+    if (G.runes[oldRune] <= 0) delete G.runes[oldRune];
+    log('♻️ Alte Verzauberung entfernt (50% der Rune zurück)', 'n');
+  }
+
+  // Rune verbrauchen
+  G.runes[rune.id]--;
+  if (G.runes[rune.id] <= 0) delete G.runes[rune.id];
+
+  // Verzauberung anwenden
+  G.enchants[_enchantSelectedSlot] = rune.id;
+  item._enchant = rune.id;
+
+  // Animation + Log
+  log(`✨ ${item.emoji} ${item.name} mit ${rune.emoji} ${rune.name} verzaubert! ${rune.desc}`, 'l');
+  try { playSfx('levelup'); } catch(e) {}
+
+  const resultEl = document.getElementById('enchantResult');
+  if (resultEl) {
+    resultEl.innerHTML = `<div style="color:var(--purple2);font-family:Cinzel,serif;">
+      ✨ Verzaubert! ${rune.emoji} ${rune.name} → ${item.emoji} ${item.name}</div>`;
+    setTimeout(() => { if(resultEl) resultEl.innerHTML = ''; }, 3000);
+  }
+
+  _enchantSelectedRune = null;
+  _enchantSelectedSlot = null;
+
+  updateAll();
+  renderEnchanting();
+  renderInventory();
+  saveToSupabase();
+}
+
+// ── Verzauberung entfernen ────────────────
+function removeEnchant(slot) {
+  const runeId = G.enchants[slot];
+  if (!runeId) return;
+  const rune = getRuneDef(runeId);
+  // 50% der Rune zurück
+  if (rune) {
+    G.runes[runeId] = (G.runes[runeId] || 0) + 1;
+    log(`♻️ Verzauberung entfernt. 1× ${rune.emoji} ${rune.name} zurückbekommen.`, 'n');
+  }
+  delete G.enchants[slot];
+  const item = G.equipped[slot];
+  if (item) delete item._enchant;
+
+  updateAll();
+  renderEnchanting();
+  renderInventory();
+  saveToSupabase();
+}
+
+// ── Render ────────────────────────────────
+function renderRuneGrid() {
+  const grid = document.getElementById('runeGrid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  RUNES.forEach(rune => {
+    const count = G.runes[rune.id] || 0;
+    const hasEnough = count >= 1;
+    const canUse = G.hero.level >= rune.minLv;
+    const div = document.createElement('div');
+    div.className = 'rune-slot' +
+      (!hasEnough || !canUse ? ' empty' : '') +
+      (_enchantSelectedRune === rune.id ? ' selected' : '');
+    div.innerHTML = `
+      <div class="rune-emoji">${rune.emoji}</div>
+      <div class="rune-name" style="color:${rune.color};">${rune.name.replace('rune','').trim()}</div>
+      <div class="rune-count">${hasEnough ? '×'+count : canUse ? 'Keine' : 'Lv'+rune.minLv}</div>
+      <div class="rune-tier" style="background:${rune.tierColor}22;color:${rune.tierColor};border:1px solid ${rune.tierColor}44;">${rune.tier}</div>`;
+    if (hasEnough && canUse) {
+      div.onclick = () => {
+        _enchantSelectedRune = _enchantSelectedRune === rune.id ? null : rune.id;
+        _updateEnchantUI();
+      };
+    }
+    grid.appendChild(div);
+  });
+}
+
+function renderEnchantSlots() {
+  const grid = document.getElementById('enchantSlotGrid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  const slots = ['weapon','helmet','chest','gloves','boots','ring'];
+  const slotEmojis = { weapon:'⚔️', helmet:'⛑️', chest:'🛡️', gloves:'🧤', boots:'👢', ring:'💍' };
+  const slotNames  = { weapon:'Waffe', helmet:'Helm', chest:'Rüstung', gloves:'Handschuhe', boots:'Stiefel', ring:'Ring' };
+
+  slots.forEach(slot => {
+    const item = G.equipped[slot];
+    const enchId = G.enchants[slot];
+    const enchRune = enchId ? getRuneDef(enchId) : null;
+    const div = document.createElement('div');
+    div.className = 'enchant-item-slot' +
+      (item ? ' has-item' : '') +
+      (_enchantSelectedSlot === slot ? ' selected' : '') +
+      (enchRune ? ' enchanted enchant-glow' : '');
+
+    if (item) {
+      div.innerHTML = `
+        <div style="font-size:1.3rem;">${item.emoji}</div>
+        <div style="font-family:Cinzel,serif;font-size:.58rem;color:var(--text2);">${slotNames[slot]}</div>
+        ${enchRune
+          ? `<div style="font-size:.7rem;">${enchRune.emoji}</div>
+             <div class="rune-effect-badge">${enchRune.name.replace('rune','').trim()}</div>`
+          : `<div style="font-size:.55rem;color:var(--text3);">Unverzaubert</div>`}`;
+      div.onclick = () => {
+        _enchantSelectedSlot = _enchantSelectedSlot === slot ? null : slot;
+        _updateEnchantUI();
+      };
+    } else {
+      div.innerHTML = `
+        <div style="font-size:1.1rem;opacity:.3;">${slotEmojis[slot]}</div>
+        <div style="font-size:.55rem;color:var(--text3);">${slotNames[slot]}<br>leer</div>`;
+    }
+    grid.appendChild(div);
+  });
+}
+
+function _updateEnchantUI() {
+  // Rune-Info anzeigen
+  const infoEl = document.getElementById('runeSelectedInfo');
+  const enchBtn = document.getElementById('enchantBtn');
+  if (infoEl) {
+    if (_enchantSelectedRune) {
+      const r = getRuneDef(_enchantSelectedRune);
+      infoEl.innerHTML = r
+        ? `<b style="color:${r.color};">${r.emoji} ${r.name}</b>: ${r.desc}`
+        : '';
+    } else {
+      infoEl.textContent = '';
+    }
+  }
+
+  // Enchant-Button zeigen/verstecken
+  if (enchBtn) {
+    const ready = _enchantSelectedRune && _enchantSelectedSlot && G.equipped[_enchantSelectedSlot];
+    enchBtn.style.display = ready ? 'block' : 'none';
+
+    if (ready) {
+      const existingEnchant = G.enchants[_enchantSelectedSlot];
+      enchBtn.textContent = existingEnchant
+        ? '🔄 Verzauberung ersetzen'
+        : '✨ Jetzt verzaubern';
+    }
+  }
+
+  // Grids neu rendern mit neuem selected-State
+  renderRuneGrid();
+  renderEnchantSlots();
+
+  // Aktive Verzauberungen
+  renderActiveEnchants();
+}
+
+function renderActiveEnchants() {
+  const el = document.getElementById('activeEnchants');
+  if (!el) return;
+  const active = Object.entries(G.enchants).filter(([slot, runeId]) => G.equipped[slot] && runeId);
+  if (!active.length) { el.innerHTML = ''; return; }
+
+  el.innerHTML = '<div style="font-family:Cinzel,serif;font-size:.62rem;color:var(--text3);margin-bottom:5px;">Aktive Verzauberungen:</div>';
+  active.forEach(([slot, runeId]) => {
+    const rune = getRuneDef(runeId);
+    const item = G.equipped[slot];
+    if (!rune || !item) return;
+    const row = document.createElement('div');
+    row.style.cssText = `display:flex;align-items:center;gap:6px;background:rgba(144,96,224,.06);
+      border:1px solid rgba(144,96,224,.2);border-radius:8px;padding:5px 8px;margin-bottom:4px;`;
+    row.innerHTML = `
+      <span style="font-size:1rem;">${item.emoji}</span>
+      <span style="font-size:.85rem;">${rune.emoji}</span>
+      <div style="flex:1;">
+        <div style="font-family:Cinzel,serif;font-size:.62rem;color:var(--purple2);">${item.name}</div>
+        <div style="font-size:.58rem;color:var(--text3);">${rune.desc}</div>
+      </div>
+      <button onclick="removeEnchant('${slot}')" style="font-size:.55rem;background:rgba(200,50,50,.1);
+        border:1px solid rgba(200,50,50,.3);border-radius:6px;padding:2px 6px;color:var(--red2);cursor:pointer;">✕</button>`;
+    el.appendChild(row);
+  });
+}
+
+function renderEnchanting() {
+  renderRuneGrid();
+  renderEnchantSlots();
+  renderActiveEnchants();
+}
 
 // ════════════════════════════════════════════
 // ── SETTINGS & AUDIO
