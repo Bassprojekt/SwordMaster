@@ -3068,7 +3068,7 @@ const ZONES = [
 
 const MONSTERS = [
   // Steinzeit
-  { name:'Steinzeit-Wolf',   minLv:1,  hpM:1.0, atkM:1.0, xp:5,   gold:1,  color:'#8B6914', type:'tier', weak:'atk', special:'swarm', specialDesc:'Rudel — greift mit Verstärkung an',
+  { name:'Steinzeit-Wolf',   minLv:1,  hpM:1.0, atkM:1.0, xp:3,   gold:1,  color:'#8B6914', type:'tier', weak:'atk', special:'swarm', specialDesc:'Rudel — greift mit Verstärkung an',
     svg:`<g>
       <ellipse cx="30" cy="55" rx="18" ry="12" fill="#6B4C1E"/>
       <ellipse cx="44" cy="48" rx="10" ry="8" fill="#7A5828"/>
@@ -3085,7 +3085,7 @@ const MONSTERS = [
       <rect x="30" y="60" width="6" height="14" rx="3" fill="#5A3E10"/>
       <rect x="38" y="60" width="6" height="14" rx="3" fill="#5A3E10"/>
     </g>` },
-  { name:'Urzeit-Bär',       minLv:1,  hpM:1.8, atkM:0.8, xp:7,  gold:2,  color:'#5C3A1E', type:'tier', weak:'feuer', special:'erdbeben', specialDesc:'Tatzensprung — Flächenangriff',
+  { name:'Urzeit-Bär',       minLv:1,  hpM:1.8, atkM:0.8, xp:4,  gold:1,  color:'#5C3A1E', type:'tier', weak:'feuer', special:'erdbeben', specialDesc:'Tatzensprung — Flächenangriff',
     svg:`<g>
       <ellipse cx="30" cy="58" rx="20" ry="16" fill="#5C3A1E"/>
       <ellipse cx="30" cy="40" rx="13" ry="12" fill="#6B4426"/>
@@ -3101,7 +3101,7 @@ const MONSTERS = [
     </g>` },
 
   // Mittelalter
-  { name:'Steingolem',       minLv:5,  hpM:2.5, atkM:0.7, xp:8,  gold:2,  color:'#707070', type:'magisch', weak:'blitz', special:'stein', specialDesc:'Steinform — wird kurzfristig unverwundbar',
+  { name:'Steingolem',       minLv:5,  hpM:2.5, atkM:0.7, xp:5,  gold:1,  color:'#707070', type:'magisch', weak:'blitz', special:'stein', specialDesc:'Steinform — wird kurzfristig unverwundbar',
     svg:`<g>
       <rect x="16" y="30" width="28" height="38" rx="4" fill="#707070"/>
       <rect x="18" y="32" width="24" height="34" rx="3" fill="#888"/>
@@ -3119,7 +3119,7 @@ const MONSTERS = [
       <line x1="22" y1="50" x2="38" y2="50" stroke="#555" stroke-width="1"/>
       <line x1="22" y1="58" x2="38" y2="58" stroke="#555" stroke-width="1"/>
     </g>` },
-  { name:'Skelettkrieger',   minLv:8,  hpM:1.5, atkM:1.5, xp:11,  gold:3, color:'#E8E0C8', type:'untoter', weak:'feuer', special:'biss', specialDesc:'Knochenstich — verursacht Vergiftung',
+  { name:'Skelettkrieger',   minLv:8,  hpM:1.5, atkM:1.5, xp:6,  gold:1, color:'#E8E0C8', type:'untoter', weak:'feuer', special:'biss', specialDesc:'Knochenstich — verursacht Vergiftung',
     svg:`<g>
       <circle cx="30" cy="22" r="11" fill="#E8E0C8"/>
       <circle cx="25" cy="20" r="3.5" fill="#1A1A2E"/>
@@ -3144,7 +3144,7 @@ const MONSTERS = [
     </g>` },
 
   // Feuerdämon
-  { name:'Feuerdämon',       minLv:12, hpM:1.4, atkM:1.8, xp:15,  gold:7, color:'#FF4400', type:'damon', weak:'eis', special:'lavaspucker', specialDesc:'Feuerstoß — Brandschaden über mehrere Runden',
+  { name:'Feuerdämon',       minLv:12, hpM:1.4, atkM:1.8, xp:9,  gold:2, color:'#FF4400', type:'damon', weak:'eis', special:'lavaspucker', specialDesc:'Feuerstoß — Brandschaden über mehrere Runden',
     svg:`<g>
       <ellipse cx="30" cy="75" rx="12" ry="4" fill="rgba(255,100,0,0.3)"/>
       <rect x="22" y="52" width="8" height="22" rx="3" fill="#CC2200"/>
@@ -3164,7 +3164,7 @@ const MONSTERS = [
     </g>` },
 
   // Eistroll
-  { name:'Eistroll',         minLv:18, hpM:3.0, atkM:1.0, xp:19,  gold:10, color:'#88CCFF', type:'tier', weak:'feuer', special:'wickeln', specialDesc:'Frostgriff — eingefroren für 2 Runden',
+  { name:'Eistroll',         minLv:18, hpM:3.0, atkM:1.0, xp:11,  gold:3, color:'#88CCFF', type:'tier', weak:'feuer', special:'wickeln', specialDesc:'Frostgriff — eingefroren für 2 Runden',
     svg:`<g>
       <rect x="20" y="56" width="8" height="18" rx="4" fill="#4488CC"/>
       <rect x="32" y="56" width="8" height="18" rx="4" fill="#4488CC"/>
@@ -3188,7 +3188,7 @@ const MONSTERS = [
     </g>` },
 
   // Todesritter
-  { name:'Todesritter',      minLv:28, hpM:2.2, atkM:2.2, xp:30,  gold:8, color:'#8800CC', type:'untoter', weak:'heilig', special:'fluch', specialDesc:'Todesfluch — DEF drastisch reduziert',
+  { name:'Todesritter',      minLv:28, hpM:2.2, atkM:2.2, xp:17,  gold:2, color:'#8800CC', type:'untoter', weak:'heilig', special:'fluch', specialDesc:'Todesfluch — DEF drastisch reduziert',
     svg:`<g>
       <rect x="22" y="58" width="7" height="16" rx="2" fill="#220033"/>
       <rect x="31" y="58" width="7" height="16" rx="2" fill="#220033"/>
@@ -3213,7 +3213,7 @@ const MONSTERS = [
     </g>` },
 
   // Schattenwyrm (Drache)
-  { name:'Schattenwyrm',     minLv:40, hpM:3.5, atkM:2.5, xp:50,  gold:13, color:'#440088', type:'magisch', weak:'heilig', special:'schatten', specialDesc:'Schattenbiss — Krit ignoriert DEF',
+  { name:'Schattenwyrm',     minLv:40, hpM:3.5, atkM:2.5, xp:28,  gold:4, color:'#440088', type:'magisch', weak:'heilig', special:'schatten', specialDesc:'Schattenbiss — Krit ignoriert DEF',
     svg:`<g>
       <path d="M10,65 Q16,58 22,62 Q28,66 30,60 Q32,54 38,52 Q44,50 48,44 Q52,38 48,32 Q44,26 38,28 Q32,30 30,36 Q28,42 22,44 Q16,46 12,52 Q8,58 10,65Z" fill="#2A0044"/>
       <path d="M30,36 Q34,28 42,26 Q50,24 54,30 Q58,36 54,44 Q50,52 42,54 Q36,56 32,52Z" fill="#3A0055"/>
@@ -3229,7 +3229,7 @@ const MONSTERS = [
     </g>` },
 
   // Höllenfürst
-  { name:'Höllenfürst',      minLv:55, hpM:4.5, atkM:3.0, xp:75, gold:19, color:'#FF2200', type:'damon', weak:'heilig', special:'teilen', specialDesc:'Seelenspaltung — teilt Schaden mit Held',
+  { name:'Höllenfürst',      minLv:55, hpM:4.5, atkM:3.0, xp:42, gold:5, color:'#FF2200', type:'damon', weak:'heilig', special:'teilen', specialDesc:'Seelenspaltung — teilt Schaden mit Held',
     svg:`<g>
       <ellipse cx="30" cy="75" rx="16" ry="5" fill="rgba(255,50,0,0.4)"/>
       <rect x="21" y="54" width="8" height="20" rx="3" fill="#880000"/>
@@ -3252,7 +3252,7 @@ const MONSTERS = [
     </g>` },
 
   // Uralter Lich
-  { name:'Uralter Lich',     minLv:70, hpM:5.5, atkM:3.5, xp:108, gold:28, color:'#00FFAA', type:'untoter', weak:'feuer', special:'urteil', specialDesc:'Todesurteil — ignoriert alle Verteidigung',
+  { name:'Uralter Lich',     minLv:70, hpM:5.5, atkM:3.5, xp:60, gold:7, color:'#00FFAA', type:'untoter', weak:'feuer', special:'urteil', specialDesc:'Todesurteil — ignoriert alle Verteidigung',
     svg:`<g>
       <ellipse cx="30" cy="76" rx="10" ry="3" fill="rgba(0,255,170,0.2)"/>
       <path d="M22,54 Q18,62 20,74 Q24,76 26,72 Q24,62 26,54Z" fill="#0A0A1E" opacity="0.9"/>
@@ -3281,7 +3281,7 @@ const MONSTERS = [
     </g>` },
 
   // Quantengeist
-  { name:'Quantengeist',     minLv:85, hpM:7.0, atkM:4.0, xp:162, gold:41, color:'#00DDFF',
+  { name:'Quantengeist',     minLv:85, hpM:7.0, atkM:4.0, xp:162, gold:10, color:'#00DDFF',
     type:'geist',   weak:'crit',  special:'phase',   specialDesc:'Phasiert sich — 30% Chance Angriff zu negieren',
     svg:`<g>
       <ellipse cx="30" cy="76" rx="14" ry="4" fill="rgba(0,200,255,0.2)"/>
@@ -3325,7 +3325,7 @@ const MONSTERS = [
       <rect x="34" y="60" width="5" height="10" rx="2" fill="#775533"/>
     </g>` },
 
-  { name:'Modergeist',       minLv:3,  hpM:1.0, atkM:1.1, xp:5,   gold:2,  color:'#88AA66',
+  { name:'Modergeist',       minLv:3,  hpM:1.0, atkM:1.1, xp:3,   gold:1,  color:'#88AA66',
     type:'geist',   weak:'crit',  special:'fluch',   specialDesc:'Fluch — reduziert deine DEF für 2 Runden',
     svg:`<g>
       <ellipse cx="30" cy="72" rx="10" ry="3" fill="rgba(100,180,80,0.3)"/>
@@ -3341,7 +3341,7 @@ const MONSTERS = [
       <path d="M25,26 Q30,30 35,26" stroke="#88AA66" stroke-width="1.5" fill="none"/>
     </g>` },
 
-  { name:'Knochenhund',      minLv:6,  hpM:1.3, atkM:1.3, xp:8,  gold:4,  color:'#CCBBAA',
+  { name:'Knochenhund',      minLv:6,  hpM:1.3, atkM:1.3, xp:5,  gold:2,  color:'#CCBBAA',
     type:'untoter', weak:'atk',   special:'biss',    specialDesc:'Giftbiss — vergiftet für 3 Runden',
     svg:`<g>
       <ellipse cx="30" cy="58" rx="17" ry="9"  fill="#BBAA99"/>
@@ -3360,7 +3360,7 @@ const MONSTERS = [
       <path d="M26,62 Q30,58 34,62" stroke="#FFFFFF" stroke-width="1" fill="none"/>
     </g>` },
 
-  { name:'Zombiekrieger',    minLv:9,  hpM:2.0, atkM:1.2, xp:12,  gold:3, color:'#779955',
+  { name:'Zombiekrieger',    minLv:9,  hpM:2.0, atkM:1.2, xp:12,  gold:1, color:'#779955',
     type:'untoter', weak:'feuer', special:'stun',    specialDesc:'Taumelschlag — betäubt dich 1 Runde',
     svg:`<g>
       <rect x="22" y="60" width="7"  height="16" rx="2" fill="#2A3A18"/>
@@ -3380,7 +3380,7 @@ const MONSTERS = [
     </g>` },
 
   // ── ZONE 2: KERKER (Lv 11-20) ─────────────────
-  { name:'Giftspinne',       minLv:11, hpM:1.1, atkM:1.6, xp:14,  gold:4, color:'#AA44AA',
+  { name:'Giftspinne',       minLv:11, hpM:1.1, atkM:1.6, xp:14,  gold:2, color:'#AA44AA',
     type:'tier',    weak:'feuer', special:'gift',    specialDesc:'Giftnetz — vergiftet und verlangsamt',
     svg:`<g>
       <ellipse cx="30" cy="50" rx="14" ry="10" fill="#660066"/>
@@ -3400,7 +3400,7 @@ const MONSTERS = [
       <ellipse cx="30" cy="56" rx="5" ry="3"   fill="#440044"/>
     </g>` },
 
-  { name:'Kerkermeister',    minLv:14, hpM:2.4, atkM:1.8, xp:20,  gold:5, color:'#AA8833',
+  { name:'Kerkermeister',    minLv:14, hpM:2.4, atkM:1.8, xp:20,  gold:2, color:'#AA8833',
     type:'mensch',  weak:'crit',  special:'kette',   specialDesc:'Kettengeißel — trifft zweimal mit reduziertem Schaden',
     svg:`<g>
       <rect x="22" y="58" width="7"  height="18" rx="2" fill="#332200"/>
@@ -3420,7 +3420,7 @@ const MONSTERS = [
       <ellipse cx="7" cy="46" rx="3" ry="5"     fill="#443300"/>
     </g>` },
 
-  { name:'Rattenmann',       minLv:17, hpM:1.6, atkM:2.0, xp:24,  gold:6, color:'#997744',
+  { name:'Rattenmann',       minLv:17, hpM:1.6, atkM:2.0, xp:24,  gold:2, color:'#997744',
     type:'mensch',  weak:'atk',   special:'dodge',   specialDesc:'Ausweichen — 25% Chance Schaden zu halbieren',
     svg:`<g>
       <rect x="23" y="58" width="7"  height="16" rx="2" fill="#664422"/>
@@ -3439,7 +3439,7 @@ const MONSTERS = [
       <path d="M42,38 Q52,36 50,44" stroke="#664422" stroke-width="1" fill="none"/>
     </g>` },
 
-  { name:'Gargoyle',         minLv:20, hpM:3.2, atkM:1.5, xp:28,  gold:7, color:'#7788AA',
+  { name:'Gargoyle',         minLv:20, hpM:3.2, atkM:1.5, xp:28,  gold:3, color:'#7788AA',
     type:'magisch', weak:'blitz', special:'stein',   specialDesc:'Steinform — 1 Runde unverwundbar',
     svg:`<g>
       <rect x="22" y="58" width="8"  height="16" rx="2" fill="#445566"/>
@@ -3460,7 +3460,7 @@ const MONSTERS = [
     </g>` },
 
   // ── ZONE 3: KRYPTA (Lv 21-30) ─────────────────
-  { name:'Vampir',           minLv:22, hpM:1.8, atkM:2.2, xp:32,  gold:8, color:'#880022',
+  { name:'Vampir',           minLv:22, hpM:1.8, atkM:2.2, xp:32,  gold:3, color:'#880022',
     type:'untoter', weak:'feuer', special:'saugen',  specialDesc:'Lebensraub — heilt sich um 30% des Schadens',
     svg:`<g>
       <ellipse cx="30" cy="72" rx="10" ry="3" fill="rgba(120,0,30,0.3)"/>
@@ -3479,7 +3479,7 @@ const MONSTERS = [
       <line x1="33" y1="28" x2="34" y2="31"     stroke="#FFFFFF" stroke-width="1"/>
     </g>` },
 
-  { name:'Mumie',            minLv:25, hpM:2.8, atkM:1.7, xp:38,  gold:10, color:'#CCAA77',
+  { name:'Mumie',            minLv:25, hpM:2.8, atkM:1.7, xp:38,  gold:4, color:'#CCAA77',
     type:'untoter', weak:'feuer', special:'fluch',   specialDesc:'Mumienfluch — -20% deiner Stats für 3 Runden',
     svg:`<g>
       <rect x="22" y="58" width="7"  height="18" rx="1" fill="#AA8844"/>
@@ -3501,7 +3501,7 @@ const MONSTERS = [
       <circle cx="36" cy="17" r="1.5"            fill="#FFBB44"/>
     </g>` },
 
-  { name:'Kryptenwächter',   minLv:28, hpM:3.5, atkM:2.0, xp:44,  gold:11, color:'#778899',
+  { name:'Kryptenwächter',   minLv:28, hpM:3.5, atkM:2.0, xp:44,  gold:4, color:'#778899',
     type:'untoter', weak:'blitz', special:'schild',  specialDesc:'Kryptenschild — absorbiert 50% Schaden einmalig',
     svg:`<g>
       <rect x="22" y="58" width="7"  height="16" rx="2" fill="#334455"/>
@@ -3520,7 +3520,7 @@ const MONSTERS = [
     </g>` },
 
   // ── ZONE 4: HÖHLEN (Lv 31-40) ─────────────────
-  { name:'Steinschlange',    minLv:32, hpM:2.5, atkM:2.4, xp:52,  gold:13, color:'#888855',
+  { name:'Steinschlange',    minLv:32, hpM:2.5, atkM:2.4, xp:52,  gold:4, color:'#888855',
     type:'tier',    weak:'blitz', special:'wickeln', specialDesc:'Einwickeln — kein Angriff für 1 Runde',
     svg:`<g>
       <path d="M10,70 Q14,58 20,54 Q26,50 30,46 Q34,42 38,36 Q42,30 40,22 Q38,14 34,12 Q30,10 28,14 Q26,18 30,22 Q34,26 36,32 Q38,38 34,44 Q30,50 24,54 Q18,58 14,64 Q10,68 10,72Z" fill="#777744"/>
@@ -3534,7 +3534,7 @@ const MONSTERS = [
       <path d="M35,15 L37,18 L33,18Z"            fill="#FF3333"/>
     </g>` },
 
-  { name:'Felstroll',        minLv:35, hpM:4.5, atkM:1.8, xp:60, gold:15, color:'#996644',
+  { name:'Felstroll',        minLv:35, hpM:4.5, atkM:1.8, xp:60, gold:5, color:'#996644',
     type:'tier',    weak:'magisch',special:'erdbeben',specialDesc:'Erdbeben — trifft alle Ziele, Flächenschaden',
     svg:`<g>
       <rect x="20" y="58" width="9"  height="18" rx="4" fill="#7A5533"/>
@@ -3552,7 +3552,7 @@ const MONSTERS = [
       <line x1="36" y1="32" x2="38" y2="36"     stroke="#553322" stroke-width="2"/>
     </g>` },
 
-  { name:'Schattenläufer',   minLv:38, hpM:2.0, atkM:3.0, xp:68, gold:18, color:'#554477',
+  { name:'Schattenläufer',   minLv:38, hpM:2.0, atkM:3.0, xp:68, gold:5, color:'#554477',
     type:'magisch', weak:'feuer', special:'schatten', specialDesc:'Schattenklinge — kritischer Treffer ignoriert DEF',
     svg:`<g>
       <ellipse cx="30" cy="74" rx="10" ry="3" fill="rgba(80,40,110,0.3)"/>
@@ -3573,7 +3573,7 @@ const MONSTERS = [
     </g>` },
 
   // ── ZONE 5: HÖLLEN-EBENE (Lv 41-50) ───────────
-  { name:'Lavakröte',        minLv:42, hpM:3.8, atkM:2.6, xp:78, gold:20, color:'#FF5500',
+  { name:'Lavakröte',        minLv:42, hpM:3.8, atkM:2.6, xp:78, gold:6, color:'#FF5500',
     type:'tier',    weak:'eis',   special:'lavaspucker',specialDesc:'Lavastrahl — verursacht Brandschaden über 3 Runden',
     svg:`<g>
       <ellipse cx="30" cy="58" rx="20" ry="14"   fill="#883300"/>
@@ -3592,7 +3592,7 @@ const MONSTERS = [
       <ellipse cx="30" cy="48" rx="4" ry="2"     fill="#FF6600" opacity="0.6"/>
     </g>` },
 
-  { name:'Dämonenfürst',     minLv:46, hpM:4.0, atkM:3.2, xp:90, gold:23, color:'#CC2244',
+  { name:'Dämonenfürst',     minLv:46, hpM:4.0, atkM:3.2, xp:90, gold:6, color:'#CC2244',
     type:'damon',   weak:'heilig',special:'teilen',  specialDesc:'Seelenspaltung — teilt sich HP-Verlust mit dir',
     svg:`<g>
       <ellipse cx="30" cy="74" rx="14" ry="4" fill="rgba(180,20,40,0.3)"/>
@@ -3613,7 +3613,7 @@ const MONSTERS = [
       <line x1="34" y1="30" x2="36" y2="34"     stroke="#FF0033" stroke-width="1.5"/>
     </g>` },
 
-  { name:'Phönixgeist',      minLv:49, hpM:3.0, atkM:3.5, xp:105, gold:27, color:'#FFAA00',
+  { name:'Phönixgeist',      minLv:49, hpM:3.0, atkM:3.5, xp:105, gold:7, color:'#FFAA00',
     type:'magisch', weak:'eis',   special:'wiedergeburt',specialDesc:'Wiedergeburt — steht einmal mit 30% HP auf',
     svg:`<g>
       <ellipse cx="30" cy="72" rx="12" ry="4" fill="rgba(255,160,0,0.3)"/>
@@ -3631,7 +3631,7 @@ const MONSTERS = [
     </g>` },
 
   // ── ZONE 6: GÖTTLICHE PRÜFUNG (Lv 51-60) ──────
-  { name:'Himmelsrichter',   minLv:52, hpM:5.0, atkM:3.8, xp:135, gold:34,color:'#EEDD88',
+  { name:'Himmelsrichter',   minLv:52, hpM:5.0, atkM:3.8, xp:135, gold:8,color:'#EEDD88',
     type:'heilig',  weak:'damon', special:'urteil',  specialDesc:'Göttliches Urteil — ignoriert alle DEF-Boni',
     svg:`<g>
       <ellipse cx="30" cy="74" rx="14" ry="4" fill="rgba(220,200,100,0.3)"/>
@@ -3654,7 +3654,7 @@ const MONSTERS = [
       <path d="M6,24 L4,20 L8,20 Z"              fill="#EEDD88"/>
     </g>` },
 
-  { name:'Sternenverschlinger',minLv:56, hpM:6.5, atkM:4.5, xp:178, gold:45,color:'#AA88FF',
+  { name:'Sternenverschlinger',minLv:56, hpM:6.5, atkM:4.5, xp:178, gold:9,color:'#AA88FF',
     type:'kosmisch', weak:'heilig',special:'verschlingen',specialDesc:'Kosmischer Schlund — stiehlt 20% deines Goldes',
     svg:`<g>
       <ellipse cx="30" cy="72" rx="18" ry="5" fill="rgba(140,100,220,0.3)"/>
@@ -3677,7 +3677,7 @@ const MONSTERS = [
       <line x1="42" y1="44" x2="52" y2="44"     stroke="#AA88FF" stroke-width="1.5" opacity="0.7"/>
     </g>` },
 
-  { name:'Weltenwächter',    minLv:59, hpM:8.0, atkM:5.0, xp:227, gold:58,color:'#FFFFFF',
+  { name:'Weltenwächter',    minLv:59, hpM:8.0, atkM:5.0, xp:227, gold:11,color:'#FFFFFF',
     type:'kosmisch', weak:'alle',  special:'weltgericht',specialDesc:'Weltgericht — massiver Flächenschaden alle 3 Runden',
     svg:`<g>
       <ellipse cx="30" cy="76" rx="18" ry="5" fill="rgba(255,255,255,0.2)"/>
@@ -3816,41 +3816,37 @@ const ITEM_DEFS = [
 ];
 
 const UPGRADES = [
-  { id:'forge_spd',  icon:'⚡', name:'Schmiedespeed',    desc:'+40% Auto-Schmied-Speed',    maxLv:5,  baseCost:500,  cm:3.5, eff:'forgeSpd' },
-  { id:'item_qual',  icon:'💎', name:'Qualitätshammer',  desc:'+12% Seltenheits-Chance',    maxLv:5,  baseCost:800,  cm:3.8, eff:'itemQual' },
-  { id:'gold_mult',  icon:'💰', name:'Goldgier',         desc:'+8% Gold je Kill',           maxLv:5,  baseCost:1500, cm:4.0, eff:'goldMult' },
-  { id:'atk_up',     icon:'⚔️', name:'Waffenschmied',    desc:'+5 Angriff permanent',       maxLv:10, baseCost:1000, cm:2.6, eff:'atkUp'   },
-  { id:'def_up',     icon:'🛡️', name:'Rüstungsmeister',  desc:'+3 Verteidigung permanent',  maxLv:10, baseCost:800,  cm:2.4, eff:'defUp'   },
-  { id:'hp_up',      icon:'❤️', name:'Lebensessenz',     desc:'+25 Max-HP permanent',       maxLv:10, baseCost:600,  cm:2.2, eff:'hpUp'    },
-  { id:'drop_rate',  icon:'🎁', name:'Glückshand',       desc:'+6% Item-Dropchance',        maxLv:5,  baseCost:2500, cm:4.5,  eff:'dropRate'},
-  { id:'idle_mul',   icon:'⏳', name:'Fleißige Werkstatt',desc:'+50% Offline-Belohnungen',  maxLv:3,  baseCost:6000, cm:6.0,  eff:'idleMul' },
+  // SCHMIED (früh - mittel, ~560k gesamt)
+  { id:'forge_spd',  icon:'⚡', name:'Schmiedespeed',     desc:'+40% Auto-Schmied-Speed',    maxLv:5,  baseCost:3400,   cm:2.0, eff:'forgeSpd'  },
+  { id:'item_qual',  icon:'💎', name:'Qualitätshammer',   desc:'+10% Seltenheits-Chance',    maxLv:5,  baseCost:5600,   cm:2.0, eff:'itemQual'  },
+  { id:'gold_mult',  icon:'💰', name:'Goldgier',           desc:'+6% Gold je Kill',           maxLv:5,  baseCost:9000,   cm:2.0, eff:'goldMult'  },
+  // KAMPF (mittel - spät, ~2.1M gesamt)
+  { id:'atk_up',     icon:'⚔️', name:'Waffenschmied',     desc:'+5 Angriff permanent',       maxLv:10, baseCost:860,    cm:2.0, eff:'atkUp'    },
+  { id:'def_up',     icon:'🛡️', name:'Rüstungsmeister',   desc:'+3 Verteidigung permanent',  maxLv:10, baseCost:685,    cm:2.0, eff:'defUp'    },
+  { id:'hp_up',      icon:'❤️', name:'Lebensessenz',      desc:'+25 Max-HP permanent',       maxLv:10, baseCost:515,    cm:2.0, eff:'hpUp'     },
+  // SUPPORT (spät, ~840k gesamt)
+  { id:'drop_rate',  icon:'🍀', name:'Glückshand',         desc:'+8% Item-Drop-Chance',       maxLv:5,  baseCost:13500,  cm:2.0, eff:'dropRate' },
+  { id:'inv_expand', icon:'🎒', name:'Fleißige Werkstatt', desc:'+20 Inventar-Plätze',        maxLv:5,  baseCost:13500,  cm:2.0, eff:'invExp'  },
 ];
-
-// ════════════════════════════════════════════
-// ── SKILL TREE SYSTEM
-// ════════════════════════════════════════════
-// 4 Zweige: Krieger, Magier, Schatten, Allgemein
-// Jeder Knoten hat: id, branch, tier (row), col (column), req[]
-
 const SKILL_TREE = {
   krieger: {
     label: '⚔️ Krieger',
     desc: 'Krieger: Hoher Schaden, maximale Überlebensfähigkeit',
     color: '#e05050',
     nodes: [
-      // Tier 0 — Einstieg
-      { id:'double_strike', icon:'⚔️', name:'Doppelschlag',    desc:'5% Chance: greife zweimal an.',           cost:1200,  req:[],                tier:0, col:1, eff:'doubleStrike' },
-      { id:'iron_skin',     icon:'🪨', name:'Eisenhaut',        desc:'Nimm 15% weniger Schaden.',               cost:1600,  req:[],                tier:0, col:3, eff:'ironSkin'     },
+      // Tier 0
+      { id:'double_strike', icon:'⚔️', name:'Doppelschlag',        desc:'5% Chance: greife zweimal an.',             cost:10000, req:[],                         tier:0, col:1, eff:'doubleStrike'  },
+      { id:'iron_skin',     icon:'🪨', name:'Eisenhaut',            desc:'Nimm 15% weniger Schaden.',                 cost:10000, req:[],                         tier:0, col:3, eff:'ironSkin'      },
       // Tier 1
-      { id:'blood_rage',    icon:'🩸', name:'Blutraserei',      desc:'+20% ATK wenn HP < 40%.',                 cost:3500,  req:['double_strike'], tier:1, col:0, eff:'bloodRage'    },
-      { id:'war_stomp',     icon:'👊', name:'Kriegsstoß',       desc:'10% Chance: betäubt Monster 1 Runde.',    cost:3000,  req:['double_strike'], tier:1, col:2, eff:'warStomp'     },
-      { id:'fortress',      icon:'🏰', name:'Festung',          desc:'+30% DEF permanent.',                     cost:5000,  req:['iron_skin'],     tier:1, col:4, eff:'fortress'     },
+      { id:'blood_rage',    icon:'🪸', name:'Blutraserei',          desc:'+20% ATK wenn HP < 40%.',                   cost:25000, req:['double_strike'],           tier:1, col:0, eff:'bloodRage'     },
+      { id:'war_stomp',     icon:'👊', name:'Kriegsstoß',           desc:'10% Chance: betäubt Monster 1 Runde.',      cost:22000, req:['double_strike'],           tier:1, col:2, eff:'warStomp'      },
+      { id:'fortress',      icon:'🏰', name:'Festung',              desc:'+30% DEF permanent.',                       cost:28000, req:['iron_skin'],               tier:1, col:4, eff:'fortress'      },
       // Tier 2
-      { id:'vampirism',     icon:'🧛', name:'Vampirismus',      desc:'Heile 8% deines Schadens als HP.',        cost:10500,  req:['blood_rage'],    tier:2, col:0, eff:'vampirism'    },
-      { id:'berserker',     icon:'🪓', name:'Berserker',        desc:'+25% ATK, aber -10% DEF.',                cost:9000,  req:['war_stomp'],     tier:2, col:2, eff:'berserker'    },
-      { id:'iron_will',     icon:'💪', name:'Eisenwille',       desc:'Einmal pro Kampf auf 1 HP überleben.',    cost:13500,  req:['fortress'],      tier:2, col:4, eff:'ironWill'     },
+      { id:'vampirism',     icon:'🧛', name:'Vampirismus',          desc:'Heile 8% deines Schadens als HP.',          cost:80000, req:['blood_rage'],              tier:2, col:0, eff:'vampirism'     },
+      { id:'berserker',     icon:'🪃', name:'Berserker',            desc:'+25% ATK, aber -10% DEF.',                  cost:70000, req:['war_stomp'],               tier:2, col:2, eff:'berserker'     },
+      { id:'iron_will',     icon:'💪', name:'Eisenwille',           desc:'Einmal pro Kampf auf 1 HP überleben.',      cost:90000, req:['fortress'],                tier:2, col:4, eff:'ironWill'      },
       // Tier 3 — Meisterschaft
-      { id:'warlord',       icon:'👑', name:'Kriegsherr',       desc:'ATK +20% und DEF +20% permanent.',        cost:36000, req:['vampirism','berserker'], tier:3, col:2, eff:'warlord' },
+      { id:'warlord',       icon:'👑', name:'Kriegsherr',           desc:'ATK +20% und DEF +20% permanent.',          cost:250000,req:['vampirism','berserker'],   tier:3, col:2, eff:'warlord'       },
     ]
   },
   magier: {
@@ -3859,18 +3855,18 @@ const SKILL_TREE = {
     color: '#8844ee',
     nodes: [
       // Tier 0
-      { id:'arcane_sight',  icon:'👁️', name:'Arkaner Blick',   desc:'Sieh Monster-Schwächen im Kampf.',        cost:960,  req:[],                tier:0, col:0, eff:'arcaneSight'  },
-      { id:'arcane_power',  icon:'🔮', name:'Arkane Macht',     desc:'+10% Crit-Chance permanent.',             cost:2400,  req:[],                tier:0, col:2, eff:'arcanePower'  },
-      { id:'mana_shield',   icon:'🔵', name:'Manaschutz',       desc:'Mana schützt vor 15% Schaden.',           cost:2000,  req:[],                tier:0, col:4, eff:'manaShield'   },
+      { id:'arcane_sight',  icon:'👁️', name:'Arkaner Blick',       desc:'Sieh Monster-Schwächen im Kampf.',          cost:8000,  req:[],                         tier:0, col:0, eff:'arcaneSight'   },
+      { id:'arcane_power',  icon:'🔮', name:'Arkane Macht',        desc:'+10% Crit-Chance permanent.',               cost:12000, req:[],                         tier:0, col:2, eff:'arcanePower'   },
+      { id:'mana_shield',   icon:'🔵', name:'Manaschutz',          desc:'Mana schützt vor 15% Schaden.',             cost:10000, req:[],                         tier:0, col:4, eff:'manaShield'    },
       // Tier 1
-      { id:'chain_lightning',icon:'⚡',name:'Kettenblitz',      desc:'15% Chance: trifft alle Monster.',        cost:4500,  req:['arcane_power'],  tier:1, col:1, eff:'chainLightning'},
-      { id:'time_warp',     icon:'⌛', name:'Zeitverzerrung',   desc:'Angriffsgeschwindigkeit +20%.',           cost:5500,  req:['arcane_power'],  tier:1, col:3, eff:'timeWarp'     },
-      { id:'mana_surge',    icon:'💎', name:'Mana-Ansturm',     desc:'Voll Mana gibt +15% Schaden.',            cost:4000,  req:['mana_shield'],   tier:1, col:4, eff:'manaSurge'    },
+      { id:'chain_lightning',icon:'⚡',name:'Kettenblitz',         desc:'15% Chance: trifft alle Monster.',          cost:20000, req:['arcane_power'],            tier:1, col:1, eff:'chainLightning'},
+      { id:'time_warp',     icon:'⏳', name:'Zeitverzerrung',      desc:'Angriffsgeschwindigkeit +20%.',             cost:25000, req:['arcane_power'],            tier:1, col:3, eff:'timeWarp'      },
+      { id:'mana_surge',    icon:'💎', name:'Mana-Ansturm',        desc:'Voll Mana gibt +15% Schaden.',              cost:18000, req:['mana_shield'],             tier:1, col:4, eff:'manaSurge'     },
       // Tier 2
-      { id:'overload',      icon:'💥', name:'Überlastung',      desc:'Crit-Treffer machen +50% Schaden.',       cost:12000,  req:['chain_lightning'],tier:2,col:1, eff:'overload'     },
-      { id:'chrono_strike', icon:'🕰️', name:'Chronoschlag',     desc:'Jeder 5. Angriff macht 3× Schaden.',     cost:13500,  req:['time_warp'],     tier:2, col:3, eff:'chronoStrike' },
+      { id:'overload',      icon:'💥', name:'Überlastung',         desc:'Crit-Treffer machen +50% Schaden.',         cost:75000, req:['chain_lightning'],         tier:2, col:1, eff:'overload'      },
+      { id:'chrono_strike', icon:'🕰️', name:'Chronoschlag',        desc:'Jeder 5. Angriff macht 3× Schaden.',       cost:85000, req:['time_warp'],               tier:2, col:3, eff:'chronoStrike'  },
       // Tier 3 — Meisterschaft
-      { id:'god_mode',      icon:'⚡', name:'Gottesmodus',      desc:'Alle Stats +15% permanent.',              cost:40000, req:['overload','chrono_strike'], tier:3, col:2, eff:'godMode' },
+      { id:'god_mode',      icon:'⚡', name:'Gottesmodus',         desc:'Alle Stats +15% permanent.',                cost:280000,req:['overload','chrono_strike'],tier:3, col:2, eff:'godMode'       },
     ]
   },
   schatten: {
@@ -3879,19 +3875,19 @@ const SKILL_TREE = {
     color: '#44bbaa',
     nodes: [
       // Tier 0
-      { id:'gold_sense',    icon:'👁️', name:'Goldgespür',       desc:'+35% Gold von Monstern.',                cost:1440,  req:[],                tier:0, col:0, eff:'goldSense'    },
-      { id:'shadow_step',   icon:'👣', name:'Schattenschritt',   desc:'10% Chance Angriff vollständig ausweichen.',cost:1600,req:[],               tier:0, col:2, eff:'shadowStep'   },
-      { id:'lucky_find',    icon:'🍀', name:'Glücksfund',        desc:'+20% Chance auf seltene Items.',          cost:1760,  req:[],                tier:0, col:4, eff:'luckyFind'    },
+      { id:'gold_sense',    icon:'👁️', name:'Goldgespür',          desc:'+35% Gold von Monstern.',                   cost:9000,  req:[],                         tier:0, col:0, eff:'goldSense'     },
+      { id:'shadow_step',   icon:'👣', name:'Schattenschritt',     desc:'10% Chance Angriff vollständig ausweichen.',cost:10000, req:[],                         tier:0, col:2, eff:'shadowStep'    },
+      { id:'lucky_find',    icon:'🍀', name:'Glücksfund',          desc:'+20% Chance auf seltene Items.',            cost:11000, req:[],                         tier:0, col:4, eff:'luckyFind'     },
       // Tier 1
-      { id:'treasure_hunt', icon:'🗺️', name:'Schatzsuche',       desc:'Items droppen 20% öfter.',               cost:3500,  req:['gold_sense'],    tier:1, col:0, eff:'treasureHunt' },
-      { id:'assassinate',   icon:'🗡️', name:'Meucheln',          desc:'Erster Treffer im Kampf macht 2× Schaden.',cost:4000,req:['shadow_step'],  tier:1, col:2, eff:'assassinate'  },
-      { id:'pickpocket',    icon:'💰', name:'Taschendiebstahl',  desc:'5% Chance: stiehl Monster-Gold extra.',   cost:3000,  req:['lucky_find'],    tier:1, col:4, eff:'pickpocket'   },
+      { id:'treasure_hunt', icon:'🗺️', name:'Schatzsuche',         desc:'Items droppen 20% öfter.',                 cost:20000, req:['gold_sense'],              tier:1, col:0, eff:'treasureHunt'  },
+      { id:'assassinate',   icon:'🗡️', name:'Meucheln',            desc:'Erster Treffer im Kampf macht 2× Schaden.',cost:22000, req:['shadow_step'],             tier:1, col:2, eff:'assassinate'   },
+      { id:'pickpocket',    icon:'💰', name:'Taschendiebstahl',   desc:'5% Chance: stiehl Monster-Gold extra.',     cost:18000, req:['lucky_find'],              tier:1, col:4, eff:'pickpocket'    },
       // Tier 2
-      { id:'golden_touch',  icon:'🥇', name:'Goldener Griff',    desc:'+50% Gold in Schatzkammern.',             cost:10500,  req:['treasure_hunt'], tier:2, col:0, eff:'goldenTouch'  },
-      { id:'death_mark',    icon:'💀', name:'Todeszeichen',       desc:'Geschwächte Monster nehmen +40% Schaden.',cost:12750, req:['assassinate'],   tier:2, col:2, eff:'deathMark'    },
-      { id:'master_thief',  icon:'🎭', name:'Meisterdieb',        desc:'Keine Schlüssel für Dungeon-Räume.',      cost:14250,  req:['pickpocket'],    tier:2, col:4, eff:'masterThief'  },
+      { id:'golden_touch',  icon:'🥇', name:'Goldener Griff',     desc:'+50% Gold in Schatzkammern.',               cost:70000, req:['treasure_hunt'],           tier:2, col:0, eff:'golden_touch'  },
+      { id:'death_mark',    icon:'💀', name:'Todeszeichen',        desc:'Geschwächte Monster nehmen +40% Schaden.',  cost:80000, req:['assassinate'],             tier:2, col:2, eff:'deathMark'     },
+      { id:'master_thief',  icon:'🎭', name:'Meisterdieb',         desc:'Keine Schlüssel für Dungeon-Räume.',        cost:90000, req:['pickpocket'],              tier:2, col:4, eff:'masterThief'   },
       // Tier 3 — Meisterschaft
-      { id:'phantom',       icon:'👻', name:'Phantom',            desc:'30% Ausweichen, +50% Gold, +20% Crit.',  cost:50000, req:['death_mark','golden_touch'], tier:3, col:2, eff:'phantom' },
+      { id:'phantom',       icon:'👻', name:'Phantom',             desc:'30% Ausweichen, +50% Gold, +20% Crit.',    cost:260000,req:['death_mark','golden_touch'],tier:3, col:2, eff:'phantom'       },
     ]
   },
   allgemein: {
@@ -3900,22 +3896,25 @@ const SKILL_TREE = {
     color: '#cc9933',
     nodes: [
       // Tier 0 — immer verfügbar
-      { id:'forge_mastery', icon:'🔨', name:'Schmiedemeisterschaft',desc:'Jedes 10. Item ist mindestens Selten.',cost:2800, req:[],               tier:0, col:0, eff:'forgeMastery' },
-      { id:'war_cry',       icon:'📯', name:'Kriegsruf',            desc:'Pets machen +40% Schaden.',            cost:3600, req:[],               tier:0, col:2, eff:'warCry'       },
-      { id:'dungeon_lore',  icon:'🏚️', name:'Kerkerwissen',         desc:'+1 Startschlüssel + 15% mehr Dungeon-XP.',cost:2240,req:[],            tier:0, col:4, eff:'dungeonLore'  },
+      { id:'forge_mastery', icon:'🔨', name:'Schmiedemeisterschaft',desc:'Jedes 10. Item ist mindestens Selten.',    cost:12000, req:[],                         tier:0, col:0, eff:'forgeMastery'  },
+      { id:'war_cry',       icon:'📯', name:'Kriegsruf',            desc:'Pets machen +40% Schaden.',               cost:10000, req:[],                         tier:0, col:2, eff:'warCry'        },
+      { id:'dungeon_lore',  icon:'🏚️', name:'Kerkerwissen',         desc:'+1 Startschlüssel + 15% mehr Dungeon-XP.',cost:9000,  req:[],                         tier:0, col:4, eff:'dungeonLore'   },
       // Tier 1
-      { id:'master_smith',  icon:'⚒️', name:'Meisterschmied',       desc:'Schmiede-Speed +30%, bessere Qualität.',cost:6000,req:['forge_mastery'],tier:1,col:0, eff:'masterSmith'  },
-      { id:'beast_bond',    icon:'🐉', name:'Tierverbund',           desc:'Bis zu 3 aktive Pets gleichzeitig.',    cost:7000,req:['war_cry'],      tier:1, col:2, eff:'beastBond'    },
-      { id:'explorer',      icon:'🧭', name:'Entdecker',             desc:'Dungeon-Räume zeigen Typ vorab.',       cost:4000,req:['dungeon_lore'], tier:1, col:4, eff:'explorer'     },
+      { id:'master_smith',  icon:'⚒️', name:'Meisterschmied',       desc:'Schmiede-Speed +30%, bessere Qualität.',  cost:24000, req:['forge_mastery'],           tier:1, col:0, eff:'masterSmith'   },
+      { id:'beast_bond',    icon:'🐉', name:'Tierverbund',           desc:'Bis zu 4 aktive Pets gleichzeitig.',      cost:28000, req:['war_cry'],                 tier:1, col:2, eff:'beastBond'     },
+      { id:'explorer',      icon:'🧭', name:'Entdecker',             desc:'Dungeon-Räume zeigen Typ vorab.',         cost:20000, req:['dungeon_lore'],            tier:1, col:4, eff:'explorer'      },
       // Tier 2
-      { id:'legendary_forge',icon:'⚡',name:'Legendenschmied',      desc:'Mythische Items können erscheinen.',    cost:18000,req:['master_smith'],tier:2, col:1, eff:'legendaryForge'},
-      { id:'alpha_pack',    icon:'🐺', name:'Alpha-Rudel',           desc:'Jeder Pet-Typ gibt +10% ATK Bonus.',   cost:15000,req:['beast_bond'],  tier:2, col:3, eff:'alphaPack'    },
+      { id:'legendary_forge',icon:'⚡',name:'Legendenschmied',      desc:'Mythische Items können erscheinen.',      cost:85000, req:['master_smith'],            tier:2, col:1, eff:'legendaryForge' },
+      { id:'alpha_pack',    icon:'🐺', name:'Alpha-Rudel',           desc:'Jeder Pet-Typ gibt +10% ATK Bonus.',      cost:75000, req:['beast_bond'],              tier:2, col:3, eff:'alphaPack'     },
+      // Tier 3
+      { id:'ascendant',     icon:'🌌', name:'Aufgestiegener',        desc:'+15% auf alle Boni aus Forschung.',       cost:270000,req:['legendary_forge','alpha_pack'],tier:3,col:2,eff:'ascendant' },
     ]
   }
 };
 
 // Flatten for legacy compatibility
 const SKILLS = Object.values(SKILL_TREE).flatMap(b => b.nodes);
+
 
 let _activeSkillBranch = 'krieger';
 let _selectedSkillId = null;
@@ -4323,7 +4322,7 @@ function goldMult()   {
   const luck2bonus = [...G.activePets].some(pid => { const p=PETS.find(x=>x.id===pid); return p&&p.special==='luck2'; }) ? 0.25 : 0;
   // Kosmische Macht Set: +25% Gold
   const cosmicBonus = (() => { try { const ss=getStats(); return ss._cosmicGold ? 0.25 : 0; } catch(e){return 0;} })();
-  return Math.min(3.5, 1 + (G.upgrades.gold_mult||0)*0.06 + fxG.gold_find
+  return Math.min(1.8, 1 + (G.upgrades.gold_mult||0)*0.06 + fxG.gold_find
     + (G.skills.has('goldSense')?0.08:0)
     + ((G.shopBoosts&&G.shopBoosts.goldBoost||0)>Date.now()?0.25:0)
     + guildBonus().gold + (G.skills.has('golden_touch')?0.10:0)
@@ -4352,11 +4351,20 @@ function rng(a,b) { return Math.floor(Math.random()*(b-a+1))+a; }
 
 function xpNeed() {
   const lv = G.hero.level;
-  // Hybrid-Kurve: Lv1-100 in ~1 Jahr spielbar
-  // Lv10:~2K  Lv20:~50K  Lv30:~500K  Lv50:~8M  Lv75:~120M  Lv100:~800M
-  if (lv <= 20)  return Math.floor(60 * Math.pow(1.50, lv - 1));
-  if (lv <= 50)  return Math.floor(60 * Math.pow(1.50, 19) * Math.pow(1.30, lv - 20));
-  return Math.floor(60 * Math.pow(1.50, 19) * Math.pow(1.30, 30) * Math.pow(1.18, lv - 50));
+  // Kalibriert für ~1,6 Jahre bis Lv100 bei 2h/Tag Spielzeit
+  // Lv1-20: Stunden, Lv20-50: Tage, Lv50-75: Wochen/Monate, Lv75-100: halbes Jahr+
+  if (lv <= 5)   return lv * 150;
+  if (lv <= 10)  return 750  + (lv-5)  * 500;
+  if (lv <= 15)  return 3250 + (lv-10) * 2000;
+  if (lv <= 20)  return 13250+ (lv-15) * 5000;
+  if (lv <= 30)  return 38250+ (lv-20) * 20000;
+  if (lv <= 40)  return 238250+(lv-30) * 80000;
+  if (lv <= 50)  return 1038250+(lv-40)*250000;
+  if (lv <= 60)  return 3538250+(lv-50)*700000;
+  if (lv <= 70)  return 10538250+(lv-60)*2000000;
+  if (lv <= 80)  return 30538250+(lv-70)*5000000;
+  if (lv <= 90)  return 80538250+(lv-80)*12000000;
+  return 200538250+(lv-90)*25000000;
 }
 
 function currentEra()  { for(let i=ERAS.length-1;i>=0;i--){if(G.hero.level>=ERAS[i].minLv)return{e:ERAS[i],i};} return{e:ERAS[0],i:0}; }
@@ -5920,7 +5928,7 @@ function spawnWave() {
     const pool = eligible.slice(Math.max(0, eligible.length - 5));
     const proto = pool[rng(0, pool.length - 1)];
     // Event monsters already have hp/atk set; regular ones need scaling
-    const hp  = proto.hp  || Math.round((10 + lv * 7)  * proto.hpM);
+    const hp  = proto.hp  || Math.round((15 + lv * 10) * proto.hpM);
     const atk = proto.atk || Math.round((2  + lv * 1.3) * proto.atkM);
     // ── Rüstung berechnen ────────────────────────────────
     // Basis-Rüstung je Monster-Typ
@@ -7290,10 +7298,10 @@ function checkIdle() {
   if (diff < 90) return;
   const mins = Math.min(Math.floor(diff / 60), 480);
   const mult = idleMult();
-  // Idle = ~30% von Online-Einnahmen (etwas großzügiger, Spieler sollen zurückkommen)
-  const gold  = Math.floor(mins * (0.8 + G.hero.level * 0.15) * mult);
-  const xp    = Math.floor(mins * (0.5 + G.hero.level * 0.10) * mult);
-  const items = Math.min(5, Math.floor(mins / 15));
+  // Idle = ~15% von Online-Einnahmen — Offline ist schlechter als aktiv spielen
+  const gold  = Math.floor(mins * (0.3 + G.hero.level * 0.05) * mult);
+  const xp    = Math.floor(mins * (0.2 + G.hero.level * 0.03) * mult);
+  const items = Math.min(3, Math.floor(mins / 30));
   const pop = document.getElementById('idleOverlay');
   const hh = Math.floor(mins/60), mm = mins%60;
   document.getElementById('idleTimeTxt').innerHTML = `Du warst <b>${hh>0?hh+'h ':''} ${mm}min</b> weg.`;
@@ -9199,23 +9207,23 @@ function buyShopItem(item){
 // ════════════════════════════════════════════
 const RESEARCH=[
   // SCHMIEDE — einzigartige Mechanikers, nicht in Upgrades vorhanden
-  {id:'forge1',cat:'Schmiede',icon:'🔨',name:'Schnelle Hände',    desc:'Auto-Schmied erzeugt immer mind. 1 Item (kein Fehlschlag)',cost:2000, time:300,  req:null},
-  {id:'forge2',cat:'Schmiede',icon:'⚒️',name:'Doppelschmiede',    desc:'Jedes 7. Schmieden gibt 2 Items statt 1',                 cost:8000, time:900,  req:'forge1'},
-  {id:'forge3',cat:'Schmiede',icon:'🌟',name:'Sternen-Schmied',   desc:'Mythische Items können beim Schmieden erscheinen',         cost:25000,time:3600, req:'forge2'},
-  {id:'forge4',cat:'Schmiede',icon:'⚗️',name:'Alchemie',          desc:'Materialien geben 50% mehr Seltenheits-Bonus',            cost:60000,time:7200, req:'forge3'},
+  {id:'forge1',cat:'Schmiede',icon:'🔨',name:'Schnelle Hände',    desc:'Auto-Schmied erzeugt immer mind. 1 Item (kein Fehlschlag)',cost:3000, time:1800,  req:null},
+  {id:'forge2',cat:'Schmiede',icon:'⚒️',name:'Doppelschmiede',    desc:'Jedes 7. Schmieden gibt 2 Items statt 1',                 cost:20000, time:14400,  req:'forge1'},
+  {id:'forge3',cat:'Schmiede',icon:'🌟',name:'Sternen-Schmied',   desc:'Mythische Items können beim Schmieden erscheinen',         cost:150000,time:259200, req:'forge2'},
+  {id:'forge4',cat:'Schmiede',icon:'⚗️',name:'Alchemie',          desc:'Materialien geben 50% mehr Seltenheits-Bonus',            cost:800000,time:1209600, req:'forge3'},
   // KAMPF — einzigartig: Crit-Schaden, Mana-Regen, passive Regeneration
-  {id:'combat1',cat:'Kampf',  icon:'⚔️',name:'Kampftraining',     desc:'Krit-Treffer machen +30% mehr Schaden',                   cost:1500, time:240,  req:null},
-  {id:'combat2',cat:'Kampf',  icon:'🛡️',name:'Kampfhärtung',      desc:'Nimm 10% weniger Schaden von Spezialangriffen',           cost:5000, time:720,  req:'combat1'},
-  {id:'combat3',cat:'Kampf',  icon:'⚡',name:'Blitzreflexe',       desc:'10% Chance: Monsterangriff vollständig ausweichen',        cost:15000,time:2400, req:'combat2'},
-  {id:'combat4',cat:'Kampf',  icon:'🩸',name:'Blutrunst',          desc:'Nach jedem Kill: 3% Max-HP regenerieren',                 cost:40000,time:5400, req:'combat3'},
+  {id:'combat1',cat:'Kampf',  icon:'⚔️',name:'Kampftraining',     desc:'Krit-Treffer machen +30% mehr Schaden',                   cost:3000, time:1200,  req:null},
+  {id:'combat2',cat:'Kampf',  icon:'🛡️',name:'Kampfhärtung',      desc:'Nimm 10% weniger Schaden von Spezialangriffen',           cost:15000, time:10800,  req:'combat1'},
+  {id:'combat3',cat:'Kampf',  icon:'⚡',name:'Blitzreflexe',       desc:'10% Chance: Monsterangriff vollständig ausweichen',        cost:80000,time:36000, req:'combat2'},
+  {id:'combat4',cat:'Kampf',  icon:'🩸',name:'Blutrunst',          desc:'Nach jedem Kill: 3% Max-HP regenerieren',                 cost:400000,time:604800, req:'combat3'},
   // PETS — einzigartig: Pet-Spezialisierung
-  {id:'pets1',  cat:'Pets',   icon:'🐾',name:'Tier-Zähmung',      desc:'Pets regenerieren 5% HP pro Sekunde',                    cost:3000, time:480,  req:null},
-  {id:'pets2',  cat:'Pets',   icon:'🦁',name:'Rudeltaktik',        desc:'Jeder aktive Pet gibt +3% Krit-Chance',                   cost:10000,time:1800, req:'pets1'},
-  {id:'pets3',  cat:'Pets',   icon:'🐉',name:'Drachenpakt',        desc:'Pets folgen Held in den Dungeon — greifen mit an',        cost:30000,time:4800, req:'pets2'},
+  {id:'pets1',  cat:'Pets',   icon:'🐾',name:'Tier-Zähmung',      desc:'Pets regenerieren 5% HP pro Sekunde',                    cost:5000, time:2700,  req:null},
+  {id:'pets2',  cat:'Pets',   icon:'🦁',name:'Rudeltaktik',        desc:'Jeder aktive Pet gibt +3% Krit-Chance',                   cost:35000,time:21600, req:'pets1'},
+  {id:'pets3',  cat:'Pets',   icon:'🐉',name:'Drachenpakt',        desc:'Pets folgen Held in den Dungeon — greifen mit an',        cost:250000,time:432000, req:'pets2'},
   // ERKUNDUNG — einzigartig: Dungeon & Wellen
-  {id:'dung1',  cat:'Erkundung',icon:'🏚️',name:'Schatzsucher',   desc:'Schatzkammern geben 40% mehr Gold & XP',                  cost:2500, time:360,  req:null},
-  {id:'dung2',  cat:'Erkundung',icon:'🗝️',name:'Schlüssel-Meister',desc:'Maximal 7 Dungeon-Schlüssel statt 5',                   cost:8000, time:1200, req:'dung1'},
-  {id:'dung3',  cat:'Erkundung',icon:'🌍',name:'Weltenwanderer',   desc:'Wellen-Boni +20% Gold & XP ab Welle 100',                cost:20000,time:3600, req:'dung2'},
+  {id:'dung1',  cat:'Erkundung',icon:'🏚️',name:'Schatzsucher',   desc:'Schatzkammern geben 40% mehr Gold & XP',                  cost:3000, time:1500,  req:null},
+  {id:'dung2',  cat:'Erkundung',icon:'🗝️',name:'Schlüssel-Meister',desc:'Maximal 7 Dungeon-Schlüssel statt 5',                   cost:25000, time:14400, req:'dung1'},
+  {id:'dung3',  cat:'Erkundung',icon:'🌍',name:'Weltenwanderer',   desc:'Wellen-Boni +20% Gold & XP ab Welle 100',                cost:100000,time:43200, req:'dung2'},
 ];
 
 if(!G.research)G.research=new Set();
@@ -10041,7 +10049,7 @@ const SEASONAL_EVENTS = {
         special:'fluch', specialDesc:'Kürbisfluch — DEF-Debuff',
         drops: { ghost_essence: 2 },
         svg:`<g><ellipse cx="30" cy="55" rx="16" ry="18" fill="#cc4400"/><path d="M20,44 Q22,36 30,34 Q38,36 40,44Z" fill="#dd5500"/><circle cx="24" cy="48" r="5" fill="#1a0800"/><polygon points="22,46 24,42 26,46" fill="#ff8800"/><circle cx="36" cy="48" r="5" fill="#1a0800"/><polygon points="34,46 36,42 38,46" fill="#ff8800"/><path d="M22,58 Q25,62 28,58 Q30,62 32,58 Q35,62 38,58" stroke="#1a0800" stroke-width="2.5" fill="none"/><rect x="28" y="28" width="4" height="8" rx="2" fill="#228822"/><rect x="26" y="28" width="8" height="3" rx="1" fill="#228822"/><rect x="22" y="68" width="7" height="12" rx="3" fill="#aa3300"/><rect x="31" y="68" width="7" height="12" rx="3" fill="#aa3300"/></g>` },
-      { name:'Geist',          emoji:'👻', hpM:0.8, atkM:1.8, xp:30,  gold:15, color:'#ccccff', type:'geist',
+      { name:'Geist',          emoji:'👻', hpM:0.8, atkM:1.8, xp:17,  gold:15, color:'#ccccff', type:'geist',
         special:'phase', specialDesc:'Phasiert — negiert 40% Angriffe',
         drops: { ghost_essence: 3 },
         svg:`<g><path d="M20,72 Q16,60 18,48 Q18,32 30,28 Q42,32 42,48 Q44,60 40,72 Q36,68 32,72 Q30,68 28,72 Q24,68 20,72Z" fill="#ddddff" opacity=".9"/><circle cx="24" cy="44" r="5" fill="#223"/><circle cx="25" cy="43" r="2.5" fill="#aaaaff"/><circle cx="36" cy="44" r="5" fill="#223"/><circle cx="37" cy="43" r="2.5" fill="#aaaaff"/><path d="M24,54 Q30,58 36,54" stroke="#8888cc" stroke-width="2" fill="none"/></g>` },
@@ -10106,7 +10114,7 @@ const SEASONAL_EVENTS = {
         special:'dodge', specialDesc:'Flink — weicht 25% Angriffen aus',
         drops: { snowflake: 3 },
         svg:`<g><rect x="23" y="58" width="7" height="16" rx="2" fill="#006622"/><rect x="30" y="58" width="7" height="16" rx="2" fill="#006622"/><rect x="19" y="28" width="22" height="30" rx="3" fill="#008833"/><rect x="11" y="32" width="8" height="18" rx="2" fill="#007722"/><rect x="41" y="32" width="8" height="18" rx="2" fill="#007722"/><ellipse cx="30" cy="24" rx="11" ry="10" fill="#ffccaa"/><path d="M20,20 Q16,10 22,8 Q20,16 22,14Z" fill="#cc0000"/><path d="M40,20 Q44,10 38,8 Q40,16 38,14Z" fill="#cc0000"/><circle cx="25" cy="22" r="3" fill="#221100"/><circle cx="26" cy="21" r="1.5" fill="#88ffcc"/><circle cx="35" cy="22" r="3" fill="#221100"/><circle cx="36" cy="21" r="1.5" fill="#88ffcc"/><polygon points="30,6 32,14 28,14" fill="#cc0000"/></g>` },
-      { name:'Frostriese',      emoji:'❄️', hpM:3.5, atkM:1.5, xp:50,  gold:25, color:'#55aaff', type:'tier',
+      { name:'Frostriese',      emoji:'❄️', hpM:3.5, atkM:1.5, xp:28,  gold:25, color:'#55aaff', type:'tier',
         special:'wickeln', specialDesc:'Eissturm — 2 Runden eingefroren',
         drops: { snowflake: 4 },
         svg:`<g><rect x="18" y="56" width="10" height="20" rx="4" fill="#2244aa"/><rect x="32" y="56" width="10" height="20" rx="4" fill="#2244aa"/><ellipse cx="30" cy="44" rx="20" ry="24" fill="#3355cc"/><rect x="6" y="32" width="14" height="26" rx="4" fill="#2244aa"/><rect x="40" y="32" width="14" height="26" rx="4" fill="#2244aa"/><ellipse cx="30" cy="22" rx="16" ry="14" fill="#4466dd"/><circle cx="22" cy="20" r="5" fill="#112233"/><circle cx="23" cy="19" r="2.5" fill="#88ddff"/><circle cx="38" cy="20" r="5" fill="#112233"/><circle cx="39" cy="19" r="2.5" fill="#88ddff"/><path d="M22,30 Q30,35 38,30" stroke="#2244aa" stroke-width="2.5" fill="none"/></g>` },
@@ -10162,7 +10170,7 @@ const SEASONAL_EVENTS = {
         special:'swarm', specialDesc:'Häschensprint — greift doppelt an',
         drops: { easter_egg: 2 },
         svg:`<g><ellipse cx="30" cy="55" rx="15" ry="17" fill="#ffddee"/><ellipse cx="30" cy="38" rx="10" ry="9" fill="#ffeef5"/><path d="M22,32 Q20,18 24,14 Q22,24 24,22Z" fill="#ffccdd"/><path d="M38,32 Q40,18 36,14 Q38,24 36,22Z" fill="#ffccdd"/><circle cx="24" cy="36" r="3.5" fill="#221100"/><circle cx="25" cy="35" r="1.8" fill="#ff6699"/><circle cx="36" cy="36" r="3.5" fill="#221100"/><circle cx="37" cy="35" r="1.8" fill="#ff6699"/><ellipse cx="30" cy="41" rx="4" ry="2.5" fill="#ff9999"/><path d="M26,44 Q30,47 34,44" stroke="#ffaacc" stroke-width="1.5" fill="none"/><rect x="18" y="64" width="7" height="12" rx="4" fill="#ffbbcc"/><rect x="35" y="64" width="7" height="12" rx="4" fill="#ffbbcc"/></g>` },
-      { name:'Ei-Elemental',    emoji:'🥚', hpM:2.0, atkM:1.0, xp:30,  gold:15, color:'#ffee88', type:'magisch',
+      { name:'Ei-Elemental',    emoji:'🥚', hpM:2.0, atkM:1.0, xp:17,  gold:15, color:'#ffee88', type:'magisch',
         special:'stein', specialDesc:'Eierschale — 1 Runde unverwundbar',
         drops: { easter_egg: 3 },
         svg:`<g><ellipse cx="30" cy="50" rx="18" ry="24" fill="#ffe866"/><ellipse cx="30" cy="52" rx="16" ry="12" fill="#ff8844"/><path d="M12,50 Q14,38 18,36 Q12,44 16,44Z" fill="#ffcc44"/><path d="M48,50 Q46,38 42,36 Q48,44 44,44Z" fill="#ffcc44"/><circle cx="24" cy="42" r="4.5" fill="#222"/><circle cx="25" cy="41" r="2.5" fill="#ffff88"/><circle cx="36" cy="42" r="4.5" fill="#222"/><circle cx="37" cy="41" r="2.5" fill="#ffff88"/><path d="M24,52 Q30,56 36,52" stroke="#cc6600" stroke-width="2" fill="none"/></g>` },
@@ -10888,14 +10896,15 @@ function trackAch(type, amount) {
 // Prestige-Stufen: jede Stufe braucht höheres Level für Reset
 // Boni stapeln sich — Stufe 3 gibt Boni von Stufe 1+2+3
 const PRESTIGE_TIERS = [
-  { stars:1,  name:'Eiserner Pfad',     reqLv:30,  bonus:{ atk:0.10, gold:0.15, xp:0.10, drop:0.05 }, color:'#cd7f32' },
-  { stars:2,  name:'Silberne Klinge',   reqLv:40,  bonus:{ atk:0.12, gold:0.18, xp:0.12, drop:0.06 }, color:'#aaaaaa' },
-  { stars:3,  name:'Goldener Krieger',  reqLv:50,  bonus:{ atk:0.15, gold:0.20, xp:0.15, drop:0.08 }, color:'#f0cc55' },
-  { stars:4,  name:'Saphir-Recke',      reqLv:60,  bonus:{ atk:0.18, gold:0.22, xp:0.18, drop:0.10 }, color:'#4488ff' },
-  { stars:5,  name:'Rubin-Seele',       reqLv:70,  bonus:{ atk:0.20, gold:0.25, xp:0.20, drop:0.12 }, color:'#ff4466' },
-  { stars:6,  name:'Smaragd-Legende',  reqLv:80,  bonus:{ atk:0.22, gold:0.28, xp:0.22, drop:0.14 }, color:'#44cc88' },
-  { stars:7,  name:'Diamant-Wächter',  reqLv:90,  bonus:{ atk:0.25, gold:0.30, xp:0.25, drop:0.16 }, color:'#aa88ff' },
-  { stars:8,  name:'Astraler Meister', reqLv:100, bonus:{ atk:0.30, gold:0.35, xp:0.30, drop:0.20 }, color:'#ff8800' },
+  // Höhere Level-Anforderungen + Kill-Mindestanforderungen für echten Fortschritt
+  { stars:1,  name:'Eiserner Pfad',     reqLv:40,  reqKills:10000,  bonus:{ atk:0.10, gold:0.15, xp:0.10, drop:0.05 }, color:'#cd7f32' },
+  { stars:2,  name:'Silberne Klinge',   reqLv:55,  reqKills:25000,  bonus:{ atk:0.12, gold:0.18, xp:0.12, drop:0.06 }, color:'#aaaaaa' },
+  { stars:3,  name:'Goldener Krieger',  reqLv:65,  reqKills:60000,  bonus:{ atk:0.15, gold:0.20, xp:0.15, drop:0.08 }, color:'#f0cc55' },
+  { stars:4,  name:'Saphir-Recke',      reqLv:75,  reqKills:120000, bonus:{ atk:0.18, gold:0.22, xp:0.18, drop:0.10 }, color:'#4488ff' },
+  { stars:5,  name:'Rubin-Seele',       reqLv:82,  reqKills:250000, bonus:{ atk:0.20, gold:0.25, xp:0.20, drop:0.12 }, color:'#ff4466' },
+  { stars:6,  name:'Smaragd-Legende',   reqLv:88,  reqKills:500000, bonus:{ atk:0.22, gold:0.28, xp:0.22, drop:0.14 }, color:'#44cc88' },
+  { stars:7,  name:'Diamant-Wächter',   reqLv:94,  reqKills:1000000,bonus:{ atk:0.25, gold:0.30, xp:0.25, drop:0.16 }, color:'#aa88ff' },
+  { stars:8,  name:'Astraler Meister',  reqLv:100, reqKills:2000000,bonus:{ atk:0.30, gold:0.35, xp:0.30, drop:0.20 }, color:'#ff8800' },
 ];
 
 // State
@@ -12084,7 +12093,8 @@ function renderHeroPanel() {
   }
 
   // XP Bar
-  const xpNeeded = G.xpTable ? (G.xpTable[h.level] || h.level * 120) : h.level * 120;
+  // XP-Kurve: frühe Level schnell, späte Level sehr langsam
+  const xpNeeded = xpNeed();
   const xpPct    = Math.min(100, Math.round(h.xp / xpNeeded * 100));
   const xpFill   = document.getElementById('heroXpFill');
   const xpLabel  = document.getElementById('heroXpLabel');
