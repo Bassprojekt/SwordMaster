@@ -1554,6 +1554,42 @@ body {
   color: var(--purple2); margin-top: 3px;
 }
 
+/* ══ SET BONUS SYSTEM ══ */
+.set-card {
+  background: rgba(0,0,0,.25);
+  border: 1px solid var(--border);
+  border-radius: 11px; padding: 10px 12px;
+  margin-bottom: 6px; transition: border-color .15s;
+  position: relative; overflow: hidden;
+}
+.set-card.active-2 { border-color: rgba(64,192,112,.4); background: rgba(64,192,112,.04); }
+.set-card.active-3 { border-color: rgba(201,162,39,.5); background: rgba(201,162,39,.05);
+  box-shadow: 0 0 12px rgba(201,162,39,.15); }
+.set-card.active-full { border-color: var(--purple2); background: rgba(144,96,224,.06);
+  box-shadow: 0 0 16px rgba(144,96,224,.2); }
+.set-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.set-name { font-family: Cinzel,serif; font-size: .8rem; font-weight: 700; flex: 1; }
+.set-badge {
+  font-size: .58rem; padding: 2px 7px; border-radius: 8px;
+  font-family: Cinzel,serif; font-weight: 700;
+}
+.set-badge.b2 { background: rgba(64,192,112,.15); color: var(--green2); border: 1px solid rgba(64,192,112,.3); }
+.set-badge.b3 { background: rgba(201,162,39,.15); color: var(--gold2);  border: 1px solid rgba(201,162,39,.3); }
+.set-badge.bf { background: rgba(144,96,224,.15); color: var(--purple2);border: 1px solid rgba(144,96,224,.3); }
+.set-items { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 5px; }
+.set-item-chip {
+  font-size: .6rem; padding: 2px 6px; border-radius: 6px;
+  background: rgba(0,0,0,.3); border: 1px solid var(--border);
+  color: var(--text2);
+}
+.set-item-chip.equipped { border-color: var(--gold); color: var(--gold2);
+  background: rgba(201,162,39,.1); }
+.set-bonus-row { font-size: .63rem; color: var(--text3); line-height: 1.5; }
+.set-bonus-row .active-bonus { color: var(--green2); font-weight: 700; }
+.set-progress { height: 4px; background: rgba(255,255,255,.05); border-radius: 2px;
+  overflow: hidden; margin-top: 5px; }
+.set-progress-fill { height: 100%; border-radius: 2px; transition: width .4s; }
+
 /* ══ WHITE MODE ══ */
 body.white-mode {
   --bg:       #f0eee8;
@@ -2203,6 +2239,15 @@ input[type=range].vol-slider::-webkit-slider-thumb:hover { transform:scale(1.2);
       <button class="ctrl-btn" onclick="openPrestige()" style="border-color:var(--gold);color:var(--gold2);font-size:.68rem;">⚡ Übersicht & Reset</button>
     </div>
     <div id="prestigeHeldInfo" style="font-size:.72rem;color:var(--text2);line-height:1.8;"></div>
+  </div>
+
+  <!-- ── SET-BONI ── -->
+  <div class="card" id="setBonusCard">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:6px;">
+      <div class="sec-title" style="margin-bottom:0;">🎽 Set-Boni</div>
+      <div style="font-size:.62rem;color:var(--text3);font-style:italic;">2+ Items eines Sets ausrüsten für Boni</div>
+    </div>
+    <div id="setBonusDisplay"></div>
   </div>
 
   <!-- ── ENCHANTING KARTE ── -->
@@ -4043,7 +4088,20 @@ function getStats() {
       crit = Math.min(75, crit + Math.round(em.all_stats * 30));
     }
   } catch(e) {}
-  return { atk, def, spd, crit: Math.min(75, crit), fx, armorPen: armorPenBonus || 0 };
+
+  // ── Set-Boni anwenden ─────────────────────
+  const statsObj = { atk, def, spd, crit: Math.min(75, crit), fx, armorPen: armorPenBonus || 0 };
+  try { applySetBonuses(statsObj); } catch(e) {}
+
+  // Max-HP Bonus (Engelschutz Set)
+  if (statsObj._maxHpBonus && h.maxHp) {
+    const hpBonus = Math.floor(h.maxHp * statsObj._maxHpBonus);
+    if (!G._setMaxHpBonus || G._setMaxHpBonus !== hpBonus) {
+      G._setMaxHpBonus = hpBonus;
+    }
+  } else { G._setMaxHpBonus = 0; }
+
+  return statsObj;
 }
 
 function guildBonus() {
@@ -4057,13 +4115,15 @@ function guildBonus() {
     level: lv
   };
 }
-function xpMult()     { const fxX = getEffectMods(); const px = (typeof prestigeXpMult==='function') ? prestigeXpMult()-1 : 0; return 1 + ((G.shopBoosts&&G.shopBoosts.xpBoost||0)>Date.now()?0.5:0) + guildBonus().xp + fxX.xp_boost + px; }
+function xpMult()     { const fxX = getEffectMods(); const px = (typeof prestigeXpMult==='function') ? prestigeXpMult()-1 : 0; const cx = (() => { try { const ss=getStats(); return ss._cosmicGold ? 0.25 : 0; } catch(e){return 0;} })(); return 1 + ((G.shopBoosts&&G.shopBoosts.xpBoost||0)>Date.now()?0.5:0) + guildBonus().xp + fxX.xp_boost + px + cx; }
 function goldMult()   {
   const fxG = getEffectMods();
   const pg = (typeof prestigeGoldMult==='function') ? prestigeGoldMult()-1 : 0;
   // luck2 pet: +25% gold
   const luck2bonus = [...G.activePets].some(pid => { const p=PETS.find(x=>x.id===pid); return p&&p.special==='luck2'; }) ? 0.25 : 0;
-  return Math.min(3.0, 1 + (G.upgrades.gold_mult||0)*0.06 + fxG.gold_find
+  // Kosmische Macht Set: +25% Gold
+  const cosmicBonus = (() => { try { const ss=getStats(); return ss._cosmicGold ? 0.25 : 0; } catch(e){return 0;} })();
+  return Math.min(3.5, 1 + (G.upgrades.gold_mult||0)*0.06 + fxG.gold_find
     + (G.skills.has('goldSense')?0.08:0)
     + ((G.shopBoosts&&G.shopBoosts.goldBoost||0)>Date.now()?0.25:0)
     + guildBonus().gold + (G.skills.has('golden_touch')?0.10:0)
@@ -4362,6 +4422,15 @@ function equipItem(item) {
   G.equipped[item.slot]=item;
   item.equipped=true;
   const effStr = item.eff ? ' [' + (EFF_LABELS[item.eff]||item.eff) + ']' : ''; log(`🗡️ Ausgerüstet: ${item.emoji} ${item.name} (+${item.sv} ${item.sk.toUpperCase()}${effStr})`,'i');
+  // Set-Bonus prüfen und anzeigen
+  try {
+    const activeSets = getActiveSets();
+    activeSets.forEach(({ set, count, bonus }) => {
+      log(`🎽 Set-Bonus: ${set.emoji} ${set.name} (${count}/${set.items.length}) — ${bonus.label}`, 'l');
+    });
+    const page = document.getElementById('page-held');
+    if (page && page.classList.contains('active')) renderSetBonuses();
+  } catch(e) {}
   updateAll();
   renderInventory();
   saveToSupabase(); // sofort speichern!
@@ -5673,7 +5742,7 @@ function tick() {
       const _deathMult = (G.skills.has('deathMark') && target.hp < target.maxHp * 0.3) ? 1.4 : 1.0;
       let dmg = Math.max(1, Math.floor((ds.atk + rng(-1, 3) - Math.floor(target.atk * 0.08)) * _assassinMult * _deathMult * _chronoMult));
       const isCrit = Math.random() * 100 < ds.crit;
-      const critMult = 1.8 * (1 + (ds.fx ? ds.fx.crit_dmg : 0)) * (G.research && G.research.has('combat1') ? 1.17 : 1);
+      const critMult = 1.8 * (1 + (ds.fx ? ds.fx.crit_dmg : 0)) * (G.research && G.research.has('combat1') ? 1.17 : 1) * (1 + (ds._critMultBonus || 0));
       if (isCrit) { dmg = Math.floor(dmg * critMult); try { trackAch('crits', 1); } catch(e) {} }
       // Weakness multiplier
       const wm = getWeaknessMult(target);
@@ -5699,6 +5768,8 @@ function tick() {
       const fxNow = ds.fx || getEffectMods();
       // Execute: Gegner unter 20% HP → +80% Schaden (VOR Rüstung berechnen)
       if (fxNow.execute && target.hp / target.maxHp < 0.20) dmg = Math.floor(dmg * 1.8);
+      // Schattenjäger Set: Execute bei 30% HP
+      if (ds._shadowExecute && target.hp / target.maxHp < 0.30) dmg = Math.floor(dmg * 1.6);
       // ── Rüstung absorbiert Schaden ────────────
       // BUG FIX: war sDebuffed.def → muss ds.def sein
       if (target.armor && target.armor > 0) {
@@ -5759,8 +5830,9 @@ function tick() {
       // AOE: Flächenschaden (zusätzlich zum Chain vom Skill)
       const aoeChance = (fxNow.aoe || 0) + (G.skills.has('chainLightning') ? 0 : 0);
       if (fxNow.aoe > 0 && Math.random() < fxNow.aoe && G.monsters.length > 1) {
-        const aoeDmg = Math.floor(dmg * 0.35);
-        G.monsters.forEach(m2 => { if (m2.id !== target.id) { m2.hp -= aoeDmg; floatDmgEl('mon_' + m2.id, aoeDmg, '#ff8844'); } });
+        const aoeMultiplier = (ds._aoeBonus || 1);
+        const aoeDmg = Math.floor(dmg * 0.35 * aoeMultiplier);
+        G.monsters.forEach(m2 => { if (m2.id !== target.id) { m2.hp -= aoeDmg; floatDmgEl('mon_' + m2.id, aoeDmg, '#ff8844'); if (ds._aoeStun) m2.atkCd += 0.5; } });
       }
       // Frost
       if (fxNow.frost && Math.random() < 0.20) target._frozen = (target._frozen || 0) + 2;
@@ -5833,11 +5905,17 @@ function tick() {
         h._itemShield -= absorbed; mDmg -= absorbed;
         if (h._itemShield <= 0) h._itemShield = 0;
       }
-      // Thorns: Rückschaden
+      // Thorns: Rückschaden (+ Set-Bonus)
       if (fxM.thorns > 0 && mDmg > 0) {
-        const thornsDmg = Math.floor(mDmg * fxM.thorns);
+        const thornsMulti = sDebuffed._thornsBonus || 1;
+        const thornsDmg = Math.floor(mDmg * fxM.thorns * thornsMulti);
         m.hp -= thornsDmg;
         if (thornsDmg > 0) floatDmgEl('mon_' + m.id, thornsDmg, '#aa44aa');
+        // Dornenfestung 3er: AOE-Thorns
+        if (sDebuffed._thornsAoe && G.monsters.length > 1) {
+          const aoeT = Math.floor(thornsDmg * 0.5);
+          G.monsters.forEach(m2 => { if (m2.id !== m.id) m2.hp -= aoeT; });
+        }
       }
       // Reflect Crit
       if (fxM.reflect_crit > 0 && Math.random() < 0.12) {
@@ -5870,7 +5948,8 @@ function tick() {
   // Item: HP-Regeneration (regen items)
   const fxTick = getEffectMods();
   if (fxTick.regen > 0 && h.hp < h.maxHp) {
-    h.hp = Math.min(h.maxHp, h.hp + h.maxHp * fxTick.regen * 0.25);
+    const regenMult = (() => { try { const ss=getStats(); return ss._angelRegen ? 2.0 : 1.0; } catch(e){return 1;} })();
+    h.hp = Math.min(h.maxHp, h.hp + h.maxHp * fxTick.regen * 0.25 * regenMult);
   }
   // Gold/XP boost from items — applied in monsterKilled via goldMult/xpMult
   // Poison tick (item-applied)
@@ -5934,6 +6013,13 @@ function monsterKilled(m) {
   try { if(m.isEventMonster) giveEventCurrency(m); } catch(e) {}
   // Research combat4: 3% HP regen on kill
   if (G.research && G.research.has('combat4')) { const healR = Math.floor(G.hero.maxHp * 0.03); G.hero.hp = Math.min(G.hero.maxHp, G.hero.hp + healR); }
+  // Blutpakt Set: 20% HP bei Kill
+  try {
+    const ss = getStats();
+    if (ss._bloodKillHeal) {
+      G.hero.hp = Math.min(G.hero.maxHp, G.hero.hp + Math.floor(G.hero.maxHp * ss._bloodKillHeal));
+    }
+  } catch(e) {}
   petHealOnKill();
   try { trackQuestProgress('kill', 1); trackQuestProgress('gold', gold); checkQuestBadge(); } catch(e) {}
   G.monsters = G.monsters.filter(x => x.id !== m.id);
@@ -7175,7 +7261,7 @@ function switchTab(name) {
   document.getElementById('page-'+name)?.classList.add('active');
   document.getElementById('tab-'+name)?.classList.add('active');
   if(name==='arena'){renderArena();updateArenaPanel();}
-  if(name==='held'){renderEquipSlots();renderEquipBonus();renderInventory();renderSkills();renderEraTimeline();updatePrestigeHeldCard();}
+  if(name==='held'){renderEquipSlots();renderEquipBonus();renderInventory();renderSkills();renderEraTimeline();updatePrestigeHeldCard();try{renderSetBonuses();}catch(e){}}
   if(name==='forge'){renderInventory();renderUpgrades();renderForgedGrid();try{renderMaterials();}catch(e){}try{renderFurnace();}catch(e){}try{renderRecipes();}catch(e){}try{renderAutoSellRules();}catch(e){}try{renderEnchanting();}catch(e){}}
   if(name==='dungeon'){renderDungeon();}
   if(name==='pvp'){
@@ -11510,6 +11596,211 @@ function renderEnchanting() {
   renderRuneGrid();
   renderEnchantSlots();
   renderActiveEnchants();
+}
+
+// ════════════════════════════════════════════
+// ── SET BONUS SYSTEM
+// ════════════════════════════════════════════
+
+const SET_BONUSES = [
+  {
+    id: 'draconik',
+    name: 'Draconisches Arsenal',
+    emoji: '🐉',
+    color: '#ff6030',
+    items: ['Drachentöter', 'Drachenhelm', 'Drachenpanzer'],
+    bonuses: [
+      { count: 2, label: '+20% ATK',
+        apply: s => { s.atk = Math.floor(s.atk * 1.20); } },
+      { count: 3, label: '+35% ATK, +15% DEF, Feuer-Immunität',
+        apply: s => { s.atk = Math.floor(s.atk * 1.35); s.def = Math.floor(s.def * 1.15); s._fireImmune = true; } },
+    ],
+  },
+  {
+    id: 'shadow',
+    name: 'Schattenjäger',
+    emoji: '🌑',
+    color: '#9060e0',
+    items: ['Schattenmesser', 'Schattenstiefel', 'Schattenklaue'],
+    bonuses: [
+      { count: 2, label: '+18% Krit-Chance',
+        apply: s => { s.crit = Math.min(75, s.crit + 18); } },
+      { count: 3, label: 'Execute bei 30% HP + +25% Krit-Schaden',
+        apply: s => { s.crit = Math.min(75, s.crit + 18); s._shadowExecute = true; s._critMult30 = true; } },
+    ],
+  },
+  {
+    id: 'thorns',
+    name: 'Dornenfestung',
+    emoji: '🌵',
+    color: '#40c070',
+    items: ['Dornenhelm', 'Dornenpanzer', 'Titanrüstung'],
+    bonuses: [
+      { count: 2, label: '+40% Thorns-Schaden',
+        apply: s => { s._thornsBonus = (s._thornsBonus || 1) * 1.40; } },
+      { count: 3, label: 'Thorns-Schaden trifft alle Monster + +50%',
+        apply: s => { s._thornsBonus = (s._thornsBonus || 1) * 1.50; s._thornsAoe = true; } },
+    ],
+  },
+  {
+    id: 'bloodpact',
+    name: 'Blutpakt',
+    emoji: '🩸',
+    color: '#cc2244',
+    items: ['Vampirklinge', 'Blutring', 'Berserkerklinge'],
+    bonuses: [
+      { count: 2, label: '+15% Lifesteal',
+        apply: s => { s._extraLifesteal = (s._extraLifesteal || 0) + 0.15; } },
+      { count: 3, label: '+15% Lifesteal + 20% HP-Heilung bei Kill',
+        apply: s => { s._extraLifesteal = (s._extraLifesteal || 0) + 0.15; s._bloodKillHeal = 0.20; } },
+    ],
+  },
+  {
+    id: 'cosmic',
+    name: 'Kosmische Macht',
+    emoji: '🌌',
+    color: '#aa88ff',
+    items: ['Weltvernichter', 'Weltläufer', 'Götterkrone'],
+    bonuses: [
+      { count: 2, label: '+25% Gold & XP',
+        apply: s => { s._cosmicGold = true; } },
+      { count: 3, label: '+25% alle Stats, Gold & XP',
+        apply: s => {
+          s.atk  = Math.floor(s.atk  * 1.25);
+          s.def  = Math.floor(s.def  * 1.25);
+          s.crit = Math.min(75, s.crit + 10);
+          s._cosmicGold = true;
+        }},
+    ],
+  },
+  {
+    id: 'angel',
+    name: 'Engelschutz',
+    emoji: '🪽',
+    color: '#f0cc55',
+    items: ['Engelhelm', 'Gottesrüstung'],
+    bonuses: [
+      { count: 2, label: 'HP-Regen ×2 + +15% Max-HP',
+        apply: s => { s._angelRegen = true; s._maxHpBonus = 0.15; } },
+    ],
+  },
+  {
+    id: 'critmaster',
+    name: 'Ewige Krit',
+    emoji: '💥',
+    color: '#50a0e0',
+    items: ['Ewigkeitsring', 'Seelenstein', 'Runenschwert'],
+    bonuses: [
+      { count: 2, label: '+15% Krit-Chance',
+        apply: s => { s.crit = Math.min(75, s.crit + 15); } },
+      { count: 3, label: '+15% Krit + Krit-Schaden ×2.5',
+        apply: s => { s.crit = Math.min(75, s.crit + 15); s._critMultBonus = 0.7; } },
+    ],
+  },
+  {
+    id: 'storm',
+    name: 'Sturmbrecher',
+    emoji: '⚡',
+    color: '#f0cc55',
+    items: ['Kriegshammer', 'Titanfaust', 'Blitzhandschuh'],
+    bonuses: [
+      { count: 2, label: 'AOE-Schaden +50%',
+        apply: s => { s._aoeBonus = (s._aoeBonus || 1) * 1.50; } },
+      { count: 3, label: 'AOE +50% + AOE-Treffer betäuben Monster kurz',
+        apply: s => { s._aoeBonus = (s._aoeBonus || 1) * 1.50; s._aoeStun = true; } },
+    ],
+  },
+];
+
+// ── Aktive Sets berechnen ─────────────────
+function getActiveSets() {
+  const equippedNames = new Set(
+    Object.values(G.equipped || {})
+      .filter(Boolean)
+      .map(item => item.name)
+  );
+  const active = [];
+  for (const set of SET_BONUSES) {
+    const count = set.items.filter(name => equippedNames.has(name)).length;
+    if (count >= 2) {
+      // Höchsten aktiven Bonus finden
+      const bonus = [...set.bonuses].reverse().find(b => count >= b.count);
+      if (bonus) active.push({ set, count, bonus });
+    }
+  }
+  return active;
+}
+
+// ── Set-Boni auf Stats anwenden ───────────
+function applySetBonuses(s) {
+  // s = Stats-Objekt, wird in-place modifiziert
+  for (const { bonus } of getActiveSets()) {
+    try { bonus.apply(s); } catch(e) {}
+  }
+  return s;
+}
+
+// ── Render: Sets auf Held-Seite ───────────
+function renderSetBonuses() {
+  const el = document.getElementById('setBonusDisplay');
+  if (!el) return;
+  el.innerHTML = '';
+
+  const equippedNames = new Set(
+    Object.values(G.equipped || {}).filter(Boolean).map(i => i.name)
+  );
+
+  // Zeige alle Sets — aktive oben, inaktive unten
+  const sorted = [...SET_BONUSES].sort((a, b) => {
+    const ca = a.items.filter(n => equippedNames.has(n)).length;
+    const cb = b.items.filter(n => equippedNames.has(n)).length;
+    return cb - ca;
+  });
+
+  sorted.forEach(set => {
+    const count   = set.items.filter(n => equippedNames.has(n)).length;
+    const maxBonus = set.bonuses[set.bonuses.length - 1];
+    const curBonus = [...set.bonuses].reverse().find(b => count >= b.count);
+    const pct     = Math.round(count / set.items.length * 100);
+    const isFull  = count >= set.items.length;
+    const isActive = count >= 2;
+
+    const card = document.createElement('div');
+    card.className = 'set-card' +
+      (isFull ? ' active-full' : count >= 3 ? ' active-3' : isActive ? ' active-2' : '');
+
+    // Badges für aktive Boni
+    const badges = set.bonuses
+      .map(b => {
+        const active = count >= b.count;
+        const cls = count >= set.items.length ? 'bf' : b.count === 3 ? 'b3' : 'b2';
+        return `<span class="set-badge ${active ? cls : ''}" style="${active ? '' : 'opacity:.35;'}">${b.count}er: ${b.label}</span>`;
+      })
+      .join(' ');
+
+    // Item-Chips
+    const chips = set.items.map(name => {
+      const eq = equippedNames.has(name);
+      return `<span class="set-item-chip ${eq ? 'equipped' : ''}">${eq ? '✅ ' : ''}${name}</span>`;
+    }).join('');
+
+    // Fortschrittsbalken-Farbe
+    const barColor = isFull ? 'var(--purple2)' : isActive ? 'var(--gold)' : 'var(--border2)';
+
+    card.innerHTML = `
+      <div class="set-header">
+        <span style="font-size:1.2rem;">${set.emoji}</span>
+        <div class="set-name" style="color:${isActive ? set.color : 'var(--text2)'};">${set.name}</div>
+        <span style="font-size:.6rem;color:var(--text3);font-family:Cinzel,serif;">${count}/${set.items.length}</span>
+      </div>
+      <div class="set-items">${chips}</div>
+      <div class="set-bonus-row">${badges}</div>
+      <div class="set-progress">
+        <div class="set-progress-fill" style="width:${pct}%;background:${barColor};"></div>
+      </div>`;
+
+    el.appendChild(card);
+  });
 }
 
 // ════════════════════════════════════════════
