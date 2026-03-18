@@ -1590,6 +1590,124 @@ body {
   overflow: hidden; margin-top: 5px; }
 .set-progress-fill { height: 100%; border-radius: 2px; transition: width .4s; }
 
+/* ══ HELD PAGE REDESIGN ══ */
+
+/* Hero Panel */
+.hero-panel {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 14px;
+  align-items: start;
+}
+.hero-avatar-wrap {
+  position: relative; width: 80px; height: 80px; flex-shrink: 0;
+}
+.hero-avatar {
+  width: 80px; height: 80px; border-radius: 50%;
+  border: 2px solid var(--gold);
+  background: linear-gradient(135deg, rgba(201,162,39,.15), rgba(144,96,224,.15));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2.4rem;
+  box-shadow: 0 0 20px rgba(201,162,39,.2);
+  position: relative; overflow: hidden;
+}
+.hero-avatar::after {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(circle at 35% 35%, rgba(255,255,255,.08), transparent 60%);
+}
+.hero-level-ring {
+  position: absolute; bottom: -3px; right: -3px;
+  background: linear-gradient(135deg, var(--gold), var(--gold2));
+  color: #000; font-family: Cinzel,serif; font-size: .58rem; font-weight: 700;
+  width: 26px; height: 26px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px solid var(--bg); box-shadow: 0 2px 6px rgba(0,0,0,.5);
+}
+.hero-name-row {
+  font-family: Cinzel,serif; font-size: 1.05rem; font-weight: 700;
+  color: var(--gold2); margin-bottom: 4px;
+  display: flex; align-items: center; gap: 8px;
+}
+.hero-class-badge {
+  font-size: .55rem; padding: 2px 7px; border-radius: 8px;
+  background: rgba(144,96,224,.15); border: 1px solid rgba(144,96,224,.3);
+  color: var(--purple2); font-weight: 400; letter-spacing: .06em;
+}
+.hero-xp-bar-wrap { margin-bottom: 6px; }
+.hero-xp-label { font-size: .58rem; color: var(--text3); margin-bottom: 2px;
+  display: flex; justify-content: space-between; }
+.hero-xp-bar { height: 6px; background: rgba(255,255,255,.06); border-radius: 3px; overflow: hidden; }
+.hero-xp-fill { height: 100%; border-radius: 3px;
+  background: linear-gradient(to right, var(--purple), var(--purple2));
+  transition: width .4s ease; }
+
+/* Stats Grid */
+.hero-stats-grid {
+  display: grid; grid-template-columns: repeat(4,1fr); gap: 6px; margin-bottom: 2px;
+}
+.hstat2 {
+  background: rgba(0,0,0,.35); border: 1px solid var(--border);
+  border-radius: 10px; padding: 8px 6px; text-align: center;
+  transition: border-color .15s;
+}
+.hstat2:hover { border-color: var(--border2); }
+.hstat2-icon { font-size: 1rem; margin-bottom: 2px; }
+.hstat2-val  { font-family: Cinzel,serif; font-size: .82rem; font-weight: 700; color: var(--text); }
+.hstat2-lbl  { font-size: .52rem; color: var(--text3); margin-top: 1px; }
+
+/* Equip Grid — paperdoll layout */
+.equip-grid-new {
+  display: grid;
+  grid-template-areas:
+    ". helm ."
+    "gloves chest ring"
+    ". boots ."
+    "weapon . .";
+  grid-template-columns: repeat(3, 1fr);
+  gap: 7px; margin-bottom: 6px;
+}
+.equip-slot-new {
+  aspect-ratio: 1;
+  background: rgba(0,0,0,.28);
+  border: 1px dashed rgba(255,255,255,.1);
+  border-radius: 12px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 3px; cursor: pointer;
+  transition: all .18s; position: relative; overflow: hidden;
+  padding: 6px;
+}
+.equip-slot-new:hover { border-color: rgba(201,162,39,.5); transform: translateY(-2px); }
+.equip-slot-new.filled { border-style: solid; }
+.equip-slot-new .es-icon { font-size: 1.55rem; line-height: 1; }
+.equip-slot-new .es-name { font-size: .48rem; color: var(--text3);
+  font-family: Cinzel,serif; text-align: center; line-height: 1.2; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 100%; }
+.equip-slot-new .es-stat { font-size: .52rem; font-family: Cinzel,serif; font-weight: 700; }
+.equip-slot-new .es-enchant { font-size: .7rem; position: absolute; top: 3px; right: 4px; }
+
+/* Rarity borders for new slots */
+.equip-slot-new.rarity-common    { border-color: #334; }
+.equip-slot-new.rarity-uncommon  { border-color: #2e8b57; box-shadow: 0 0 8px rgba(46,139,87,.2); }
+.equip-slot-new.rarity-rare      { border-color: #2060a0; box-shadow: 0 0 8px rgba(32,96,160,.25); }
+.equip-slot-new.rarity-epic      { border-color: #6030a0; box-shadow: 0 0 10px rgba(96,48,160,.3); }
+.equip-slot-new.rarity-legendary { border-color: var(--gold); box-shadow: 0 0 14px rgba(201,162,39,.4); animation: legPulse 2.5s infinite; }
+.equip-slot-new.rarity-mythic    { border-color: var(--red2); box-shadow: 0 0 16px rgba(224,80,80,.5); animation: mytPulse 2s infinite; }
+
+/* Stat-Bonus Leiste */
+.stat-bonus-bar {
+  display: flex; gap: 6px; flex-wrap: wrap;
+  padding: 7px 10px; background: rgba(0,0,0,.25);
+  border-radius: 8px; border: 1px solid var(--border);
+  margin-top: 6px;
+}
+.stat-chip {
+  font-family: Cinzel,serif; font-size: .6rem; font-weight: 700;
+  padding: 2px 8px; border-radius: 6px;
+}
+
+/* Upgrade-Karte kompakter */
+.upg-grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+
 /* ══ WHITE MODE ══ */
 body.white-mode {
   --bg:       #f0eee8;
@@ -2141,21 +2259,103 @@ input[type=range].vol-slider::-webkit-slider-thumb:hover { transform:scale(1.2);
 
 <!-- ═══ HELD PAGE ═══ -->
 <div class="page" id="page-held">
-  <!-- Ausrüstung -->
+
+  <!-- ══ HELD-PANEL ══ -->
   <div class="card">
-    <div class="sec-title">🗡️ Ausrüstung</div>
-    <div style="font-size:.7rem;color:var(--text2);font-style:italic;margin-bottom:8px;">Klicke ein Item im Inventar zum Ausrüsten. Klicke einen Slot zum Ablegen.</div>
-    <div class="equip-grid" id="equipGrid"></div>
-    <div style="margin-top:8px;" id="equipBonus"></div>
-  </div>
-  <!-- Inventar -->
-  <div class="card">
-    <div class="sec-title">🎒 Inventar <span style="font-size:.68rem;color:var(--text2);font-weight:400;" id="invCount">(0)</span></div>
-    <div style="display:flex;gap:5px;margin-bottom:8px;flex-wrap:wrap;">
-      <button class="ctrl-btn" onclick="autoEquipBest()" style="border-color:var(--green2);color:var(--green2);font-size:.66rem;padding:5px 10px;">🗡️ Auto-Ausrüsten</button>
-      <button class="ctrl-btn" onclick="openSellManager()" style="border-color:var(--blue2);color:var(--blue2);font-size:.66rem;padding:5px 10px;">💰 Verkaufen</button>
+    <!-- Charakter-Header -->
+    <div class="hero-panel">
+      <div class="hero-avatar-wrap">
+        <div class="hero-avatar" id="heroAvatarEl">🧙</div>
+        <div class="hero-level-ring" id="heroLevelRing">1</div>
+      </div>
+      <div style="min-width:0;flex:1;">
+        <div class="hero-name-row">
+          <span id="heroNameDisplay">Held</span>
+          <span class="hero-class-badge" id="heroClassBadge">KRIEGER</span>
+        </div>
+        <!-- XP Bar -->
+        <div class="hero-xp-bar-wrap">
+          <div class="hero-xp-label">
+            <span>Erfahrung</span>
+            <span id="heroXpLabel">0 / 100</span>
+          </div>
+          <div class="hero-xp-bar">
+            <div class="hero-xp-fill" id="heroXpFill" style="width:0%"></div>
+          </div>
+        </div>
+        <!-- HP Bar -->
+        <div class="hero-xp-bar-wrap">
+          <div class="hero-xp-label">
+            <span style="color:var(--red2);">❤️ HP</span>
+            <span id="heroHpLabel">100 / 100</span>
+          </div>
+          <div class="hero-xp-bar" style="height:5px;">
+            <div class="hero-xp-fill" id="heroHpFill"
+              style="width:100%;background:linear-gradient(to right,var(--red),#ff6060);"></div>
+          </div>
+        </div>
+      </div>
     </div>
-    <div class="inv-grid" id="invGrid"><div style="color:var(--text2);font-size:.78rem;font-style:italic;grid-column:1/-1;padding:10px;text-align:center;">Noch leer — geh schmieden!</div></div>
+
+    <!-- Stat-Reihe -->
+    <div class="hero-stats-grid" style="margin-top:10px;" id="heroStatsGrid">
+      <div class="hstat2">
+        <div class="hstat2-icon">⚔️</div>
+        <div class="hstat2-val" id="hs-atk">—</div>
+        <div class="hstat2-lbl">ATK</div>
+      </div>
+      <div class="hstat2">
+        <div class="hstat2-icon">🛡️</div>
+        <div class="hstat2-val" id="hs-def">—</div>
+        <div class="hstat2-lbl">DEF</div>
+      </div>
+      <div class="hstat2">
+        <div class="hstat2-icon">💥</div>
+        <div class="hstat2-val" id="hs-crit">—</div>
+        <div class="hstat2-lbl">KRIT</div>
+      </div>
+      <div class="hstat2">
+        <div class="hstat2-icon">⚡</div>
+        <div class="hstat2-val" id="hs-spd">—</div>
+        <div class="hstat2-lbl">SPD</div>
+      </div>
+    </div>
+
+    <!-- Aktive Boni Leiste -->
+    <div class="stat-bonus-bar" id="equipBonus"></div>
+  </div>
+
+  <!-- ══ AUSRÜSTUNG ══ -->
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:6px;">
+      <div class="sec-title" style="margin-bottom:0;">🗡️ Ausrüstung</div>
+      <div style="display:flex;gap:5px;">
+        <button class="ctrl-btn" onclick="autoEquipBest()"
+          style="border-color:var(--green2);color:var(--green2);font-size:.6rem;padding:4px 10px;">
+          ⚡ Auto
+        </button>
+      </div>
+    </div>
+    <div id="equipGrid" class="equip-grid-new"></div>
+    <div style="font-size:.6rem;color:var(--text3);text-align:center;margin-top:4px;font-style:italic;">
+      Klicke ein Item im Inventar zum Ausrüsten · Klicke einen Slot zum Ablegen
+    </div>
+  </div>
+
+  <!-- ══ INVENTAR ══ -->
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:5px;">
+      <div class="sec-title" style="margin-bottom:0;">🎒 Inventar <span style="font-size:.65rem;color:var(--text2);font-weight:400;" id="invCount"></span></div>
+      <button class="ctrl-btn" onclick="openSellManager()"
+        style="border-color:var(--blue2);color:var(--blue2);font-size:.6rem;padding:4px 10px;">
+        💰 Verkaufen
+      </button>
+    </div>
+    <div class="inv-grid" id="invGrid">
+      <div style="color:var(--text2);font-size:.78rem;font-style:italic;grid-column:1/-1;padding:10px;text-align:center;">
+        Noch leer — geh schmieden!
+      </div>
+    </div>
   </div>
   <!-- Skill-Tree -->
   <div class="card" style="padding:12px 14px;">
@@ -4378,42 +4578,88 @@ const SLOT_INFO = {
 };
 
 function renderEquipSlots() {
-  const grid=document.getElementById('equipGrid');
-  grid.innerHTML='';
-  for(const [slot, info] of Object.entries(SLOT_INFO)){
-    const item=G.equipped[slot];
-    const div=document.createElement('div');
-    div.className='equip-slot'+(item?' has-item rarity-'+item.rarity:'');
-    if(item){
-      const RCOL={'common':'#888','uncommon':'#40c070','rare':'#50a0e0','epic':'#9060e0','legendary':'#c9a227','mythic':'#f07070'};
-      div.innerHTML=`
-        <div class="slot-icon">${item.emoji}</div>
-        <div class="slot-stat" style="color:${RCOL[item.rarity]}">+${item.sv} ${item.sk.toUpperCase()}</div>
-        <div class="slot-label">${item.name.length>8?item.name.slice(0,7)+'…':item.name}</div>
-      `;
-      div.title='Klicke zum Ablegen';
-      div.addEventListener('mouseenter',e=>showTT(e,item,'Klicken zum Ablegen'));
-      div.addEventListener('mouseleave',hideTT);
-      div.onclick=()=>{ unequipItem(slot); };
+  const grid = document.getElementById('equipGrid');
+  if (!grid) return;
+  grid.innerHTML = '';
+
+  const RCOL = { common:'#668', uncommon:'#40c070', rare:'#50a0e0',
+                  epic:'#9060e0', legendary:'#c9a227', mythic:'#f07070' };
+
+  // Paperdoll-Reihenfolge mit grid-area
+  const SLOT_ORDER = [
+    { slot:'helmet',  area:'helm',   emptyIcon:'⛑️' },
+    { slot:'gloves',  area:'gloves', emptyIcon:'🧤' },
+    { slot:'chest',   area:'chest',  emptyIcon:'🛡️' },
+    { slot:'ring',    area:'ring',   emptyIcon:'💍' },
+    { slot:'boots',   area:'boots',  emptyIcon:'👢' },
+    { slot:'weapon',  area:'weapon', emptyIcon:'⚔️' },
+  ];
+
+  SLOT_ORDER.forEach(({ slot, area, emptyIcon }) => {
+    const item    = G.equipped[slot];
+    const enchId  = item ? (G.enchants || {})[slot] : null;
+    const enchRune= enchId ? (typeof getRuneDef==='function' ? getRuneDef(enchId) : null) : null;
+
+    const div = document.createElement('div');
+    div.className = 'equip-slot-new' + (item ? ' filled rarity-' + item.rarity : '');
+    div.style.gridArea = area;
+
+    if (item) {
+      const col = RCOL[item.rarity] || '#888';
+      const statLabel = item.sk === 'spd'
+        ? '-' + item.sv + 's'
+        : '+' + item.sv + ' ' + item.sk.toUpperCase();
+      div.innerHTML = `
+        ${enchRune ? `<div class="es-enchant">${enchRune.emoji}</div>` : ''}
+        <div class="es-icon">${item.emoji}</div>
+        <div class="es-stat" style="color:${col};">${statLabel}</div>
+        <div class="es-name" style="color:${col};">${item.name}</div>`;
+      div.addEventListener('mouseenter', e => showTT(e, item, 'Klicken zum Ablegen'));
+      div.addEventListener('mouseleave', hideTT);
+      div.onclick = () => unequipItem(slot);
     } else {
-      div.innerHTML=`<div class="slot-icon" style="opacity:.3">${info.icon}</div><div class="slot-label" style="color:var(--text3)">${info.label}</div>`;
+      div.innerHTML = `
+        <div class="es-icon" style="opacity:.22;">${emptyIcon}</div>
+        <div class="es-name" style="color:var(--text3);opacity:.5;">${SLOT_INFO[slot]?.label || slot}</div>`;
     }
     grid.appendChild(div);
-  }
+  });
+
+  renderEquipBonus();
+  renderHeroPanel();
 }
 
 function renderEquipBonus() {
-  const s=getStats();
-  const h=G.hero;
-  const bonusAtk=s.atk-h.baseAtk, bonusDef=s.def-h.baseDef;
-  const el=document.getElementById('equipBonus');
-  if(bonusAtk===0&&bonusDef===0&&s.crit===h.baseCrit){el.innerHTML='';return;}
-  el.innerHTML=`<div style="font-size:0.72rem;color:var(--text2);font-style:italic;">
-    📊 Ausrüstungsbonus:
-    ${bonusAtk>0?`<span style="color:#50e090">+${bonusAtk} ATK</span> `:''}
-    ${bonusDef>0?`<span style="color:#50a0e0">+${bonusDef} DEF</span> `:''}
-    ${s.crit>h.baseCrit?`<span style="color:#f0cc55">+${s.crit-h.baseCrit}% CRIT</span>`:''}
-  </div>`;
+  const s = getStats(); const h = G.hero;
+  const el = document.getElementById('equipBonus');
+  if (!el) return;
+
+  const chips = [];
+  const dAtk  = s.atk - h.baseAtk;
+  const dDef  = s.def - h.baseDef;
+  const dCrit = s.crit - h.baseCrit;
+  const eff   = getEffectMods();
+
+  if (dAtk  > 0) chips.push(`<span class="stat-chip" style="background:rgba(80,224,144,.1);border:1px solid rgba(80,224,144,.25);color:#50e090;">⚔️ +${dAtk} ATK</span>`);
+  if (dDef  > 0) chips.push(`<span class="stat-chip" style="background:rgba(80,160,224,.1);border:1px solid rgba(80,160,224,.25);color:#50a0e0;">🛡️ +${dDef} DEF</span>`);
+  if (dCrit > 0) chips.push(`<span class="stat-chip" style="background:rgba(240,204,85,.1);border:1px solid rgba(240,204,85,.25);color:var(--gold2);">💥 +${dCrit}% Krit</span>`);
+  if (s.spd < 1.0) chips.push(`<span class="stat-chip" style="background:rgba(144,96,224,.1);border:1px solid rgba(144,96,224,.25);color:var(--purple2);">⚡ ${s.spd.toFixed(2)}s SPD</span>`);
+  if (eff.lifesteal) chips.push(`<span class="stat-chip" style="background:rgba(204,34,68,.1);border:1px solid rgba(204,34,68,.3);color:#ff6080;">🩸 Lifesteal</span>`);
+  if (eff.aoe)       chips.push(`<span class="stat-chip" style="background:rgba(255,136,68,.1);border:1px solid rgba(255,136,68,.3);color:#ff8844;">💥 AOE</span>`);
+  if (eff.execute)   chips.push(`<span class="stat-chip" style="background:rgba(224,80,80,.1);border:1px solid rgba(224,80,80,.3);color:var(--red2);">☠️ Execute</span>`);
+  if (eff.poison_on_hit) chips.push(`<span class="stat-chip" style="background:rgba(64,192,112,.1);border:1px solid rgba(64,192,112,.3);color:var(--green2);">☠️ Vergiftung</span>`);
+  if (eff.thorns)    chips.push(`<span class="stat-chip" style="background:rgba(100,150,80,.1);border:1px solid rgba(100,150,80,.3);color:#88cc44;">🌵 Dornen</span>`);
+  if (eff.crit_dmg)  chips.push(`<span class="stat-chip" style="background:rgba(240,204,85,.08);border:1px solid rgba(240,204,85,.2);color:var(--gold);">💫 Krit-Dmg</span>`);
+
+  // Set-Boni
+  const activeSets = (typeof getActiveSets === 'function') ? getActiveSets() : [];
+  activeSets.forEach(({ set, count }) => {
+    chips.push(`<span class="stat-chip" style="background:rgba(${count >= set.items.length ? '144,96,224' : '201,162,39'},.1);border:1px solid rgba(${count >= set.items.length ? '144,96,224' : '201,162,39'},.3);color:${count >= set.items.length ? 'var(--purple2)' : 'var(--gold2)'};">${set.emoji} ${set.name}</span>`);
+  });
+
+  el.innerHTML = chips.length
+    ? chips.join('')
+    : '<span style="font-size:.6rem;color:var(--text3);font-style:italic;">Keine Ausrüstung — Item ausrüsten für Boni</span>';
 }
 
 function equipItem(item) {
@@ -7261,7 +7507,7 @@ function switchTab(name) {
   document.getElementById('page-'+name)?.classList.add('active');
   document.getElementById('tab-'+name)?.classList.add('active');
   if(name==='arena'){renderArena();updateArenaPanel();}
-  if(name==='held'){renderEquipSlots();renderEquipBonus();renderInventory();renderSkills();renderEraTimeline();updatePrestigeHeldCard();try{renderSetBonuses();}catch(e){}}
+  if(name==='held'){renderEquipSlots();renderEquipBonus();renderInventory();renderSkills();renderEraTimeline();updatePrestigeHeldCard();try{renderSetBonuses();}catch(e){}try{renderHeroPanel();}catch(e){}}
   if(name==='forge'){renderInventory();renderUpgrades();renderForgedGrid();try{renderMaterials();}catch(e){}try{renderFurnace();}catch(e){}try{renderRecipes();}catch(e){}try{renderAutoSellRules();}catch(e){}try{renderEnchanting();}catch(e){}}
   if(name==='dungeon'){renderDungeon();}
   if(name==='pvp'){
@@ -11801,6 +12047,68 @@ function renderSetBonuses() {
 
     el.appendChild(card);
   });
+}
+
+// ════════════════════════════════════════════
+// ── HERO PANEL RENDER (Held-Seite)
+// ════════════════════════════════════════════
+
+function renderHeroPanel() {
+  const h = G.hero;
+  const s = getStats();
+
+  // Avatar — wechselt je nach Prestige-Stufe
+  const avatarEmojis = ['🧙','⚔️','🛡️','🗡️','🔥','⚡','🌑','🌟','👑'];
+  const avatarEl = document.getElementById('heroAvatarEl');
+  if (avatarEl) avatarEl.textContent = avatarEmojis[Math.min(G.prestigeStars||0, 8)];
+
+  // Level-Ring
+  const lvRing = document.getElementById('heroLevelRing');
+  if (lvRing) lvRing.textContent = h.level;
+
+  // Name
+  const nameEl = document.getElementById('heroNameDisplay');
+  if (nameEl) nameEl.textContent = typeof getPlayerName==='function' ? getPlayerName() : 'Held';
+
+  // Klasse aus Skills ableiten
+  const classEl = document.getElementById('heroClassBadge');
+  if (classEl) {
+    const hasKrieger  = G.skills && [...G.skills].some(sk => sk.startsWith('iron') || sk.startsWith('war'));
+    const hasMagier   = G.skills && [...G.skills].some(sk => sk.startsWith('mana') || sk === 'chronoStrike');
+    const hasSchatten = G.skills && [...G.skills].some(sk => sk.startsWith('shadow') || sk === 'assassinate');
+    const cls = hasSchatten ? '🌑 Schattenkämpfer'
+              : hasMagier   ? '🔮 Magier'
+              : hasKrieger  ? '⚔️ Krieger'
+              : '🧙 Abenteurer';
+    classEl.textContent = cls;
+  }
+
+  // XP Bar
+  const xpNeeded = G.xpTable ? (G.xpTable[h.level] || h.level * 120) : h.level * 120;
+  const xpPct    = Math.min(100, Math.round(h.xp / xpNeeded * 100));
+  const xpFill   = document.getElementById('heroXpFill');
+  const xpLabel  = document.getElementById('heroXpLabel');
+  if (xpFill)  xpFill.style.width  = xpPct + '%';
+  if (xpLabel) xpLabel.textContent = h.xp.toLocaleString() + ' / ' + xpNeeded.toLocaleString();
+
+  // HP Bar
+  const hpPct   = h.maxHp > 0 ? Math.min(100, Math.round(h.hp / h.maxHp * 100)) : 100;
+  const hpFill  = document.getElementById('heroHpFill');
+  const hpLabel = document.getElementById('heroHpLabel');
+  if (hpFill) {
+    hpFill.style.width = hpPct + '%';
+    hpFill.style.background = hpPct > 60 ? 'linear-gradient(to right,var(--red),#ff6060)'
+                            : hpPct > 30 ? 'linear-gradient(to right,#c06020,#f08030)'
+                            :              'linear-gradient(to right,#800,#c02020)';
+  }
+  if (hpLabel) hpLabel.textContent = Math.floor(h.hp) + ' / ' + h.maxHp;
+
+  // Stats
+  const _t = (id, val) => { const el=document.getElementById(id); if(el) el.textContent=val; };
+  _t('hs-atk',  s.atk);
+  _t('hs-def',  s.def);
+  _t('hs-crit', s.crit + '%');
+  _t('hs-spd',  s.spd.toFixed(2) + 's');
 }
 
 // ════════════════════════════════════════════
