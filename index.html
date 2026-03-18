@@ -6141,6 +6141,12 @@ function executeSell() {
 // ── SUPABASE CONFIG ─────────────────────────
 // ════════════════════════════════════════════
 
+// ════════════════════════════════════════════════════════
+// SUPABASE CONFIG
+// Der anon-key ist bei client-seitigen Supabase-Apps per Design
+// öffentlich sichtbar — Sicherheit läuft über RLS-Policies.
+// Niemals den service_role key hier verwenden!
+// ════════════════════════════════════════════════════════
 const SUPA_URL  = 'https://wzavkrblpraprxqvainj.supabase.co';
 const SUPA_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind6YXZrcmJscHJhcHJ4cXZhaW5qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2NTkwOTAsImV4cCI6MjA4OTIzNTA5MH0.Rm53ZDcE0YlymAmWoXtYBo7zlkOgZVTUuvz9pLTIOQM';
 const SUPA_HDR  = { 'Content-Type':'application/json', 'apikey': SUPA_KEY, 'Authorization': 'Bearer '+SUPA_KEY };
@@ -6398,9 +6404,36 @@ async function saveNow() {
   await _doSave();
 }
 
+// ── Server-seitige Werte validieren vor dem Speichern ───────
+function _sanitizeSaveData() {
+  const h = G.hero;
+  // Zahlen auf realistische Grenzen begrenzen
+  h.gold      = Math.max(0, Math.min(999999999, Math.floor(h.gold     || 0)));
+  h.level     = Math.max(1, Math.min(200,        Math.floor(h.level   || 1)));
+  h.hp        = Math.max(0, Math.min(h.maxHp,    Math.floor(h.hp      || 0)));
+  h.maxHp     = Math.max(10, Math.min(9999999,   Math.floor(h.maxHp   || 100)));
+  h.baseAtk   = Math.max(1, Math.min(99999,      Math.floor(h.baseAtk || 5)));
+  h.baseDef   = Math.max(0, Math.min(99999,      Math.floor(h.baseDef || 0)));
+  G.wave        = Math.max(1, Math.min(99999,    Math.floor(G.wave    || 1)));
+  G.kills       = Math.max(0, Math.min(99999999, Math.floor(G.kills   || 0)));
+  G.pvpPoints   = Math.max(0, Math.min(999999,   Math.floor(G.pvpPoints || 0)));
+  G.pvpWins     = Math.max(0, Math.min(999999,   Math.floor(G.pvpWins   || 0)));
+  G.furnaceLevel= Math.max(1, Math.min(8,        Math.floor(G.furnaceLevel || 1)));
+  G.prestigeStars= Math.max(0, Math.min(8,       Math.floor(G.prestigeStars || 0)));
+  // Strings säubern (kein SQL-Injection möglich da Supabase JSON nutzt, aber trotzdem)
+  if (typeof getPlayerName === 'function') {
+    const name = getPlayerName();
+    if (name) localStorage.setItem('sm_player_name', name.slice(0,20).replace(/[<>"']/g,''));
+  }
+}
+
 async function _doSave() {
   setSaveStatus('💾 Speichert...', 'var(--gold)');
   const pid = getPlayerId();
+
+  // Werte sanieren bevor sie gespeichert werden
+  try { _sanitizeSaveData(); } catch(e) {}
+
   const h = G.hero;
 
   try {
@@ -6536,7 +6569,7 @@ async function _doSave() {
 
     // 6. Leaderboard — PATCH if exists, skip if conflict
     try {
-      const lbRow = { player_id: pid, player_name: getPlayerName(), hero_level: h.level, total_kills: G.kills, hero_gold: h.gold, wave: G.wave, pvp_points: G.pvpPoints||0, hero_base_atk: h.baseAtk, hero_base_def: h.baseDef, updated_at: new Date().toISOString() };
+      const lbRow = { player_id: pid, player_name: (getPlayerName()||'Held').slice(0,20).replace(/[<>"'&]/g,''), hero_level: h.level, total_kills: G.kills, hero_gold: h.gold, wave: G.wave, pvp_points: G.pvpPoints||0, hero_base_atk: h.baseAtk, hero_base_def: h.baseDef, updated_at: new Date().toISOString() };
       const pResp = await sbFetch(`${SUPA_URL}/rest/v1/sm_leaderboard?player_id=eq.${pid}`, {
         method: 'PATCH', headers: { ...SUPA_HDR, 'Prefer': 'return=minimal' }, body: JSON.stringify(lbRow)
       });
@@ -7862,7 +7895,7 @@ function finalizePVPBattle(won, ptsGain, ptsLoss, opp, oppPts, resultEl) {
     try { checkAchievements(); } catch(e) {}
     G.pvpStreak = (G.pvpStreak || 0) + 1;
     // Gold: wenig — PVP soll nicht Hauptgoldquelle sein
-    const gold = Math.floor(10 + G.pvpPoints * 0.02 + rng(0, 15));
+    const gold = Math.min(500, Math.floor(10 + G.pvpPoints * 0.02 + rng(0, 15)));
     G.hero.gold += gold;
     const streakTxt = G.pvpStreak >= 3 ? ` (${G.pvpStreak}er Siegesserie! +25% Bonus)` : '';
     const msg = `🏆 Sieg vs ${oppName}! +${ptsGain} Pkt +${gold}G${streakTxt}`;
