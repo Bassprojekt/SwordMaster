@@ -6642,17 +6642,19 @@ async function loadFromSupabase() {
     G.pvpWins    = p.pvp_wins    || 0;
     G.pvpLosses  = p.pvp_losses  || 0;
     G.pvpStreak  = p.pvp_streak  || 0;
-    // PVP Anti-Abuse wiederherstellen
+    // PVP Anti-Abuse: localStorage hat Vorrang (aktueller), Supabase als Fallback
     try {
-      const pvpAb = JSON.parse(p.pvp_fought_today || '{}');
+      const ls   = JSON.parse(localStorage.getItem('sm3_pvp_abuse') || '{}');
+      const db   = JSON.parse(p.pvp_fought_today || '{}');
       const today = new Date().toDateString();
-      if (pvpAb.date === today) {
-        // Heutiger Stand laden
-        G._pvpDailyFights = pvpAb.fights || 0;
-        G._pvpFightRecord  = pvpAb.record  || {};
-        G._pvpRecentOpps   = pvpAb.recent  || [];
+      // Nehme den aktuelleren Stand (höhere fights-Zahl oder neuerer Timestamp)
+      const useLS = ls.date === today && (db.date !== today || (ls.fights||0) >= (db.fights||0));
+      const src = useLS ? ls : db;
+      if (src.date === today) {
+        G._pvpDailyFights = src.fights || 0;
+        G._pvpFightRecord  = src.record  || {};
+        G._pvpRecentOpps   = src.recent  || [];
       } else {
-        // Neuer Tag → alles zurücksetzen
         G._pvpDailyFights = 0;
         G._pvpFightRecord  = {};
         G._pvpRecentOpps   = [];
@@ -7012,7 +7014,13 @@ function switchTab(name) {
   if(name==='held'){renderEquipSlots();renderEquipBonus();renderInventory();renderSkills();renderEraTimeline();updatePrestigeHeldCard();}
   if(name==='forge'){renderInventory();renderUpgrades();renderForgedGrid();try{renderMaterials();}catch(e){}try{renderFurnace();}catch(e){}try{renderRecipes();}catch(e){}try{renderAutoSellRules();}catch(e){}}
   if(name==='dungeon'){renderDungeon();}
-  if(name==='pvp'){renderPVP();loadPVPOpponents();loadPVPLeaderboard();}
+  if(name==='pvp'){
+    // Anti-Abuse neu laden falls nicht frisch (z.B. Tab-Wechsel)
+    try { _loadPVPAntiAbuse(); } catch(e) {}
+    renderPVP();
+    loadPVPOpponents();
+    loadPVPLeaderboard();
+  }
   if(name==='pets'){
     document.getElementById('petTierBtns').innerHTML='';
     renderPets();
@@ -7941,6 +7949,42 @@ function finalizePVPBattle(won, ptsGain, ptsLoss, opp, oppPts, resultEl) {
   G._pvpDailyFights = (G._pvpDailyFights || 0) + 1;
 
   renderPVP(); updateAll(); saveToSupabase();
+  // Anti-Abuse sofort in localStorage sichern (überlebt F5)
+  _savePVPAntiAbuse();
+}
+
+function _savePVPAntiAbuse() {
+  try {
+    localStorage.setItem('sm3_pvp_abuse', JSON.stringify({
+      date:    new Date().toDateString(),
+      fights:  G._pvpDailyFights  || 0,
+      record:  G._pvpFightRecord   || {},
+      recent:  G._pvpRecentOpps    || [],
+      ts:      Date.now(),
+    }));
+  } catch(e) {}
+}
+
+function _loadPVPAntiAbuse() {
+  try {
+    const d = JSON.parse(localStorage.getItem('sm3_pvp_abuse') || '{}');
+    const today = new Date().toDateString();
+    if (d.date === today) {
+      G._pvpDailyFights = d.fights || 0;
+      G._pvpFightRecord  = d.record  || {};
+      G._pvpRecentOpps   = d.recent  || [];
+    } else {
+      // Neuer Tag — zurücksetzen
+      G._pvpDailyFights = 0;
+      G._pvpFightRecord  = {};
+      G._pvpRecentOpps   = [];
+    }
+    G._pvpDailyReset = Date.now();
+  } catch(e) {
+    G._pvpDailyFights = 0;
+    G._pvpFightRecord  = {};
+    G._pvpRecentOpps   = [];
+  }
 }
 
 // ── Render PVP Hauptseite ───────────────────
@@ -9118,6 +9162,8 @@ async function continueInit() {
   } catch(e) {}
   try { checkIdle(); }           catch(e) {}
   try { spawnMonster(); startCombat(); } catch(e) {}
+  // PVP Anti-Abuse aus localStorage laden (sofort, vor PVP-Tab)
+  try { _loadPVPAntiAbuse(); } catch(e) {}
   // Run achievements check on startup
   try { checkAchievements(); renderAchievements(); updateAchBadge(); } catch(e) {}
   // Prestige header
