@@ -1394,6 +1394,74 @@ body {
   font-size: .7rem; color: var(--green2); line-height: 1.7;
 }
 
+/* ══ TUTORIAL SYSTEM ══ */
+#tutOverlay {
+  position: fixed; inset: 0; z-index: 10000;
+  pointer-events: none;
+}
+#tutSpotlight {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.72);
+  transition: clip-path .45s cubic-bezier(.4,0,.2,1);
+  pointer-events: all;
+  z-index: 10001;
+}
+#tutCard {
+  position: fixed; z-index: 10002;
+  background: linear-gradient(135deg,rgba(20,14,8,.97),rgba(14,10,4,.97));
+  border: 1.5px solid var(--gold);
+  border-radius: 14px;
+  padding: 16px 18px 14px;
+  width: min(320px, 90vw);
+  box-shadow: 0 12px 40px rgba(0,0,0,.7), 0 0 24px rgba(201,162,39,.2);
+  transition: top .4s cubic-bezier(.4,0,.2,1), left .4s cubic-bezier(.4,0,.2,1),
+              bottom .4s, right .4s, opacity .25s;
+  pointer-events: all;
+}
+#tutCard .tut-step  { font-size:.55rem; color:var(--gold); font-family:Cinzel,serif; letter-spacing:.12em; margin-bottom:6px; }
+#tutCard .tut-title { font-size:.98rem; font-weight:700; font-family:Cinzel,serif; color:var(--text); margin-bottom:6px; }
+#tutCard .tut-body  { font-size:.75rem; color:var(--text2); line-height:1.65; margin-bottom:12px; }
+#tutCard .tut-reward {
+  background: rgba(201,162,39,.08); border: 1px solid rgba(201,162,39,.25);
+  border-radius: 8px; padding: 6px 10px; margin-bottom: 12px;
+  font-size:.68rem; color:var(--gold2);
+}
+#tutCard .tut-btns  { display:flex; gap:8px; justify-content:flex-end; }
+#tutCard .tut-next  {
+  background: linear-gradient(135deg,rgba(201,162,39,.25),rgba(255,200,50,.1));
+  border: 1px solid var(--gold); border-radius: 8px;
+  padding: 7px 18px; font-family:Cinzel,serif; font-size:.72rem;
+  font-weight:700; color:var(--gold2); cursor:pointer;
+  transition: background .15s; white-space:nowrap;
+}
+#tutCard .tut-next:hover { background: rgba(201,162,39,.35); }
+#tutCard .tut-skip  {
+  border:none; background:none; font-size:.65rem; color:var(--text3);
+  cursor:pointer; padding:7px 8px; transition:color .15s;
+}
+#tutCard .tut-skip:hover { color:var(--text2); }
+#tutArrow {
+  position: fixed; z-index: 10003;
+  width: 0; height: 0;
+  pointer-events: none;
+  transition: top .4s, left .4s, right .4s, bottom .4s;
+}
+.tut-pulse-ring {
+  position: fixed; z-index: 10003;
+  border: 3px solid var(--gold);
+  border-radius: 50%;
+  pointer-events: none;
+  animation: tutPulse 1.5s ease-out infinite;
+}
+@keyframes tutPulse {
+  0%   { transform: scale(1);    opacity: .9; }
+  100% { transform: scale(1.7);  opacity: 0;  }
+}
+.tut-progress { display:flex; gap:4px; justify-content:center; margin-bottom:10px; }
+.tut-dot { width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,.15); transition:background .3s; }
+.tut-dot.done { background:var(--gold); }
+.tut-dot.active { background:var(--gold2); box-shadow:0 0 6px var(--gold); }
+
 /* ══ WHITE MODE ══ */
 body.white-mode {
   --bg:       #f0eee8;
@@ -1890,6 +1958,29 @@ input[type=range].vol-slider::-webkit-slider-thumb:hover { transform:scale(1.2);
         style="background:rgba(0,0,0,.4);border-color:var(--border2);color:var(--text2);">
         ❌ Abbrechen
       </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ TUTORIAL OVERLAY ═══ -->
+<div id="tutOverlay" style="display:none;" aria-live="polite">
+  <!-- Spotlight: darkens everything except target -->
+  <div id="tutSpotlight" onclick="tutSpotlightClick()"></div>
+
+  <!-- Pulse ring on target element -->
+  <div id="tutPulse" class="tut-pulse-ring" style="display:none;width:50px;height:50px;"></div>
+
+  <!-- Main tutorial card -->
+  <div id="tutCard" style="bottom:80px;left:50%;transform:translateX(-50%);">
+    <!-- Progress dots -->
+    <div class="tut-progress" id="tutDots"></div>
+    <div class="tut-step"  id="tutStep">SCHRITT 1 / 8</div>
+    <div class="tut-title" id="tutTitle">Willkommen!</div>
+    <div class="tut-body"  id="tutBody"></div>
+    <div class="tut-reward" id="tutReward" style="display:none;"></div>
+    <div class="tut-btns">
+      <button class="tut-skip" onclick="tutSkip()">Tutorial überspringen</button>
+      <button class="tut-next" id="tutNextBtn" onclick="tutNext()">Weiter →</button>
     </div>
   </div>
 </div>
@@ -2531,7 +2622,8 @@ input[type=range].vol-slider::-webkit-slider-thumb:hover { transform:scale(1.2);
     <div style="display:flex;gap:8px;justify-content:center;margin-top:14px;flex-wrap:wrap;">
       <button class="collect-btn" onclick="confirmNameEdit()" style="padding:9px 22px;">✅ Speichern</button>
       <button class="collect-btn" onclick="closeNameEdit()" style="background:rgba(0,0,0,.4);border-color:var(--border2);color:var(--text2);padding:9px 22px;">❌ Abbrechen</button>
-      <button onclick="signOut()" style="margin-top:8px;width:100%;padding:8px;background:rgba(180,30,30,.12);border:1px solid rgba(180,30,30,.4);border-radius:8px;font-family:'Cinzel',serif;font-size:.66rem;color:var(--red2);cursor:pointer;" title="Ausloggen">🚪 Ausloggen</button>
+      <button onclick="openTutorial()" style="margin-top:8px;width:100%;padding:8px;background:rgba(201,162,39,.08);border:1px solid rgba(201,162,39,.3);border-radius:8px;font-family:'Cinzel',serif;font-size:.66rem;color:var(--gold2);cursor:pointer;" title="Tutorial">📖 Tutorial neu starten</button>
+      <button onclick="signOut()" style="margin-top:6px;width:100%;padding:8px;background:rgba(180,30,30,.12);border:1px solid rgba(180,30,30,.4);border-radius:8px;font-family:'Cinzel',serif;font-size:.66rem;color:var(--red2);cursor:pointer;" title="Ausloggen">🚪 Ausloggen</button>
     </div>
   </div>
 </div>
@@ -5981,6 +6073,12 @@ function saveToSupabase() {
   localStorage.setItem('sm3_save', Date.now().toString());
   try { saveEventState(); } catch(e) {}
   try {
+    localStorage.setItem('sm3_tutorial', JSON.stringify({
+      tutorialDone: G.tutorialDone || false,
+      tutorialStep: G.tutorialStep || 0,
+    }));
+  } catch(e) {}
+  try {
     localStorage.setItem('sm3_prestige', JSON.stringify({
       prestigeStars:   G.prestigeStars   || 0,
       prestigeHistory: G.prestigeHistory || [],
@@ -6078,6 +6176,8 @@ async function _doSave() {
       event_buffs:       JSON.stringify(G.eventBuffs      || {}),
       // Daily quest claimed
       daily_claimed:     JSON.stringify([...(G.dailyClaimed  || [])]),
+      // Tutorial
+      tutorial_done: G.tutorialDone ? 1 : 0,
       // Prestige
       prestige_stars:   G.prestigeStars   || 0,
       prestige_history: JSON.stringify(G.prestigeHistory || []),
@@ -6254,6 +6354,8 @@ async function loadFromSupabase() {
 
     // Daily quest claimed
     try { G.dailyClaimed   = new Set(JSON.parse(p.daily_claimed   || '[]')); } catch(e) { G.dailyClaimed  = new Set(); }
+    // Tutorial
+    G.tutorialDone = !!(p.tutorial_done);
     // Prestige
     G.prestigeStars   = p.prestige_stars || 0;
     try { G.prestigeHistory = JSON.parse(p.prestige_history || '[]'); } catch(e) { G.prestigeHistory = []; }
@@ -8528,6 +8630,12 @@ async function continueInit() {
   await new Promise(r=>setTimeout(r,300));
   removeLoader();
 
+  // Tutorial aus localStorage laden (Fallback)
+  try {
+    const td = JSON.parse(localStorage.getItem('sm3_tutorial') || '{}');
+    if (td.tutorialDone) G.tutorialDone = true;
+    if (td.tutorialStep) G.tutorialStep = td.tutorialStep;
+  } catch(e) {}
   // Prestige aus localStorage laden (Fallback)
   try {
     const pd = JSON.parse(localStorage.getItem('sm3_prestige') || '{}');
@@ -8571,6 +8679,14 @@ async function continueInit() {
     if (evTab) evTab.style.display = isEventActive() ? 'flex' : 'none';
     if (isEventActive()) { log('🎃 ' + getActiveEvent().name + ' ist aktiv! Schau im Event-Tab vorbei!', 'l'); }
   } catch(e) {}
+
+  // Tutorial für neue Spieler (Level 1, kein vorheriger Fortschritt)
+  const isNewPlayer = !loaded || (G.hero.level <= 1 && G.kills === 0 && !G.tutorialDone);
+  if (isNewPlayer && !G.tutorialDone) {
+    setTimeout(() => {
+      try { startTutorial(); } catch(e) { console.warn('Tutorial start failed:', e); }
+    }, 1200);
+  }
 
   if (loaded) {
     log('✅ Willkommen zuruck! Level ' + G.hero.level + ' geladen.', 'n');
@@ -10046,6 +10162,354 @@ function updatePrestigeHeader() {
     badge.style.display = 'none';
   }
 }
+
+// ════════════════════════════════════════════
+// ── TUTORIAL SYSTEM
+// ════════════════════════════════════════════
+
+const TUT_STEPS = [
+  {
+    id: 'welcome',
+    title: '⚔️ Willkommen bei SwordMaster!',
+    body: 'Du startest als unbekannter Held. Kämpfe gegen Monster, schmied mächtige Waffen und werde zur Legende! Dieses Tutorial zeigt dir die Grundlagen in 8 Schritten.',
+    target: null,
+    position: 'center',
+    reward: null,
+    nextLabel: 'Los geht\u2019s! \u2192',
+    action: null,
+  },
+  {
+    id: 'arena',
+    title: '⚔️ Die Arena',
+    body: 'Hier kämpfst du automatisch gegen Monster. Dein Held greift von selbst an — du musst nichts tun. Schau zu wie deine HP und die Monster-HP sich verändern! Das 🛡️%-Symbol zeigt die Rüstung des Monsters.',
+    target: 'page-arena',
+    position: 'bottom',
+    reward: null,
+    nextLabel: 'Verstanden →',
+    action: () => { try { switchTab('arena'); } catch(e) {} },
+  },
+  {
+    id: 'first_kill',
+    title: '💀 Warte auf deinen ersten Kill',
+    body: 'Dein Held kämpft bereits! Warte kurz bis das erste Monster stirbt — dann bekommst du Gold und XP. Gold siehst du oben rechts (💰).',
+    target: 'page-arena',
+    position: 'bottom',
+    reward: { gold: 50, label: '🎁 +50 Startgold für dich!' },
+    nextLabel: 'Super, weiter! →',
+    action: () => { try { switchTab('arena'); G.hero.gold += 50; updateHeaderStats(); } catch(e) {} },
+  },
+  {
+    id: 'forge',
+    title: '🔨 Die Schmiede',
+    body: 'Mit Gold kannst du Items schmieden! Klicke auf den großen Schmied-Button um dein erstes Item herzustellen. Items verbessern deinen Angriff, deine Verteidigung oder haben Spezialeffekte.',
+    target: 'forgeBtn',
+    position: 'above',
+    reward: null,
+    nextLabel: 'Hab geschmiedet! →',
+    action: () => { try { switchTab('forge'); } catch(e) {} },
+    waitFor: () => G.forgeCount >= 1,
+    waitLabel: '🔨 Schmied einmal...',
+  },
+  {
+    id: 'equip',
+    title: '🧙 Items ausrüsten',
+    body: 'Du hast jetzt mindestens ein Item im Inventar! Gehe zum Held-Tab und klicke auf ein Item um es auszurüsten. Ausgerüstete Items machen deinen Helden sofort stärker.',
+    target: 'tab-held',
+    position: 'below',
+    reward: { gold: 100, label: '🎁 +100 Gold Belohnung!' },
+    nextLabel: 'Item ausgerüstet! →',
+    action: () => { try { switchTab('held'); G.hero.gold += 100; updateHeaderStats(); } catch(e) {} },
+    waitFor: () => Object.values(G.equipped || {}).some(x => x !== null),
+    waitLabel: '🧙 Rüste ein Item aus...',
+  },
+  {
+    id: 'upgrades',
+    title: '📈 Upgrades kaufen',
+    body: 'Auf der Held-Seite gibt es Upgrades — permanente Verbesserungen die Gold kosten. "Waffenschmied" erhöht deinen Angriff dauerhaft. Kaufe dein erstes Upgrade!',
+    target: 'upgradeList',
+    position: 'above',
+    reward: null,
+    nextLabel: 'Upgrade gekauft! →',
+    action: () => { try { switchTab('held'); } catch(e) {} },
+    waitFor: () => Object.values(G.upgrades || {}).some(v => v > 0),
+    waitLabel: '📈 Kauf ein Upgrade...',
+  },
+  {
+    id: 'dungeon',
+    title: '🏚️ Der Dungeon',
+    body: 'Der Dungeon ist eine besondere Herausforderung! Du kämpfst manuell Etage für Etage gegen stärkere Monster. Du hast 🗝️ Schlüssel — benutze einen um eine Etage zu betreten!',
+    target: 'dungStartBtn',
+    position: 'above',
+    reward: null,
+    nextLabel: 'Dungeon betreten! →',
+    action: () => { try { switchTab('dungeon'); } catch(e) {} },
+    waitFor: () => (G.dungeonBestFloor || 0) >= 1 || G.questProgress?.dung_total >= 1,
+    waitLabel: '🏚️ Betritt eine Etage...',
+  },
+  {
+    id: 'done',
+    title: '🏆 Tutorial abgeschlossen!',
+    body: 'Du kennst jetzt die Grundlagen! Erkunde auf eigene Faust: Pets, Forschung, Gilde, PVP und Prestige ab Level 30. Viel Spass!',
+    target: null,
+    position: 'center',
+    reward: { gold: 300, xp: 500, label: '🎁 Tutorial-Belohnung: +300 Gold, +500 XP!' },
+    nextLabel: '🏆 Spielen!',
+    action: () => {
+      G.hero.gold += 300;
+      G.hero.xp   += 500;
+      try { checkLevelUp(); updateAll(); saveToSupabase(); } catch(e) {}
+    },
+  },
+];
+
+// State
+if (!G.tutorialStep)   G.tutorialStep   = 0;
+if (!G.tutorialDone)   G.tutorialDone   = false;
+if (!G.tutorialActive) G.tutorialActive = false;
+let _tutWaitInterval = null;
+
+// ── Start Tutorial ────────────────────────────
+function startTutorial() {
+  if (G.tutorialDone) return;
+  G.tutorialActive = true;
+  G.tutorialStep   = 0;
+  const overlay = document.getElementById('tutOverlay');
+  if (overlay) overlay.style.display = 'block';
+  _renderTutStep();
+}
+
+function tutSkip() {
+  _tutCleanup();
+  G.tutorialDone   = true;
+  G.tutorialActive = false;
+  // Kleine Trost-Belohnung
+  G.hero.gold += 100;
+  updateHeaderStats();
+  log('Tutorial übersprungen. +100 Startgold!', 'n');
+  try { saveToSupabase(); } catch(e) {}
+}
+
+function tutNext() {
+  const step = TUT_STEPS[G.tutorialStep];
+  // Run step action if any
+  if (step && step.action) {
+    try { step.action(); } catch(e) {}
+  }
+  // Give reward
+  if (step && step.reward) {
+    if (step.reward.gold) { G.hero.gold += step.reward.gold; updateHeaderStats(); }
+    if (step.reward.xp)   { G.hero.xp   += step.reward.xp; try { checkLevelUp(); } catch(e) {} }
+    log(step.reward.label || '🎁 Belohnung erhalten!', 'l');
+  }
+  G.tutorialStep++;
+  if (G.tutorialStep >= TUT_STEPS.length) {
+    _tutFinish();
+  } else {
+    _renderTutStep();
+  }
+}
+
+function tutSpotlightClick() {
+  // If current step has a waitFor, check if it's satisfied
+  const step = TUT_STEPS[G.tutorialStep];
+  if (step && step.waitFor && step.waitFor()) {
+    tutNext();
+  }
+}
+
+function _tutFinish() {
+  _tutCleanup();
+  G.tutorialDone   = true;
+  G.tutorialActive = false;
+  const overlay = document.getElementById('tutOverlay');
+  if (overlay) {
+    overlay.style.opacity = '0';
+    overlay.style.transition = 'opacity .4s';
+    setTimeout(() => { if (overlay) overlay.style.display = 'none'; overlay.style.opacity = ''; }, 400);
+  }
+  try { updateAll(); } catch(e) {}
+  try { saveToSupabase(); } catch(e) {}
+}
+
+function _tutCleanup() {
+  if (_tutWaitInterval) { clearInterval(_tutWaitInterval); _tutWaitInterval = null; }
+  _tutClearPulse();
+}
+
+function _renderTutStep() {
+  _tutCleanup();
+  const step = TUT_STEPS[G.tutorialStep];
+  if (!step) { _tutFinish(); return; }
+
+  // Run navigation action immediately
+  if (step.action && step.id !== 'done') {
+    try { step.action(); } catch(e) {}
+  }
+
+  // Update card content
+  const total = TUT_STEPS.length;
+  const idx   = G.tutorialStep;
+
+  _t('tutStep',  `SCHRITT ${idx + 1} / ${total}`);
+  _t('tutTitle', step.title);
+  _t('tutBody',  step.body);
+
+  const rewEl = document.getElementById('tutReward');
+  if (rewEl) {
+    if (step.reward) {
+      rewEl.textContent  = step.reward.label;
+      rewEl.style.display = 'block';
+    } else {
+      rewEl.style.display = 'none';
+    }
+  }
+
+  // Progress dots
+  const dotsEl = document.getElementById('tutDots');
+  if (dotsEl) {
+    dotsEl.innerHTML = '';
+    for (let i = 0; i < total; i++) {
+      const d = document.createElement('div');
+      d.className = 'tut-dot' + (i < idx ? ' done' : i === idx ? ' active' : '');
+      dotsEl.appendChild(d);
+    }
+  }
+
+  // Handle waitFor steps
+  const nextBtn = document.getElementById('tutNextBtn');
+  if (step.waitFor) {
+    if (nextBtn) {
+      nextBtn.textContent = step.waitLabel || 'Warten...';
+      nextBtn.disabled    = !step.waitFor();
+      nextBtn.style.opacity = step.waitFor() ? '1' : '0.45';
+    }
+    _tutWaitInterval = setInterval(() => {
+      if (step.waitFor && step.waitFor()) {
+        if (nextBtn) {
+          nextBtn.textContent = step.nextLabel || 'Weiter →';
+          nextBtn.disabled    = false;
+          nextBtn.style.opacity = '1';
+          // pulse the button
+          nextBtn.style.boxShadow = '0 0 12px var(--gold)';
+          setTimeout(() => { if(nextBtn) nextBtn.style.boxShadow = ''; }, 1000);
+        }
+        clearInterval(_tutWaitInterval);
+        _tutWaitInterval = null;
+      }
+    }, 500);
+  } else {
+    if (nextBtn) {
+      nextBtn.textContent = step.nextLabel || 'Weiter →';
+      nextBtn.disabled    = false;
+      nextBtn.style.opacity = '1';
+    }
+  }
+
+  // Position card and spotlight
+  setTimeout(() => _tutPositionCard(step), 100);
+}
+
+function _tutPositionCard(step) {
+  const card     = document.getElementById('tutCard');
+  const spotlight= document.getElementById('tutSpotlight');
+  if (!card || !spotlight) return;
+
+  // Reset positioning
+  card.style.cssText = 'transition: top .4s, left .4s, bottom .4s, right .4s, opacity .25s;';
+
+  if (!step.target || step.position === 'center') {
+    // Centered card, no spotlight cutout
+    spotlight.style.clipPath = 'none';
+    spotlight.style.background = 'rgba(0,0,0,.72)';
+    card.style.bottom = '80px';
+    card.style.left   = '50%';
+    card.style.transform = 'translateX(-50%)';
+    _tutClearPulse();
+    return;
+  }
+
+  // Find target element
+  const target = document.getElementById(step.target);
+  if (!target) {
+    spotlight.style.clipPath = 'none';
+    card.style.bottom = '80px';
+    card.style.left   = '50%';
+    card.style.transform = 'translateX(-50%)';
+    return;
+  }
+
+  const r    = target.getBoundingClientRect();
+  const pad  = 10;
+  const rx   = r.left   - pad;
+  const ry   = r.top    - pad;
+  const rw   = r.width  + pad*2;
+  const rh   = r.height + pad*2;
+  const vw   = window.innerWidth;
+  const vh   = window.innerHeight;
+
+  // Spotlight with rounded cutout using polygon approximation
+  spotlight.style.background = 'rgba(0,0,0,.72)';
+  // Use a CSS mask approach — two overlapping clips
+  // Simpler: use backdrop with box-shadow inset trick
+  spotlight.style.cssText = `
+    position:fixed; inset:0; pointer-events:all; z-index:10001;
+    background: transparent;
+    box-shadow: 0 0 0 9999px rgba(0,0,0,.72);
+    border-radius: 8px;
+    left:   ${rx}px;
+    top:    ${ry}px;
+    width:  ${rw}px;
+    height: ${rh}px;
+    transition: left .4s, top .4s, width .4s, height .4s;
+  `;
+
+  // Pulse ring on target
+  _tutClearPulse();
+  const pulse = document.getElementById('tutPulse');
+  if (pulse) {
+    const cx = rx + rw/2;
+    const cy = ry + rh/2;
+    const sz = Math.max(rw, rh) * 0.7;
+    pulse.style.cssText = `
+      display:block; position:fixed; z-index:10003; pointer-events:none;
+      width:${sz}px; height:${sz}px;
+      left:${cx - sz/2}px; top:${cy - sz/2}px;
+      border:3px solid var(--gold); border-radius:50%;
+      animation:tutPulse 1.5s ease-out infinite;
+    `;
+  }
+
+  // Position card — prefer below target, or above if not enough space
+  const cardH = 220;
+  const cardW = Math.min(320, vw * 0.92);
+  let cardTop, cardLeft;
+
+  if (step.position === 'above' || (ry + rh + cardH + 20 > vh && ry > cardH + 20)) {
+    cardTop  = Math.max(8, ry - cardH - 16);
+  } else {
+    cardTop  = Math.min(vh - cardH - 8, ry + rh + 16);
+  }
+  cardLeft = Math.max(8, Math.min(vw - cardW - 8, rx + rw/2 - cardW/2));
+
+  card.style.cssText = `
+    position:fixed; z-index:10002; pointer-events:all;
+    background:linear-gradient(135deg,rgba(20,14,8,.97),rgba(14,10,4,.97));
+    border:1.5px solid var(--gold); border-radius:14px;
+    padding:16px 18px 14px;
+    width:${cardW}px;
+    box-shadow:0 12px 40px rgba(0,0,0,.7),0 0 24px rgba(201,162,39,.2);
+    top:${cardTop}px; left:${cardLeft}px;
+    transition: top .4s cubic-bezier(.4,0,.2,1), left .4s cubic-bezier(.4,0,.2,1), opacity .25s;
+  `;
+}
+
+function _tutClearPulse() {
+  const pulse = document.getElementById('tutPulse');
+  if (pulse) pulse.style.display = 'none';
+}
+
+// ── Public API ────────────────────────────────
+function openTutorial() { G.tutorialDone = false; G.tutorialStep = 0; startTutorial(); }
 
 // ════════════════════════════════════════════
 // ── SETTINGS & AUDIO
