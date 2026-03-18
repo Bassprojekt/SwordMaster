@@ -3302,13 +3302,18 @@ const MONSTERS = [
 ];
 
 const RARITIES = [
-  { id:'common',    label:'Gewöhnlich',   col:'#888',   weight:400 },
-  { id:'uncommon',  label:'Ungewöhnlich', col:'#40c070',weight:240 },
-  { id:'rare',      label:'Selten',       col:'#50a0e0',weight:140 },
-  { id:'epic',      label:'Episch',       col:'#9060e0',weight:75  },
-  { id:'legendary', label:'Legendär',     col:'#c9a227',weight:30  },
-  { id:'mythic',    label:'Mystisch',     col:'#f07070',weight:8   },
+  // Gewichte so kalibriert dass Legendary ~0.4% base, Mythic ~0.07% base
+  // Mit maximalem Ofen+Upgrades: Legendary ~2.4%, Mythic ~0.5%
+  { id:'common',    label:'Gewöhnlich',   col:'#888',   weight:1000 },
+  { id:'uncommon',  label:'Ungewöhnlich', col:'#40c070',weight:350  },
+  { id:'rare',      label:'Selten',       col:'#50a0e0',weight:120  },
+  { id:'epic',      label:'Episch',       col:'#9060e0',weight:28   },
+  { id:'legendary', label:'Legendär',     col:'#c9a227',weight:6    },
+  { id:'mythic',    label:'Mystisch',     col:'#f07070',weight:1    },
 ];
+// Tier-Faktoren: wie stark Bonus jede Seltenheit erhöht
+// Seltener = profitiert mehr vom Bonus (statt flaches +b*0.3 für alle)
+const RAR_TIER_FACTORS = [0, 0.2, 0.4, 0.7, 1.2, 1.8];
 
 // ITEM SLOTS: weapon, helmet, chest, gloves, boots, ring
 // ── Item-Sondereffekte ─────────────────────────────────────────
@@ -3828,7 +3833,7 @@ function xpMult()     { const fxX = getEffectMods(); const px = (typeof prestige
 function goldMult()   { const fxG = getEffectMods(); const pg = (typeof prestigeGoldMult==='function') ? prestigeGoldMult()-1 : 0; return Math.min(3.0, 1 + (G.upgrades.gold_mult||0)*0.06 + fxG.gold_find + (G.skills.has('goldSense')?0.08:0) + ((G.shopBoosts&&G.shopBoosts.goldBoost||0)>Date.now()?0.25:0) + guildBonus().gold + (G.skills.has('golden_touch')?0.10:0) + (G.skills.has('phantom')?0.20:0) + pg); }
 function dropBonus()  { const pd = (typeof prestigeDropBonus==='function') ? prestigeDropBonus() : 0; return (G.upgrades.drop_rate||0)*0.08 + (G.skills.has('treasureHunt')?0.2:0) + pd; }
 function idleMult()   { return 1 + (G.upgrades.idle_mul||0)*0.6; }
-function rarBonus()   { return (G.upgrades.item_qual||0)*0.15; }
+function rarBonus()   { return (G.upgrades.item_qual||0)*0.10; }
 function forgeMs() {
   let ms = 2000 - (G.upgrades.forge_spd||0)*320;
   if (G.shopBoosts && G.shopBoosts.forgeMaster) ms *= 0.75;   // -25%
@@ -3856,10 +3861,15 @@ function currentEra()  { for(let i=ERAS.length-1;i>=0;i--){if(G.hero.level>=ERAS
 function currentZone() { for(let i=ZONES.length-1;i>=0;i--){if(G.hero.level>=ZONES[i].minLv)return ZONES[i];} return ZONES[0]; }
 
 function pickRarity() {
-  const b=rarBonus();
-  const w=RARITIES.map((r,i)=>i===0?Math.max(10,r.weight*(1-b)):r.weight*(1+b*0.3));
-  const tot=w.reduce((s,x)=>s+x,0); let r=Math.random()*tot;
-  for(let i=0;i<RARITIES.length;i++){r-=w[i];if(r<=0)return RARITIES[i];}
+  const b = rarBonus();
+  const w = RARITIES.map((r,i) =>
+    i === 0
+      ? Math.max(50, r.weight * Math.max(0.05, 1 - b * 0.6))
+      : r.weight * (1 + b * RAR_TIER_FACTORS[i])
+  );
+  const tot = w.reduce((s,x) => s+x, 0);
+  let rv = Math.random() * tot;
+  for (let i = 0; i < RARITIES.length; i++) { rv -= w[i]; if (rv <= 0) return RARITIES[i]; }
   return RARITIES[0];
 }
 
@@ -4688,13 +4698,13 @@ const MATERIALS = [
 // Ofenstufen: jede Stufe verbessert Schmied-Output
 const FURNACE_LEVELS = [
   { lv:1,  name:'Lehmofen',        emoji:'🪨', itemsPerForge:1, rarBonus:0,    matEff:1.0, speedMult:1.0,  upgCost:{iron:0,      gold:0}    },
-  { lv:2,  name:'Eisenschmelze',   emoji:'🔩', itemsPerForge:1, rarBonus:0.10, matEff:1.1, speedMult:0.90, upgCost:{iron:50,     gold:500}  },
-  { lv:3,  name:'Stahlofen',       emoji:'⚙️', itemsPerForge:2, rarBonus:0.20, matEff:1.2, speedMult:0.82, upgCost:{steel:30,    gold:1800}  },
-  { lv:4,  name:'Goldherd',        emoji:'🟡', itemsPerForge:2, rarBonus:0.35, matEff:1.4, speedMult:0.72, upgCost:{gold_ore:20, gold:5000} },
-  { lv:5,  name:'Mithrilofen',     emoji:'💠', itemsPerForge:3, rarBonus:0.50, matEff:1.6, speedMult:0.60, upgCost:{mithril:15,  gold:15000} },
-  { lv:6,  name:'Dunkelschmiede',  emoji:'⬛', itemsPerForge:3, rarBonus:0.65, matEff:1.8, speedMult:0.50, upgCost:{darksteel:12, gold:40000}},
-  { lv:7,  name:'Sternenschmiede', emoji:'🌟', itemsPerForge:5, rarBonus:0.85, matEff:2.0, speedMult:0.38, upgCost:{stardust:8,  gold:100000}},
-  { lv:8,  name:'Gottesamboss',    emoji:'👑', itemsPerForge:5, rarBonus:1.00, matEff:2.5, speedMult:0.28, upgCost:{stardust:20, gold:300000}},
+  { lv:2,  name:'Eisenschmelze',   emoji:'🔩', itemsPerForge:1, rarBonus:0.06, matEff:1.1, speedMult:0.90, upgCost:{iron:50,     gold:500}  },
+  { lv:3,  name:'Stahlofen',       emoji:'⚙️', itemsPerForge:2, rarBonus:0.13, matEff:1.2, speedMult:0.82, upgCost:{steel:30,    gold:1800}  },
+  { lv:4,  name:'Goldherd',        emoji:'🟡', itemsPerForge:2, rarBonus:0.22, matEff:1.4, speedMult:0.72, upgCost:{gold_ore:20, gold:5000} },
+  { lv:5,  name:'Mithrilofen',     emoji:'💠', itemsPerForge:3, rarBonus:0.33, matEff:1.6, speedMult:0.60, upgCost:{mithril:15,  gold:15000} },
+  { lv:6,  name:'Dunkelschmiede',  emoji:'⬛', itemsPerForge:3, rarBonus:0.44, matEff:1.8, speedMult:0.50, upgCost:{darksteel:12, gold:40000}},
+  { lv:7,  name:'Sternenschmiede', emoji:'🌟', itemsPerForge:5, rarBonus:0.57, matEff:2.0, speedMult:0.38, upgCost:{stardust:8,  gold:100000}},
+  { lv:8,  name:'Gottesamboss',    emoji:'👑', itemsPerForge:5, rarBonus:0.70, matEff:2.5, speedMult:0.28, upgCost:{stardust:20, gold:300000}},
 ];
 
 // Rezepte: garantierter Slot + Mindest-Seltenheit gegen Materialien
@@ -4920,7 +4930,11 @@ function calcForgeMatBonus() {
 function pickRarityWithFurnace() {
   const f = getFurnace();
   const b = rarBonus() + f.rarBonus + (G._forgeMatBonus || 0);
-  const w = RARITIES.map((r, i) => i === 0 ? Math.max(10, r.weight*(1-b)) : r.weight*(1+b*0.3));
+  const w = RARITIES.map((r, i) =>
+    i === 0
+      ? Math.max(50, r.weight * Math.max(0.05, 1 - b * 0.6))
+      : r.weight * (1 + b * RAR_TIER_FACTORS[i])
+  );
   const tot = w.reduce((s,x) => s+x, 0);
   let rv = Math.random() * tot;
   for (let i = 0; i < RARITIES.length; i++) { rv -= w[i]; if (rv <= 0) return RARITIES[i]; }
