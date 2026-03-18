@@ -9210,7 +9210,7 @@ const SEASONAL_EVENTS = {
 
     quests: [
       { id:'ea_q1', icon:'🐰', name:'Häschenjäger',      desc:'Besiege 20 Oster-Monster',      type:'ea_kill',   target:20, reward:{ easter_egg:15, gold:300 } },
-      { id:'ea_q2', icon:'🥚', name:'Eiersuche',         desc:'Besiege 10 Ei-Elementale',      type:'ea_egg',    target:10, reward:{ easter_egg:20, gold:500 } },
+      { id:'ea_q2', icon:'🥚', name:'Eiersuche',         desc:'Besiege 10 Ei-Elementale',      type:'ea_eielemental', target:10, reward:{ easter_egg:20, gold:500 } },
       { id:'ea_q3', icon:'🌸', name:'Frühlingsschmied',  desc:'Schmied 20 Items',               type:'forge_total',target:20,reward:{ easter_egg:10, gold:350 } },
       { id:'ea_q4', icon:'🏚️', name:'Frühlingstaucher',  desc:'Abschluss 3 Dungeon-Bossetagen',type:'dung',      target:3,  reward:{ easter_egg:18, gold:600 } },
       { id:'ea_q5', icon:'🐣', name:'Oster-Golem',       desc:'Besiege den Oster-Golem',       type:'ea_boss',   target:1,  reward:{ easter_egg:100, gold:4500, items:2 } },
@@ -9307,13 +9307,30 @@ function getEventCurrencyCount() {
 function trackEventQuest(monster) {
   const ev = getActiveEvent();
   if (!ev) return;
-  // Generic kill counter
+  // Generic kill counter (für 'ea_kill', 'hw_kill' etc.)
   const killKey = ev.id + '_kills';
   G.eventProgress[killKey] = (G.eventProgress[killKey] || 0) + 1;
   // Specific monster type tracking
+  // Key = ev.id + '_' + bereinigter Monster-Name
+  // Wichtig: Ei-Elemental → 'eielemental', Kürbis-Geist → 'kürbisgeist' etc.
   if (monster.isEventMonster) {
-    const typeKey = ev.id + '_' + monster.name.toLowerCase().replace(/[^a-z]/g,'');
+    // Kompletten Namen bereinigen (Bindestrich entfernen, alles lowercase)
+    const cleanName = monster.name.toLowerCase().replace(/[-\s]/g,'').replace(/[^a-zäöü]/g,'');
+    const typeKey = ev.id + '_' + cleanName;
     G.eventProgress[typeKey] = (G.eventProgress[typeKey] || 0) + 1;
+
+    // Quest-Type-Mapping: prüfe alle Event-Quests ob eine auf diesen Monster-Namen passt
+    if (ev.quests) {
+      ev.quests.forEach(q => {
+        // Quest-Typ wie 'ea_egg' → Monstersuche nach 'egg' im Namen
+        const questMonPart = q.type.replace(/^[a-z]+_/, '').replace(/[-_]/g, '');
+        if (cleanName.includes(questMonPart) && questMonPart.length >= 2) {
+          // Direkter Counter für diese Quest
+          G.eventProgress[ev.id + '_' + questMonPart] =
+            (G.eventProgress[ev.id + '_' + questMonPart] || 0) + 1;
+        }
+      });
+    }
   }
   checkEventQuestBadge();
 }
@@ -9329,10 +9346,21 @@ function getEventQuestProgress(q) {
   if (t === 'forge_total')  return G.forgeCount || 0;
   if (t === 'treasure')     return G.questProgress?.treasure_total || 0;
   if (t === 'wave')         return G.wave || 0;
-  // Specific monster-name quests (e.g. hw_pumpkin)
-  const monName = t.replace(/^[a-z]+_/,'');
-  const key = ev.id + '_' + monName;
-  return G.eventProgress[key] || 0;
+  // Specific monster-name quests (e.g. ea_egg → 'egg', hw_pumpkin → 'pumpkin')
+  // Counter wird in trackEventQuest unter ev.id + '_' + questMonPart gespeichert
+  const monPart = t.replace(/^[a-z]+_/,'').replace(/[-_]/g,'');
+  // Versuche direkten Counter zuerst
+  const directKey = ev.id + '_' + monPart;
+  if (G.eventProgress[directKey]) return G.eventProgress[directKey];
+  // Fallback: suche nach bereinigten Monster-Namen die diesen Teil enthalten
+  let total = 0;
+  Object.keys(G.eventProgress).forEach(key => {
+    if (key.startsWith(ev.id + '_') && key !== ev.id + '_kills') {
+      const namePart = key.replace(ev.id + '_', '');
+      if (namePart.includes(monPart)) total += G.eventProgress[key];
+    }
+  });
+  return total;
 }
 
 function claimEventQuest(questId) {
