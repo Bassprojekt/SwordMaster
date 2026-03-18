@@ -12787,17 +12787,33 @@ const _RESET_DATA = {
 
 async function _adminResetPlayer() {
   if (!_adminLoggedIn || !_adminTargetPlayer) { _adminLog('❌ Kein Spieler ausgewählt!'); return; }
-  if (!confirm(`⚠️ "${_adminTargetPlayer.name}" zurücksetzen? Unwiderruflich!`)) return;
+  if (!confirm(`⚠️ "${_adminTargetPlayer.name}" komplett zurücksetzen?\nLevel, Gold, Materialien, Erfolge, Inventar, Skills, Pets — alles wird gelöscht. Unwiderruflich!`)) return;
   try {
-    const pid = _adminTargetPlayer.id;
-    for (const t of ['sm_inventory','sm_upgrades','sm_skills','sm_pets','sm_guild_members','sm_leaderboard'])
-      await sbDelete(t, `player_id=eq.${pid}`).catch(()=>{});
-    await sbFetch(`${SUPA_URL}/rest/v1/sm_players?id=eq.${pid}`,{
-      method:'PATCH',headers:{...SUPA_HDR,'Prefer':'return=minimal'},body:JSON.stringify(_RESET_DATA)});
-    _adminLog(`✅ Resettet: ${_adminTargetPlayer.name}`);
-    document.getElementById('adminTargetInfo').innerHTML='<span style="color:var(--green2);">✅ Reset OK!</span>';
-    _adminTargetPlayer=null; _adminRefreshStats();
-  } catch(e) { _adminLog('❌ ' + e.message); }
+    const pid = _adminTargetPlayer.name_backup = _adminTargetPlayer.name;
+    const id  = _adminTargetPlayer.id;
+    _adminLog(`⏳ Resette ${_adminTargetPlayer.name}...`);
+
+    // Alle verknüpften Tabellen leeren
+    for (const t of [
+      'sm_inventory', 'sm_upgrades', 'sm_skills', 'sm_pets',
+      'sm_guild_members', 'sm_leaderboard'
+    ]) {
+      await sbDelete(t, `player_id=eq.${id}`).catch(e => _adminLog(`  ⚠️ ${t}: ${e.message}`));
+    }
+
+    // Hauptdaten + Erfolge + Materialien + Runen alles auf 0
+    await sbFetch(`${SUPA_URL}/rest/v1/sm_players?id=eq.${id}`, {
+      method: 'PATCH',
+      headers: { ...SUPA_HDR, 'Prefer': 'return=minimal' },
+      body: JSON.stringify(_RESET_DATA)
+    });
+
+    _adminLog(`✅ Komplett resettet: ${_adminTargetPlayer.name} — Level, Gold, Materialien, Erfolge, Runen, Verzauberungen, Inventar, Skills, Pets, Forschung, PVP, Quests`);
+    document.getElementById('adminTargetInfo').innerHTML =
+      '<span style="color:var(--green2);">✅ Komplett resettet!</span>';
+    _adminTargetPlayer = null;
+    _adminRefreshStats();
+  } catch(e) { _adminLog('❌ Reset fehlgeschlagen: ' + e.message); }
 }
 
 async function _adminGiveGold() {
