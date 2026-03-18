@@ -6163,6 +6163,7 @@ async function _doSave() {
       quest_claimed:   JSON.stringify([...G.questClaimed]),
       // Shop
       shop_purchases:  JSON.stringify(G.shopPurchases  || {}),
+      shop_boosts:     JSON.stringify(G.shopBoosts      || {}),
       // Forge: Materialien, Ofenlevel, Auto-Sell
       forge_materials:   JSON.stringify(G.materials       || {}),
       furnace_level:     G.furnaceLevel   || 1,
@@ -6338,6 +6339,7 @@ async function loadFromSupabase() {
 
     // Shop
     try { G.shopPurchases = JSON.parse(p.shop_purchases || '{}'); } catch(e) { G.shopPurchases = {}; }
+    try { G.shopBoosts    = JSON.parse(p.shop_boosts    || '{}'); } catch(e) { G.shopBoosts    = {}; }
 
     // Forge: Materialien + Ofenlevel + Auto-Sell
     try { G.materials      = JSON.parse(p.forge_materials  || '{}'); } catch(e) { G.materials = {}; }
@@ -8252,7 +8254,16 @@ function renderResearch(){
     const res=RESEARCH.find(r=>r.id===G.researchActive);
     if(document.getElementById('activeResearch'))document.getElementById('activeResearch').textContent=(res?res.icon+' '+res.name:'—');
   }else{
-    if(G.researchActive){G.research.add(G.researchActive);try{trackQuestProgress('research',1);}catch(e){}log('🔬 Forschung abgeschlossen: '+(RESEARCH.find(r=>r.id===G.researchActive)?.name||''),'l');G.researchActive=null;G.researchEnd=0;clearInterval(resTimerInterval);}
+    if(G.researchActive){
+      const _rDone=RESEARCH.find(r=>r.id===G.researchActive);
+      G.research.add(G.researchActive);
+      log('🔬 Forschung abgeschlossen: '+(_rDone?_rDone.icon+' '+_rDone.name:''),'l');
+      try{trackQuestProgress('research',1);}catch(e){}
+      try{checkAchievements();}catch(e){}
+      G.researchActive=null; G.researchEnd=0;
+      clearInterval(resTimerInterval);
+      saveToSupabase();  // ← FEHLTE
+    }
     if(document.getElementById('activeResearch'))document.getElementById('activeResearch').textContent='—';
     if(document.getElementById('researchTimer'))document.getElementById('researchTimer').textContent='⏳ —';
   }
@@ -8465,10 +8476,14 @@ setInterval(() => {
         const res = RESEARCH.find(r => r.id === G.researchActive);
         G.research.add(G.researchActive);
         log('🔬 Forschung fertig: ' + (res ? res.icon + ' ' + res.name : ''), 'l');
+        try{trackQuestProgress('research',1);}catch(e){}
+        try{checkAchievements();}catch(e){}
         G.researchActive = null; G.researchEnd = 0;
         clearInterval(resTimerInterval);
+        saveToSupabase();  // ← FEHLTE
         const page = document.getElementById('page-forschung');
         if (page && page.classList.contains('active')) renderResearch();
+        updateAll();
       } else {
         const left = G.researchEnd - Date.now();
         const m = Math.floor(left / 60000), s = Math.floor((left % 60000) / 1000);
