@@ -1302,6 +1302,55 @@ body {
 /* Pulse on tab badge */
 @keyframes evBadgePulse { 0%,100%{opacity:1}50%{opacity:.5} }
 #eventBadge { animation:evBadgePulse 1.5s ease-in-out infinite; }
+/* ══ ACHIEVEMENTS ══ */
+.ach-header-card { border-color: rgba(201,162,39,.3) !important; background: rgba(201,162,39,.03) !important; }
+.ach-cat-btn {
+  padding: 5px 12px; border-radius: 20px;
+  border: 1px solid var(--border2); background: var(--panel2);
+  font-family: Cinzel,serif; font-size: .62rem; font-weight: 700;
+  color: var(--text2); cursor: pointer; transition: all .15s;
+}
+.ach-cat-btn.active { border-color: var(--gold); color: var(--gold2); background: rgba(201,162,39,.08); }
+.ach-card {
+  background: rgba(0,0,0,.25); border: 1px solid var(--border);
+  border-radius: 11px; padding: 11px 13px;
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 6px; transition: border-color .15s;
+  position: relative; overflow: hidden;
+}
+.ach-card.unlocked { border-color: rgba(201,162,39,.45); background: rgba(201,162,39,.04); }
+.ach-card.locked   { opacity: .5; }
+.ach-card.unlocked::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(90deg, rgba(201,162,39,.04), transparent 60%);
+  pointer-events: none;
+}
+.ach-icon-wrap {
+  width: 44px; height: 44px; border-radius: 10px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 1.5rem;
+}
+.ach-icon-wrap.unlocked { background: rgba(201,162,39,.15); border: 1px solid rgba(201,162,39,.4); }
+.ach-icon-wrap.locked   { background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08); filter: grayscale(1); opacity: .6; }
+.ach-body { flex: 1; min-width: 0; }
+.ach-name  { font-family: Cinzel,serif; font-size: .8rem; font-weight: 700; color: var(--text); }
+.ach-desc  { font-size: .66rem; color: var(--text2); margin-top: 2px; line-height: 1.45; }
+.ach-prog  { margin-top: 5px; }
+.ach-prog-bar  { height: 5px; background: rgba(255,255,255,.05); border-radius: 3px; overflow: hidden; }
+.ach-prog-fill { height: 100%; border-radius: 3px; transition: width .5s; }
+.ach-prog-txt  { font-size: .58rem; color: var(--text3); font-family: Cinzel,serif; margin-top: 2px; }
+.ach-reward { text-align: right; flex-shrink: 0; }
+.ach-reward-val { font-family: Cinzel,serif; font-size: .72rem; font-weight: 700; color: var(--gold2); }
+.ach-reward-lbl { font-size: .58rem; color: var(--text3); margin-top: 1px; }
+.ach-check { font-size: 1.1rem; flex-shrink: 0; }
+.ach-tier-badge {
+  display: inline-block; font-size: .55rem; padding: 1px 6px; border-radius: 8px;
+  font-family: Cinzel,serif; font-weight: 700; margin-left: 5px;
+  vertical-align: middle;
+}
+.ach-tier-bronze  { background: rgba(205,127,50,.15); color: #cd7f32; border: 1px solid #cd7f3244; }
+.ach-tier-silver  { background: rgba(170,170,170,.12); color: #aaa; border: 1px solid #aaa4; }
+.ach-tier-gold    { background: rgba(201,162,39,.15); color: var(--gold2); border: 1px solid var(--gold)44; }
+.ach-tier-diamond { background: rgba(136,120,255,.12); color: #aa88ff; border: 1px solid #aa88ff44; }
 /* ══ WHITE MODE ══ */
 body.white-mode {
   --bg:       #f0eee8;
@@ -1555,6 +1604,7 @@ input[type=range].vol-slider::-webkit-slider-thumb:hover { transform:scale(1.2);
   <div class="nav-tab" onclick="switchTab('shop')" id="tab-shop"><div class="tab-icon">🛒</div>Shop</div>
   <div class="nav-tab" onclick="switchTab('forschung')" id="tab-forschung"><div class="tab-icon">🔬</div>Forschung</div>
   <div class="nav-tab" onclick="switchTab('quests')" id="tab-quests"><div class="tab-icon">📜</div>Quests<span id="questBadge" style="display:none;background:var(--red2);color:#fff;font-size:.48rem;border-radius:8px;padding:0 4px;margin-left:2px;">!</span></div>
+  <div class="nav-tab" onclick="switchTab('achievements')" id="tab-achievements"><div class="tab-icon">🏅</div>Erfolge<span id="achBadge" style="display:none;background:var(--gold);color:#000;font-size:.48rem;border-radius:8px;padding:0 4px;margin-left:2px;font-weight:700;">!</span></div>
   <div class="nav-tab" onclick="switchTab('event')" id="tab-event" style="display:none;"><div class="tab-icon" id="eventTabIcon">🎃</div><span id="eventTabName">Event</span><span id="eventBadge" style="display:none;background:#ff6600;color:#fff;font-size:.48rem;border-radius:8px;padding:0 4px;margin-left:2px;">!</span></div>
 </div>
 
@@ -2180,6 +2230,55 @@ input[type=range].vol-slider::-webkit-slider-thumb:hover { transform:scale(1.2);
 
 </div>
 
+<!-- ═══ ACHIEVEMENTS PAGE ═══ -->
+<div class="page" id="page-achievements">
+
+  <!-- Header mit Gesamtfortschritt -->
+  <div class="card ach-header-card">
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+      <div>
+        <div style="font-family:'Cinzel',serif;font-size:1.05rem;font-weight:900;color:var(--gold2);">🏅 Erfolge</div>
+        <div style="font-size:.68rem;color:var(--text2);margin-top:2px;">Schalte Erfolge frei und sammle Belohnungen!</div>
+      </div>
+      <div style="margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <div class="pill" style="border-color:var(--gold);color:var(--gold2);">🏅 <b id="achUnlocked">0</b> / <b id="achTotal">0</b></div>
+        <div class="pill" id="achPointsPill" style="border-color:var(--purple2);color:var(--purple2);">⭐ <b id="achPoints">0</b> Pkt</div>
+      </div>
+    </div>
+    <!-- Gesamtfortschritt -->
+    <div style="margin-top:10px;">
+      <div style="height:8px;background:rgba(255,255,255,.05);border-radius:4px;overflow:hidden;">
+        <div id="achTotalBar" style="height:100%;border-radius:4px;background:linear-gradient(to right,var(--gold),#ffdd55);transition:width .5s;width:0%;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Kategorie-Filter -->
+  <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:2px;" id="achCatBtns"></div>
+
+  <!-- Achievement Grid -->
+  <div id="achGrid"></div>
+
+</div>
+
+<!-- Achievement Toast Notification -->
+<div id="achToast" style="
+  position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(100px);
+  background:linear-gradient(135deg,rgba(30,20,10,.97),rgba(20,15,5,.97));
+  border:2px solid var(--gold);border-radius:14px;padding:12px 18px;
+  display:flex;align-items:center;gap:12px;z-index:9999;
+  box-shadow:0 8px 32px rgba(0,0,0,.6),0 0 20px rgba(201,162,39,.3);
+  transition:transform .4s cubic-bezier(.34,1.56,.64,1),opacity .3s;
+  opacity:0;pointer-events:none;min-width:240px;max-width:340px;
+">
+  <div id="achToastIcon" style="font-size:2rem;flex-shrink:0;"></div>
+  <div>
+    <div style="font-family:'Cinzel',serif;font-size:.65rem;color:var(--gold);letter-spacing:.1em;margin-bottom:2px;">ERFOLG FREIGESCHALTET</div>
+    <div id="achToastName" style="font-family:'Cinzel',serif;font-size:.88rem;font-weight:700;color:#fff;"></div>
+    <div id="achToastReward" style="font-size:.65rem;color:var(--gold2);margin-top:1px;"></div>
+  </div>
+</div>
+
 <!-- ═══ RANG PAGE ═══ -->
 <div class="page" id="page-rang">
   <div class="card">
@@ -2236,11 +2335,11 @@ input[type=range].vol-slider::-webkit-slider-thumb:hover { transform:scale(1.2);
 <!-- ═══ QUESTS PAGE ═══ -->
 <div class="page" id="page-quests">
   <div class="card">
-    <div class="sec-title">📜 Quests & Erfolge</div>
+    <div class="sec-title">📜 Quests</div>
+    <div style="font-size:.68rem;color:var(--text2);margin-bottom:8px;">Tägliche Quests und Story-Quests. Dauerhafte Meilensteine findest du unter <b style="color:var(--gold2);">🏅 Erfolge</b>.</div>
     <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px;">
       <button class="ctrl-btn active" id="qTab-daily" onclick="setQuestTab('daily')" style="border-color:var(--gold);color:var(--gold2);">📅 Täglich</button>
-      <button class="ctrl-btn" id="qTab-main" onclick="setQuestTab('main')">⚔️ Haupt-Quests</button>
-      <button class="ctrl-btn" id="qTab-achieve" onclick="setQuestTab('achieve')">🏆 Erfolge</button>
+      <button class="ctrl-btn" id="qTab-main" onclick="setQuestTab('main')">📖 Story</button>
     </div>
     <div id="questList"></div>
   </div>
@@ -4369,6 +4468,7 @@ function buySkill(id) {
   G.hero.gold -= sk.cost;
   G.skills.add(sk.id);
   log('✨ Fähigkeit erforscht: ' + sk.icon + ' ' + sk.name + '!', 's');
+  try { checkAchievements(); } catch(e) {}
   try { playSfx('buy'); } catch(e) {}
   updateAll();
   renderSkills();
@@ -4457,6 +4557,7 @@ function dropMaterials(monster) {
   const bonus = dropBonus();
   const amt = Math.max(1, Math.round(base * (1 + bonus) * matEfficiency()));
   addMat(mat.id, amt);
+  try { checkAchievements(); } catch(e) {}  // materials + furnace
   // Kein Log-Spam — nur bei seltenen Materialien
   if (mat.minLv >= 30) log('💎 ' + mat.emoji + ' ' + mat.name + ' ×' + amt + ' gefunden!', 'i');
   renderMaterials();
@@ -4486,6 +4587,7 @@ function upgradeFurnace() {
   }
   G.furnaceLevel = nextLv;
   log('🔥 Ofen auf Stufe ' + nextLv + ' (' + next.name + ') upgegraded!', 'l');
+  try { checkAchievements(); } catch(e) {}
   try { playSfx('levelup'); } catch(e) {}
   if (G.autoForge) restartAuto();
   updateAll();
@@ -4520,6 +4622,7 @@ function craftRecipe(recipeId) {
   G.recentForged.unshift(item);
   if (G.inventory.length > 200) G.inventory.pop();
   log('📜 Rezept: ' + r.emoji + ' ' + r.name + ' → [' + rar.label + '] ' + item.emoji + ' ' + item.name + ' +' + item.sv + ' ' + item.sk.toUpperCase(), 'l');
+  try { trackQuestProgress('craft', 1); } catch(e) {}
   try { playSfx('buy'); } catch(e) {}
   G.forgeCount++;
   checkAutoSell();
@@ -4570,6 +4673,14 @@ function forgeWithFurnace() {
     G.recentForged.unshift(item);
     if (G.inventory.length > 200) G.inventory.pop();
     if (i === 0) log('🎁 [' + rar.label + '] ' + item.emoji + ' ' + item.name + ' +' + item.sv + ' ' + item.sk.toUpperCase() + (itemCount > 1 ? ' (×'+itemCount+')' : ''), 'i');
+    // Track rarity achievements (only first time)
+    try {
+      const rp = G.achProgress || {};
+      if (rar.id === 'rare'      && !rp.rarity_rare)  trackAch('rarity_rare',  1);
+      if (rar.id === 'epic'      && !rp.rarity_epic)  trackAch('rarity_epic',  1);
+      if (rar.id === 'legendary' && !rp.rarity_leg)   trackAch('rarity_leg',   1);
+      if (rar.id === 'mythic'    && !rp.rarity_myth)  trackAch('rarity_myth',  1);
+    } catch(e) {}
     // Auto-sell check
     checkAutoSellItem(item);
   }
@@ -4952,7 +5063,7 @@ function tick() {
       let dmg = Math.max(1, Math.floor((ds.atk + rng(-1, 3) - Math.floor(target.atk * 0.08)) * _assassinMult * _deathMult * _chronoMult));
       const isCrit = Math.random() * 100 < ds.crit;
       const critMult = 1.8 * (1 + (ds.fx ? ds.fx.crit_dmg : 0)) * (G.research && G.research.has('combat1') ? 1.17 : 1);
-      if (isCrit) dmg = Math.floor(dmg * critMult);
+      if (isCrit) { dmg = Math.floor(dmg * critMult); try { trackAch('crits', 1); } catch(e) {} }
       // Weakness multiplier
       const wm = getWeaknessMult(target);
       if (wm > 1) { dmg = Math.floor(dmg * wm); }
@@ -5117,6 +5228,7 @@ function monsterKilled(m) {
   let pickpocketBonus = 0;
   if (G.skills.has('pickpocket') && Math.random() < 0.05) { pickpocketBonus = Math.floor(gold * 0.5 + rng(5,20)); }
   G.hero.xp += xp; G.hero.gold += gold + pickpocketBonus; G.kills++;
+  try { checkAchievements(); } catch(e) {}
   log('💀 ' + m.name + ' besiegt! +' + xp + ' XP  +' + (gold+pickpocketBonus) + ' Gold' + (pickpocketBonus?'  (+'+pickpocketBonus+'G Taschendiebstahl!)':''), 'c');
   try { playSfx('kill'); } catch(e) {}
   try { dropMaterials(m); } catch(e) {}
@@ -5161,6 +5273,7 @@ function heroDied() {
 }
 
 function checkLevelUp() {
+  // Check level achievements when level changes
   let leveled = false;
   while (G.hero.xp >= xpNeed()) {
     G.hero.xp -= xpNeed(); G.hero.level++;
@@ -5173,7 +5286,7 @@ function checkLevelUp() {
     leveled = true;
     try { playSfx('levelup'); } catch(e) {}
   }
-  if (leveled) { updateEraUI(); saveToSupabase(); }
+  if (leveled) { updateEraUI(); saveToSupabase(); try { checkAchievements(); } catch(e) {} }
 }
 
 function renderArena() {
@@ -5682,6 +5795,13 @@ function saveToSupabase() {
   localStorage.setItem('sm3_save', Date.now().toString());
   try { saveEventState(); } catch(e) {}
   try {
+    localStorage.setItem('sm3_ach', JSON.stringify({
+      achProgress: G.achProgress || {},
+      achUnlocked: [...(G.achUnlocked || [])],
+      achPoints:   G.achPoints || 0,
+    }));
+  } catch(e) {}
+  try {
     localStorage.setItem('sm3_forge', JSON.stringify({
       materials: G.materials || {},
       furnaceLevel: G.furnaceLevel || 1,
@@ -5766,6 +5886,10 @@ async function _doSave() {
       event_buffs:       JSON.stringify(G.eventBuffs      || {}),
       // Daily quest claimed
       daily_claimed:     JSON.stringify([...(G.dailyClaimed  || [])]),
+      // Achievements
+      ach_progress:  JSON.stringify(G.achProgress || {}),
+      ach_unlocked:  JSON.stringify([...(G.achUnlocked || [])]),
+      ach_points:    G.achPoints || 0,
     });
 
     // 2. Upgrades — erst löschen dann neu (verhindert 409)
@@ -5935,6 +6059,10 @@ async function loadFromSupabase() {
 
     // Daily quest claimed
     try { G.dailyClaimed   = new Set(JSON.parse(p.daily_claimed   || '[]')); } catch(e) { G.dailyClaimed  = new Set(); }
+    // Achievements
+    try { G.achProgress = JSON.parse(p.ach_progress || '{}'); } catch(e) { G.achProgress = {}; }
+    try { G.achUnlocked = new Set(JSON.parse(p.ach_unlocked || '[]')); } catch(e) { G.achUnlocked = new Set(); }
+    G.achPoints = p.ach_points || 0;
 
     const upgrades = await sbGet('sm_upgrades', `player_id=eq.${pid}`);
     G.upgrades = {};
@@ -6244,6 +6372,7 @@ function switchTab(name) {
   if(name==='shop'){renderShop();}
   if(name==='forschung'){renderUpgrades();renderResearch();}
   if(name==='quests'){renderQuests();}
+  if(name==='achievements'){checkAchievements();renderAchievements();}
   if(name==='event'){renderEventPage();}
   // legacy compat
   if(name==='skills'){renderSkills();}
@@ -6721,6 +6850,8 @@ function dungeonVictory() {
     log('⚔️ Dungeon-Etage ' + G.dungeonFloor + ' besiegt!', 'i');
   }
   try { trackQuestProgress('dung', 1); checkQuestBadge(); } catch(e) {}
+  if (isBoss) { try { trackAch('dung_boss', 1); } catch(e) {} }
+  try { checkAchievements(); } catch(e) {}
   showDungeonReward(rows);
 }
 
@@ -7036,6 +7167,7 @@ function finalizePVPBattle(won, ptsGain, ptsLoss, opp, oppPts, resultEl) {
   if (won) {
     G.pvpPoints += ptsGain;
     G.pvpWins++;
+    try { checkAchievements(); } catch(e) {}
     G.pvpStreak = (G.pvpStreak || 0) + 1;
     // Gold: wenig — PVP soll nicht Hauptgoldquelle sein
     const gold = Math.floor(10 + G.pvpPoints * 0.02 + rng(0, 15));
@@ -7794,7 +7926,7 @@ function renderResearch(){
     const res=RESEARCH.find(r=>r.id===G.researchActive);
     if(document.getElementById('activeResearch'))document.getElementById('activeResearch').textContent=(res?res.icon+' '+res.name:'—');
   }else{
-    if(G.researchActive){G.research.add(G.researchActive);log('🔬 Forschung abgeschlossen: '+(RESEARCH.find(r=>r.id===G.researchActive)?.name||''),'l');G.researchActive=null;G.researchEnd=0;clearInterval(resTimerInterval);}
+    if(G.researchActive){G.research.add(G.researchActive);try{trackQuestProgress('research',1);}catch(e){}log('🔬 Forschung abgeschlossen: '+(RESEARCH.find(r=>r.id===G.researchActive)?.name||''),'l');G.researchActive=null;G.researchEnd=0;clearInterval(resTimerInterval);}
     if(document.getElementById('activeResearch'))document.getElementById('activeResearch').textContent='—';
     if(document.getElementById('researchTimer'))document.getElementById('researchTimer').textContent='⏳ —';
   }
@@ -7838,25 +7970,21 @@ const QUESTS_DAILY=[
   {id:'d4',title:'Wellen-Reiter',desc:'Schließe 5 Wellen ab',icon:'🌊',type:'wave_daily',target:5,reward:{gold:300,xp:200}},
 ];
 const QUESTS_MAIN=[
-  {id:'m1',title:'Erste Schritte',desc:'Erreiche Level 5',icon:'🌟',type:'level_reach',target:5,reward:{gold:500,xp:300}},
-  {id:'m2',title:'Krieger-Anfänger',desc:'Besiege 100 Monster',icon:'💀',type:'kills_total',target:100,reward:{gold:800,xp:500}},
-  {id:'m3',title:'Schmiedemeister I',desc:'Schmied 50 Items',icon:'🔨',type:'forge_total',target:50,reward:{gold:1000,xp:600}},
-  {id:'m4',title:'Bronzezeit',desc:'Erreiche Level 10',icon:'🥉',type:'level_reach',target:10,reward:{gold:2000,xp:1000}},
-  {id:'m5',title:'Monster-Jäger',desc:'Besiege 500 Monster',icon:'⚔️',type:'kills_total',target:500,reward:{gold:3000,xp:2000}},
-  {id:'m6',title:'Mittelalter',desc:'Erreiche Level 20',icon:'🏰',type:'level_reach',target:20,reward:{gold:5000,xp:3000}},
-  {id:'m7',title:'Dungeon-Held',desc:'Schließe 10 Dungeon-Etagen ab',icon:'🏚️',type:'dung_total',target:10,reward:{gold:5000,xp:3000}},
-  {id:'m8',title:'Wellen-Meister',desc:'Erreiche Welle 50',icon:'🌊',type:'wave_reach',target:50,reward:{gold:8000,xp:4000}},
+  // Story-Quests: einmalig, mit Kontext — kein Overlap mit Achievements
+  {id:'m1',title:'Die Reise beginnt',  desc:'Öffne deinen ersten Dungeon-Schlüssel',        icon:'🗝️', type:'dung_total',   target:1,   reward:{gold:400,   xp:200}},
+  {id:'m2',title:'Erstes Rezept',      desc:'Crafte ein Item über das Rezept-System',        icon:'📜', type:'craft_recipe', target:1,   reward:{gold:800,   xp:400}},
+  {id:'m3',title:'Gilden-Pflicht',     desc:'Spende 500 Gold an deine Gilde',               icon:'🏰', type:'donate_gold',  target:500, reward:{gold:600,   xp:500}},
+  {id:'m4',title:'Haustier-Freund',   desc:'Aktiviere dein erstes Pet im Kampf',            icon:'🐾', type:'pet_active',   target:1,   reward:{gold:600,   xp:400}},
+  {id:'m5',title:'Materialsammler',   desc:'Sammle 50 Materialien aus Monstern',            icon:'⚗️', type:'materials',    target:50,  reward:{gold:1000,  xp:800}},
+  {id:'m6',title:'Arena-Debüt',       desc:'Gewinne deinen ersten PVP-Kampf',               icon:'🥊', type:'pvp_wins',     target:1,   reward:{gold:1500,  xp:1000}},
+  {id:'m7',title:'Forschungsdrang',   desc:'Schließe eine Forschung ab',                   icon:'🔬', type:'research_done',target:1,   reward:{gold:1200,  xp:900}},
+  {id:'m8',title:'Tiefen-Erkunder',   desc:'Erreiche Etage 20 im Dungeon',                 icon:'🏚️', type:'dung_floor',   target:20,  reward:{gold:3000,  xp:2000}},
+  {id:'m9',title:'Ofen-Lehrling',     desc:'Upgrade den Ofen auf Stufe 3',                 icon:'🔥', type:'furnace',      target:3,   reward:{gold:2000,  xp:1500}},
+  {id:'m10',title:'Wellenbrecher',    desc:'Überlebe bis Welle 100',                        icon:'🌊', type:'wave_reach',   target:100, reward:{gold:5000,  xp:3000}},
+  {id:'m11',title:'Skill-Initiat',    desc:'Lerne 5 Fähigkeiten im Skill-Tree',             icon:'✨', type:'skills_count', target:5,   reward:{gold:2500,  xp:2000}},
+  {id:'m12',title:'Der Weg des Schmieds',desc:'Schmied ein Legendäres Item',               icon:'⚡', type:'rarity_leg',   target:1,   reward:{gold:8000,  xp:5000}},
 ];
-const QUESTS_ACHIEVE=[
-  {id:'a1',title:'Erstes Blut',desc:'Besiege deinen ersten Monster',icon:'🩸',type:'kills_total',target:1,reward:{gold:50,xp:50}},
-  {id:'a2',title:'Hundert Kills',desc:'Besiege 100 Monster',icon:'💀',type:'kills_total',target:100,reward:{gold:200,xp:100}},
-  {id:'a3',title:'Tausend Kills',desc:'1000 Monster besiegt',icon:'☠️',type:'kills_total',target:1000,reward:{gold:1000,xp:500}},
-  {id:'a4',title:'Zehntausend',desc:'10.000 Monster besiegt',icon:'👑',type:'kills_total',target:10000,reward:{gold:5000,xp:2000}},
-  {id:'a5',title:'Level 10',desc:'Erreiche Level 10',icon:'⭐',type:'level_reach',target:10,reward:{gold:500,xp:200}},
-  {id:'a6',title:'Level 50',desc:'Erreiche Level 50',icon:'🌟',type:'level_reach',target:50,reward:{gold:5000,xp:2000}},
-  {id:'a7',title:'Schmied-Legende',desc:'Schmied 500 Items',icon:'🔨',type:'forge_total',target:500,reward:{gold:3000,xp:1500}},
-  {id:'a8',title:'Dungeon-Bezwinger',desc:'Etage 25 erreicht',icon:'🏚️',type:'dung_best',target:25,reward:{gold:5000,xp:2500}},
-];
+// QUESTS_ACHIEVE entfernt — ersetzt durch das Achievements-System (🏅 Tab)
 
 if(!G.questProgress)G.questProgress={};
 if(!G.questClaimed)G.questClaimed=new Set();
@@ -7871,36 +7999,63 @@ function checkDailyReset(){
 }
 
 function trackQuestProgress(type,amount=1){
-  // Total trackers
+  // Daily trackers
   if(type==='kill'){
-    G.questProgress.kills_total=(G.questProgress.kills_total||0)+amount;
     G.dailyProgress.kills_daily=(G.dailyProgress.kills_daily||0)+amount;
   }
   if(type==='forge'){
-    G.questProgress.forge_total=(G.questProgress.forge_total||0)+amount;
     G.dailyProgress.forge_daily=(G.dailyProgress.forge_daily||0)+amount;
   }
-  if(type==='gold'){G.dailyProgress.gold_daily=(G.dailyProgress.gold_daily||0)+amount;}
-  if(type==='wave'){G.dailyProgress.wave_daily=(G.dailyProgress.wave_daily||0)+1;G.questProgress.wave_reach=G.wave;}
-  if(type==='level'){G.questProgress.level_reach=G.hero.level;}
-  if(type==='dung'){G.questProgress.dung_total=(G.questProgress.dung_total||0)+1;G.questProgress.dung_best=G.dungeonBestFloor;}
+  if(type==='gold') { G.dailyProgress.gold_daily=(G.dailyProgress.gold_daily||0)+amount; }
+  if(type==='wave') { G.dailyProgress.wave_daily=(G.dailyProgress.wave_daily||0)+1; }
+  // Story quest trackers (snapshot values)
+  G.questProgress.wave_reach   = G.wave;
+  G.questProgress.dung_floor   = G.dungeonBestFloor;
+  G.questProgress.pvp_wins     = G.pvpWins;
+  G.questProgress.skills_count = G.skills ? G.skills.size : 0;
+  G.questProgress.furnace      = G.furnaceLevel || 1;
+  G.questProgress.materials    = Object.values(G.materials||{}).reduce((s,v)=>s+v,0);
+  G.questProgress.pet_active   = G.activePets && G.activePets.size > 0 ? 1 : 0;
+  G.questProgress.rarity_leg   = G.achProgress?.rarity_leg || 0;
+  if(type==='dung') {
+    G.questProgress.dung_total=(G.questProgress.dung_total||0)+1;
+  }
+  if(type==='craft') G.questProgress.craft_recipe=(G.questProgress.craft_recipe||0)+1;
+  if(type==='donate') G.questProgress.donate_gold=(G.questProgress.donate_gold||0)+amount;
+  if(type==='research') G.questProgress.research_done=(G.questProgress.research_done||0)+1;
   checkQuestBadge();
 }
 
 function getQuestProgress(q){
-  if(q.type.endsWith('_daily'))return G.dailyProgress[q.type]||0;
-  return G.questProgress[q.type]||0;
+  const t=q.type;
+  if(t.endsWith('_daily')) return G.dailyProgress[t]||0;
+  // Story quest live lookups
+  if(t==='dung_total')    return G.questProgress.dung_total||0;
+  if(t==='craft_recipe')  return G.questProgress.craft_recipe||0;
+  if(t==='donate_gold')   return G.questProgress.donate_gold||0;
+  if(t==='pet_active')    return G.activePets&&G.activePets.size>0?1:0;
+  if(t==='materials')     return Object.values(G.materials||{}).reduce((s,v)=>s+v,0);
+  if(t==='pvp_wins')      return G.pvpWins||0;
+  if(t==='research_done') return G.questProgress.research_done||0;
+  if(t==='dung_floor')    return G.dungeonBestFloor||0;
+  if(t==='furnace')       return G.furnaceLevel||1;
+  if(t==='wave_reach')    return G.wave||0;
+  if(t==='skills_count')  return G.skills?G.skills.size:0;
+  if(t==='rarity_leg')    return G.achProgress?.rarity_leg||0;
+  return G.questProgress[t]||0;
 }
 
 function isQuestClaimed(q,tab){return tab==='daily'?G.dailyClaimed.has(q.id):G.questClaimed.has(q.id);}
 
 function checkQuestBadge(){
-  const all=[...QUESTS_DAILY,...QUESTS_MAIN,...QUESTS_ACHIEVE];
+  const all=[...QUESTS_DAILY,...QUESTS_MAIN];
   const hasClaim=all.some(q=>{const prog=getQuestProgress(q);const claimed=G.questClaimed.has(q.id)||G.dailyClaimed.has(q.id);return prog>=q.target&&!claimed;});
   const b=document.getElementById('questBadge');if(b)b.style.display=hasClaim?'inline-block':'none';
 }
 
 function setQuestTab(t){
+  // Only allow daily and main (achieve tab removed)
+  if(t==='achieve') t='main';
   questTabCurrent=t;
   ['daily','main','achieve'].forEach(x=>{const b=document.getElementById('qTab-'+x);if(b){b.classList.remove('active');b.style.borderColor='var(--border2)';b.style.color='var(--text2)';}});
   const active=document.getElementById('qTab-'+t);if(active){active.classList.add('active');active.style.borderColor='var(--gold)';active.style.color='var(--gold2)';}
@@ -7909,7 +8064,7 @@ function setQuestTab(t){
 
 function renderQuests(){
   const list=document.getElementById('questList');if(!list)return;list.innerHTML='';
-  const quests=questTabCurrent==='daily'?QUESTS_DAILY:questTabCurrent==='main'?QUESTS_MAIN:QUESTS_ACHIEVE;
+  const quests=questTabCurrent==='daily'?QUESTS_DAILY:QUESTS_MAIN;
   quests.forEach(q=>{
     const prog=Math.min(getQuestProgress(q),q.target);const claimed=isQuestClaimed(q,questTabCurrent);
     const canClaim=prog>=q.target&&!claimed;const pct=prog/q.target*100;
@@ -8149,6 +8304,13 @@ async function continueInit() {
   await new Promise(r=>setTimeout(r,300));
   removeLoader();
 
+  // Achievements aus localStorage laden (Fallback)
+  try {
+    const ad = JSON.parse(localStorage.getItem('sm3_ach') || '{}');
+    if (ad.achProgress && !Object.keys(G.achProgress||{}).length)  G.achProgress = ad.achProgress;
+    if (ad.achUnlocked && !G.achUnlocked?.size)                    G.achUnlocked = new Set(ad.achUnlocked);
+    if (ad.achPoints   && !G.achPoints)                            G.achPoints   = ad.achPoints;
+  } catch(e) {}
   // localStorage als Fallback wenn Supabase keine Daten hatte
   // (Materialien/Ofen/Event nur aus localStorage nehmen wenn noch leer)
   try {
@@ -8169,6 +8331,8 @@ async function continueInit() {
   } catch(e) {}
   try { checkIdle(); }           catch(e) {}
   try { spawnMonster(); startCombat(); } catch(e) {}
+  // Run achievements check on startup
+  try { checkAchievements(); renderAchievements(); updateAchBadge(); } catch(e) {}
   // Event tab visibility
   try {
     const evTab = document.getElementById('tab-event');
@@ -9097,6 +9261,253 @@ function loadEventState() {
     if (d.eventBoss)      G.eventBoss      = d.eventBoss;
     if (d.eventBuffs)     G.eventBuffs     = d.eventBuffs;
   } catch(e) {}
+}
+
+// ════════════════════════════════════════════
+// ── ACHIEVEMENTS SYSTEM
+// ════════════════════════════════════════════
+
+const ACHIEVEMENTS = [
+  // ─── 🗡️ KAMPF ───────────────────────────────────────────
+  { id:'kill_1',      cat:'Kampf',    icon:'⚔️',  tier:'bronze',  name:'Erste Blut',          desc:'Besiege deinen ersten Gegner.',                    type:'kills',        target:1,      reward:{gold:50,   xp:100}  },
+  { id:'kill_10',     cat:'Kampf',    icon:'⚔️',  tier:'bronze',  name:'Anfänger',            desc:'10 Monster besiegt.',                              type:'kills',        target:10,     reward:{gold:100,  xp:200}  },
+  { id:'kill_100',    cat:'Kampf',    icon:'🗡️',  tier:'bronze',  name:'Kämpfer',             desc:'100 Monster besiegt.',                             type:'kills',        target:100,    reward:{gold:300,  xp:500}  },
+  { id:'kill_500',    cat:'Kampf',    icon:'🛡️',  tier:'silver',  name:'Krieger',             desc:'500 Monster besiegt.',                             type:'kills',        target:500,    reward:{gold:800,  xp:1500} },
+  { id:'kill_1000',   cat:'Kampf',    icon:'🏹',  tier:'silver',  name:'Schlächter',          desc:'1.000 Monster besiegt.',                           type:'kills',        target:1000,   reward:{gold:2000, xp:4000} },
+  { id:'kill_5000',   cat:'Kampf',    icon:'💀',  tier:'gold',    name:'Monstermörder',       desc:'5.000 Monster besiegt.',                           type:'kills',        target:5000,   reward:{gold:8000, xp:15000}},
+  { id:'kill_25000',  cat:'Kampf',    icon:'👑',  tier:'diamond', name:'Legende des Todes',   desc:'25.000 Monster besiegt.',                          type:'kills',        target:25000,  reward:{gold:50000,xp:100000}},
+  { id:'wave_10',     cat:'Kampf',    icon:'🌊',  tier:'bronze',  name:'Wellensurfer',        desc:'Welle 10 erreicht.',                               type:'wave',         target:10,     reward:{gold:200,  xp:300}  },
+  { id:'wave_50',     cat:'Kampf',    icon:'🌊',  tier:'silver',  name:'Wellenreiter',        desc:'Welle 50 erreicht.',                               type:'wave',         target:50,     reward:{gold:1000, xp:2000} },
+  { id:'wave_200',    cat:'Kampf',    icon:'🌊',  tier:'gold',    name:'Sturmreiter',         desc:'Welle 200 erreicht.',                              type:'wave',         target:200,    reward:{gold:5000, xp:10000}},
+  { id:'crit_first',  cat:'Kampf',    icon:'⚡',  tier:'bronze',  name:'Glückstreffer',       desc:'10 kritische Treffer landen.',                     type:'crits',        target:10,     reward:{gold:150,  xp:250}  },
+  { id:'crit_500',    cat:'Kampf',    icon:'💥',  tier:'silver',  name:'Krit-Meister',        desc:'500 kritische Treffer.',                           type:'crits',        target:500,    reward:{gold:2000, xp:3000} },
+  { id:'lv5',         cat:'Kampf',    icon:'⭐',  tier:'bronze',  name:'Aufsteiger',          desc:'Level 5 erreicht.',                                type:'level',        target:5,      reward:{gold:200,  xp:0}    },
+  { id:'lv10',        cat:'Kampf',    icon:'⭐',  tier:'bronze',  name:'Abenteurer',          desc:'Level 10 erreicht.',                               type:'level',        target:10,     reward:{gold:500,  xp:0}    },
+  { id:'lv25',        cat:'Kampf',    icon:'🌟',  tier:'silver',  name:'Veteran',             desc:'Level 25 erreicht.',                               type:'level',        target:25,     reward:{gold:2000, xp:0}    },
+  { id:'lv50',        cat:'Kampf',    icon:'💫',  tier:'gold',    name:'Meister',             desc:'Level 50 erreicht.',                               type:'level',        target:50,     reward:{gold:10000,xp:0}    },
+  { id:'lv75',        cat:'Kampf',    icon:'👑',  tier:'diamond', name:'Großmeister',         desc:'Level 75 erreicht.',                               type:'level',        target:75,     reward:{gold:50000,xp:0}    },
+
+  // ─── 🔨 SCHMIEDE ────────────────────────────────────────
+  { id:'forge_1',     cat:'Schmiede', icon:'🔨',  tier:'bronze',  name:'Erster Hammerschlag', desc:'Dein erstes Item geschmiedet.',                    type:'forge',        target:1,      reward:{gold:50,   xp:100}  },
+  { id:'forge_10',    cat:'Schmiede', icon:'🔨',  tier:'bronze',  name:'Lehrling',            desc:'10 Items geschmiedet.',                            type:'forge',        target:10,     reward:{gold:200,  xp:300}  },
+  { id:'forge_100',   cat:'Schmiede', icon:'⚒️',  tier:'silver',  name:'Schmied',             desc:'100 Items geschmiedet.',                           type:'forge',        target:100,    reward:{gold:800,  xp:1000} },
+  { id:'forge_500',   cat:'Schmiede', icon:'🔥',  tier:'silver',  name:'Meisterschmied',      desc:'500 Items geschmiedet.',                           type:'forge',        target:500,    reward:{gold:3000, xp:5000} },
+  { id:'forge_2000',  cat:'Schmiede', icon:'⭐',  tier:'gold',    name:'Legenden-Schmied',    desc:'2.000 Items geschmiedet.',                         type:'forge',        target:2000,   reward:{gold:12000,xp:20000}},
+  { id:'rare_first',  cat:'Schmiede', icon:'💠',  tier:'bronze',  name:'Seltener Fund',       desc:'Erstes Seltenes Item geschmiedet.',                type:'rarity_rare',  target:1,      reward:{gold:300,  xp:500}  },
+  { id:'epic_first',  cat:'Schmiede', icon:'🔮',  tier:'silver',  name:'Epische Schöpfung',   desc:'Erstes Episches Item geschmiedet.',                type:'rarity_epic',  target:1,      reward:{gold:800,  xp:1500} },
+  { id:'leg_first',   cat:'Schmiede', icon:'✨',  tier:'gold',    name:'Legendäres Werk',     desc:'Erstes Legendäres Item geschmiedet.',              type:'rarity_leg',   target:1,      reward:{gold:3000, xp:5000} },
+  { id:'myth_first',  cat:'Schmiede', icon:'🌋',  tier:'diamond', name:'Göttliches Meisterwerk',desc:'Erstes Mythisches Item erschmiedet!',            type:'rarity_myth',  target:1,      reward:{gold:15000,xp:25000}},
+  { id:'furnace_5',   cat:'Schmiede', icon:'🔥',  tier:'silver',  name:'Ofenmeister',         desc:'Ofen auf Stufe 5 geupgradet.',                     type:'furnace',      target:5,      reward:{gold:5000, xp:8000} },
+  { id:'furnace_8',   cat:'Schmiede', icon:'👑',  tier:'gold',    name:'Gottesamboss',        desc:'Maximale Ofenstufe 8 erreicht.',                   type:'furnace',      target:8,      reward:{gold:25000,xp:40000}},
+  { id:'gold_1000',   cat:'Schmiede', icon:'💰',  tier:'bronze',  name:'Sparschwein',         desc:'1.000 Gold angesammelt.',                          type:'gold_total',   target:1000,   reward:{gold:200,  xp:300}  },
+  { id:'gold_10000',  cat:'Schmiede', icon:'💰',  tier:'silver',  name:'Händler',             desc:'10.000 Gold angesammelt.',                         type:'gold_total',   target:10000,  reward:{gold:1000, xp:2000} },
+  { id:'gold_100k',   cat:'Schmiede', icon:'💎',  tier:'gold',    name:'Schatzkammer',        desc:'100.000 Gold angesammelt.',                        type:'gold_total',   target:100000, reward:{gold:5000, xp:10000}},
+
+  // ─── 🏚️ DUNGEON ─────────────────────────────────────────
+  { id:'dung_1',      cat:'Dungeon',  icon:'🏚️',  tier:'bronze',  name:'Taucher',             desc:'Betritt deinen ersten Dungeon-Raum.',               type:'dung',         target:1,      reward:{gold:100,  xp:200}  },
+  { id:'dung_10',     cat:'Dungeon',  icon:'🗝️',  tier:'bronze',  name:'Erkunder',            desc:'10 Dungeon-Räume durchquert.',                     type:'dung',         target:10,     reward:{gold:400,  xp:600}  },
+  { id:'dung_50',     cat:'Dungeon',  icon:'🗡️',  tier:'silver',  name:'Kerkerläufer',        desc:'50 Dungeon-Räume durchquert.',                     type:'dung',         target:50,     reward:{gold:2000, xp:3000} },
+  { id:'dung_floor10',cat:'Dungeon',  icon:'🏆',  tier:'bronze',  name:'Etagen-Kletterer',    desc:'Etage 10 im Dungeon erreicht.',                    type:'dung_floor',   target:10,     reward:{gold:500,  xp:800}  },
+  { id:'dung_floor30',cat:'Dungeon',  icon:'🔥',  tier:'silver',  name:'Tiefen-Taucher',      desc:'Etage 30 im Dungeon erreicht.',                    type:'dung_floor',   target:30,     reward:{gold:2500, xp:4000} },
+  { id:'dung_floor60',cat:'Dungeon',  icon:'💀',  tier:'gold',    name:'Dungeon-Lord',        desc:'Alle 60 Etagen gemeistert!',                       type:'dung_floor',   target:60,     reward:{gold:15000,xp:25000}},
+  { id:'dung_boss1',  cat:'Dungeon',  icon:'👹',  tier:'bronze',  name:'Bosstöter',           desc:'Ersten Dungeon-Boss besiegt.',                     type:'dung_boss',    target:1,      reward:{gold:600,  xp:1000} },
+  { id:'dung_boss5',  cat:'Dungeon',  icon:'👑',  tier:'silver',  name:'Bossmörder',          desc:'5 Dungeon-Bosse besiegt.',                         type:'dung_boss',    target:5,      reward:{gold:3000, xp:5000} },
+
+  // ─── 🥊 SOZIAL / PVP ────────────────────────────────────
+  { id:'pvp_1',       cat:'Sozial',   icon:'🥊',  tier:'bronze',  name:'Herausforderer',      desc:'Ersten PVP-Kampf gewonnen.',                       type:'pvp_wins',     target:1,      reward:{gold:300,  xp:500}  },
+  { id:'pvp_10',      cat:'Sozial',   icon:'🏆',  tier:'silver',  name:'Arena-Kämpfer',       desc:'10 PVP-Kämpfe gewonnen.',                          type:'pvp_wins',     target:10,     reward:{gold:1500, xp:2500} },
+  { id:'pvp_50',      cat:'Sozial',   icon:'💎',  tier:'gold',    name:'Arena-Champion',      desc:'50 PVP-Kämpfe gewonnen.',                          type:'pvp_wins',     target:50,     reward:{gold:8000, xp:15000}},
+  { id:'pvp_rank_g',  cat:'Sozial',   icon:'🥇',  tier:'gold',    name:'Gold-Rang',           desc:'PVP-Rang Gold erreicht.',                          type:'pvp_rank',     target:800,    reward:{gold:5000, xp:8000} },
+  { id:'guild_join',  cat:'Sozial',   icon:'🏰',  tier:'bronze',  name:'Gildenbruder',        desc:'Einer Gilde beigetreten.',                         type:'guild',        target:1,      reward:{gold:200,  xp:400}  },
+  { id:'skill_1',     cat:'Sozial',   icon:'✨',  tier:'bronze',  name:'Erster Skill',        desc:'Erste Fähigkeit erforscht.',                       type:'skills',       target:1,      reward:{gold:200,  xp:300}  },
+  { id:'skill_10',    cat:'Sozial',   icon:'🌟',  tier:'silver',  name:'Forscher',            desc:'10 Fähigkeiten erforscht.',                        type:'skills',       target:10,     reward:{gold:2000, xp:3000} },
+  { id:'skill_all',   cat:'Sozial',   icon:'👑',  tier:'diamond', name:'Allwissend',          desc:'Alle 44 Fähigkeiten erforscht!',                   type:'skills',       target:44,     reward:{gold:100000,xp:200000}},
+  { id:'pet_first',   cat:'Sozial',   icon:'🐾',  tier:'bronze',  name:'Tierfreund',          desc:'Erstes Pet gekauft.',                              type:'pets',         target:1,      reward:{gold:300,  xp:500}  },
+  { id:'mat_collect', cat:'Sozial',   icon:'⚗️',  tier:'bronze',  name:'Sammler',             desc:'100 Materialien gesammelt.',                       type:'materials',    target:100,    reward:{gold:400,  xp:600}  },
+  { id:'event_done',  cat:'Sozial',   icon:'🎃',  tier:'silver',  name:'Event-Held',          desc:'Eine Event-Quest abgeschlossen.',                  type:'event_claimed',target:1,      reward:{gold:1000, xp:1500} },
+];
+
+// State
+if (!G.achProgress) G.achProgress = {};
+if (!G.achUnlocked) G.achUnlocked = new Set();
+if (!G.achPoints)   G.achPoints   = 0;
+
+let _achCat = 'Alle';
+
+// ── Progress ermitteln ────────────────────
+function getAchProgress(a) {
+  switch (a.type) {
+    case 'kills':        return G.kills || 0;
+    case 'wave':         return G.wave  || 0;
+    case 'level':        return G.hero.level || 1;
+    case 'forge':        return G.forgeCount || 0;
+    case 'gold_total':   return G.hero.gold || 0;
+    case 'dung':         return G.questProgress?.dung_total || 0;
+    case 'dung_floor':   return G.dungeonBestFloor || 0;
+    case 'dung_boss':    return G.achProgress.dung_boss || 0;
+    case 'pvp_wins':     return G.pvpWins || 0;
+    case 'pvp_rank':     return G.pvpPoints || 0;
+    case 'skills':       return G.skills ? G.skills.size : 0;
+    case 'pets':         return G.pets ? Object.keys(G.pets).length : 0;
+    case 'guild':        return G.guildId ? 1 : 0;
+    case 'crits':        return G.achProgress.crits || 0;
+    case 'furnace':      return G.furnaceLevel || 1;
+    case 'rarity_rare':  return G.achProgress.rarity_rare  || 0;
+    case 'rarity_epic':  return G.achProgress.rarity_epic  || 0;
+    case 'rarity_leg':   return G.achProgress.rarity_leg   || 0;
+    case 'rarity_myth':  return G.achProgress.rarity_myth  || 0;
+    case 'materials': {
+      const total = Object.values(G.materials || {}).reduce((s,v) => s+v, 0);
+      return total;
+    }
+    case 'event_claimed': return G.eventClaimed ? G.eventClaimed.size : 0;
+    default: return G.achProgress[a.type] || 0;
+  }
+}
+
+// ── Check + Unlock ────────────────────────
+function checkAchievements() {
+  let anyNew = false;
+  ACHIEVEMENTS.forEach(a => {
+    if (G.achUnlocked.has(a.id)) return;
+    const prog = getAchProgress(a);
+    if (prog >= a.target) {
+      G.achUnlocked.add(a.id);
+      anyNew = true;
+      // Belohnung geben
+      if (a.reward.gold) G.hero.gold += a.reward.gold;
+      if (a.reward.xp)   { G.hero.xp += a.reward.xp; checkLevelUp(); }
+      // Punkte
+      const pts = { bronze:10, silver:25, gold:60, diamond:150 }[a.tier] || 10;
+      G.achPoints = (G.achPoints || 0) + pts;
+      // Toast zeigen
+      showAchToast(a, pts);
+      log(`🏅 Erfolg freigeschaltet: ${a.icon} ${a.name}! +${a.reward.gold}G +${pts}⭐`, 'l');
+    }
+  });
+  if (anyNew) {
+    updateAll();
+    updateAchBadge();
+    saveToSupabase();
+  }
+}
+
+function showAchToast(a, pts) {
+  const toast = document.getElementById('achToast');
+  if (!toast) return;
+  document.getElementById('achToastIcon').textContent  = a.icon;
+  document.getElementById('achToastName').textContent  = a.name;
+  document.getElementById('achToastReward').textContent = `+${a.reward.gold}G · +${pts} Punkte`;
+  toast.style.opacity   = '1';
+  toast.style.transform = 'translateX(-50%) translateY(0)';
+  try { playSfx('levelup'); } catch(e) {}
+  clearTimeout(toast._timer);
+  toast._timer = setTimeout(() => {
+    toast.style.opacity   = '0';
+    toast.style.transform = 'translateX(-50%) translateY(100px)';
+  }, 3500);
+}
+
+function updateAchBadge() {
+  const unlocked = G.achUnlocked.size;
+  const total    = ACHIEVEMENTS.length;
+  const pct      = Math.round(unlocked / total * 100);
+  const el = document.getElementById('achBadge');
+  // Show badge if recently unlocked
+  if (el) el.style.display = unlocked > 0 ? 'inline-block' : 'none';
+}
+
+// ── Render ────────────────────────────────
+function renderAchievements() {
+  const unlocked = G.achUnlocked.size;
+  const total    = ACHIEVEMENTS.length;
+  const pct      = Math.round(unlocked / total * 100);
+
+  // Header
+  const uEl = document.getElementById('achUnlocked');
+  const tEl = document.getElementById('achTotal');
+  const pEl = document.getElementById('achPoints');
+  const bEl = document.getElementById('achTotalBar');
+  if (uEl) uEl.textContent = unlocked;
+  if (tEl) tEl.textContent = total;
+  if (pEl) pEl.textContent = (G.achPoints||0).toLocaleString();
+  if (bEl) bEl.style.width = pct + '%';
+
+  // Category buttons
+  const cats = ['Alle', ...new Set(ACHIEVEMENTS.map(a => a.cat))];
+  const catDiv = document.getElementById('achCatBtns');
+  if (catDiv) {
+    catDiv.innerHTML = '';
+    cats.forEach(c => {
+      const b = document.createElement('button');
+      b.className = 'ach-cat-btn' + (_achCat === c ? ' active' : '');
+      const cnt = c === 'Alle' ? ACHIEVEMENTS.length : ACHIEVEMENTS.filter(a => a.cat === c).length;
+      const unc = c === 'Alle' ? unlocked : ACHIEVEMENTS.filter(a => a.cat === c && G.achUnlocked.has(a.id)).length;
+      b.textContent = c + ' (' + unc + '/' + cnt + ')';
+      b.onclick = () => { _achCat = c; renderAchievements(); };
+      catDiv.appendChild(b);
+    });
+  }
+
+  // Achievement cards
+  const grid = document.getElementById('achGrid');
+  if (!grid) return;
+  grid.innerHTML = '';
+
+  const list = _achCat === 'Alle'
+    ? ACHIEVEMENTS
+    : ACHIEVEMENTS.filter(a => a.cat === _achCat);
+
+  // Sort: unlocked first, then by target
+  const sorted = [...list].sort((a, b) => {
+    const au = G.achUnlocked.has(a.id), bu = G.achUnlocked.has(b.id);
+    if (au && !bu) return -1;
+    if (!au && bu) return 1;
+    return a.target - b.target;
+  });
+
+  const tierColors = { bronze:'#cd7f32', silver:'#aaaaaa', gold:'#f0cc55', diamond:'#aa88ff' };
+
+  sorted.forEach(a => {
+    const isUnlocked = G.achUnlocked.has(a.id);
+    const prog  = Math.min(getAchProgress(a), a.target);
+    const pct   = Math.round(prog / a.target * 100);
+    const color = tierColors[a.tier] || '#888';
+    const pts   = { bronze:10, silver:25, gold:60, diamond:150 }[a.tier] || 10;
+
+    const card = document.createElement('div');
+    card.className = 'ach-card' + (isUnlocked ? ' unlocked' : ' locked');
+
+    const progHTML = !isUnlocked ? `
+      <div class="ach-prog">
+        <div class="ach-prog-bar"><div class="ach-prog-fill" style="width:${pct}%;background:${color};"></div></div>
+        <div class="ach-prog-txt">${prog.toLocaleString()} / ${a.target.toLocaleString()}</div>
+      </div>` : '';
+
+    card.innerHTML = `
+      <div class="ach-icon-wrap ${isUnlocked ? 'unlocked' : 'locked'}">${a.icon}</div>
+      <div class="ach-body">
+        <div class="ach-name">
+          ${a.name}
+          <span class="ach-tier-badge ach-tier-${a.tier}">${a.tier.toUpperCase()}</span>
+        </div>
+        <div class="ach-desc">${a.desc}</div>
+        ${progHTML}
+      </div>
+      <div class="ach-reward">
+        <div class="ach-reward-val">${isUnlocked ? '✅' : '💰 ' + a.reward.gold.toLocaleString() + 'G'}</div>
+        <div class="ach-reward-lbl">${isUnlocked ? 'Fertig' : '⭐ ' + pts + ' Pkt'}</div>
+      </div>`;
+
+    grid.appendChild(card);
+  });
+}
+
+// ── Achievement-Tracking Hooks ────────────
+function trackAch(type, amount) {
+  if (!G.achProgress) G.achProgress = {};
+  G.achProgress[type] = (G.achProgress[type] || 0) + amount;
+  checkAchievements();
 }
 
 // ════════════════════════════════════════════
