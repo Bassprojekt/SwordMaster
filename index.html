@@ -1351,6 +1351,49 @@ body {
 .ach-tier-silver  { background: rgba(170,170,170,.12); color: #aaa; border: 1px solid #aaa4; }
 .ach-tier-gold    { background: rgba(201,162,39,.15); color: var(--gold2); border: 1px solid var(--gold)44; }
 .ach-tier-diamond { background: rgba(136,120,255,.12); color: #aa88ff; border: 1px solid #aa88ff44; }
+/* ══ PRESTIGE SYSTEM ══ */
+.prestige-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: linear-gradient(135deg, rgba(255,180,0,.15), rgba(255,120,0,.08));
+  border: 1px solid rgba(255,180,0,.4);
+  border-radius: 20px; padding: 2px 8px;
+  font-family: Cinzel,serif; font-size: .65rem; font-weight: 700;
+  color: #ffcc00; cursor: pointer;
+  transition: all .15s;
+}
+.prestige-badge:hover { background: rgba(255,180,0,.25); }
+.prestige-star { font-size: .7rem; }
+
+/* Prestige overlay */
+#prestigeOverlay .idle-box { max-width: 400px; }
+.prestige-tier {
+  background: rgba(0,0,0,.25);
+  border: 1px solid rgba(255,180,0,.2);
+  border-radius: 10px; padding: 10px 14px;
+  margin-bottom: 6px; display: flex;
+  align-items: center; gap: 12px;
+  transition: border-color .15s;
+}
+.prestige-tier.current { border-color: rgba(255,180,0,.5); background: rgba(255,180,0,.06); }
+.prestige-tier.done    { opacity: .5; }
+.prestige-tier-stars   { font-size: 1.2rem; flex-shrink: 0; min-width: 50px; text-align: center; }
+.prestige-tier-info    { flex: 1; min-width: 0; }
+.prestige-tier-name    { font-family: Cinzel,serif; font-size: .78rem; font-weight: 700; color: var(--text); }
+.prestige-tier-bonus   { font-size: .66rem; color: var(--gold2); margin-top: 2px; }
+.prestige-tier-req     { font-size: .62rem; color: var(--text3); margin-top: 1px; }
+
+/* Prestige reset confirmation */
+.prestige-warning {
+  background: rgba(200,50,50,.1); border: 1px solid rgba(200,50,50,.3);
+  border-radius: 8px; padding: 10px 12px; margin: 10px 0;
+  font-size: .7rem; color: var(--red2); line-height: 1.6;
+}
+.prestige-keeps {
+  background: rgba(64,192,112,.07); border: 1px solid rgba(64,192,112,.2);
+  border-radius: 8px; padding: 8px 12px; margin-bottom: 10px;
+  font-size: .7rem; color: var(--green2); line-height: 1.7;
+}
+
 /* ══ WHITE MODE ══ */
 body.white-mode {
   --bg:       #f0eee8;
@@ -1579,6 +1622,7 @@ input[type=range].vol-slider::-webkit-slider-thumb:hover { transform:scale(1.2);
       <div class="hstat">💰 <b id="hGold">0</b></div>
       <div class="hstat">⭐ Lv<b id="hLv">1</b></div>
       <div class="hstat">💀 <b id="hKills">0</b></div>
+      <div class="prestige-badge" id="prestigeBadge" onclick="openPrestige()" style="display:none;" title="Prestige — klicken für Details">⚡ <b id="hPrestige">✦0</b></div>
       <div class="hstat" id="saveStatus" style="color:var(--text2);font-size:0.65rem;">💾 —</div>
       <div id="guildHeaderBadge" onclick="switchTab('gilde')" title="Gilden-Boni aktiv">🏰 <span id="guildHeaderBadgeTxt">Lv1</span></div>
       <button id="settingsGearBtn" onclick="openSettings()" title="Einstellungen" style="background:rgba(0,0,0,0.4);border:1px solid var(--border);border-radius:6px;padding:3px 9px;cursor:pointer;color:var(--text2);font-size:1rem;transition:all .2s;display:flex;align-items:center;">⚙️</button>
@@ -1814,6 +1858,42 @@ input[type=range].vol-slider::-webkit-slider-thumb:hover { transform:scale(1.2);
 
 </div>
 
+<!-- ═══ PRESTIGE OVERLAY ═══ -->
+<div class="idle-overlay hidden" id="prestigeOverlay">
+  <div class="idle-box">
+    <div style="text-align:center;margin-bottom:14px;">
+      <div style="font-size:2.5rem;margin-bottom:4px;">⚡</div>
+      <h2 style="font-family:'Cinzel',serif;color:var(--gold2);margin-bottom:4px;">Prestige</h2>
+      <div style="font-size:.75rem;color:var(--text2);">Setze alles zurück und werde stärker als zuvor.</div>
+    </div>
+
+    <!-- Aktuelle Prestige-Stufe & Boni -->
+    <div id="prestigeCurrentInfo" style="margin-bottom:12px;"></div>
+
+    <!-- Alle Stufen -->
+    <div id="prestigeTierList" style="margin-bottom:12px;"></div>
+
+    <!-- Was bleibt / was geht -->
+    <div class="prestige-keeps" id="prestigeKeeps"></div>
+    <div class="prestige-warning">
+      ⚠️ Der Reset ist <b>permanent</b>. Level, Gold, Inventar, Skills, Upgrades und Welle werden zurückgesetzt.
+      Gilde, PVP-Rang, Achievements und Prestige-Sterne bleiben erhalten.
+    </div>
+
+    <!-- Buttons -->
+    <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+      <button id="prestigeConfirmBtn" class="collect-btn" onclick="doPrestige()"
+        style="background:linear-gradient(135deg,rgba(255,180,0,.3),rgba(255,120,0,.1));border-color:var(--gold);">
+        ⚡ Prestige durchführen
+      </button>
+      <button class="collect-btn" onclick="closePrestige()"
+        style="background:rgba(0,0,0,.4);border-color:var(--border2);color:var(--text2);">
+        ❌ Abbrechen
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- ═══ SELL MANAGER OVERLAY ═══ -->
 <div class="idle-overlay hidden" id="sellOverlay">
   <div class="idle-box" style="max-width:500px;width:95%;">
@@ -1932,6 +2012,14 @@ input[type=range].vol-slider::-webkit-slider-thumb:hover { transform:scale(1.2);
   <div class="card">
     <div class="sec-title">🌅 Zeitalter</div>
     <div id="eraTimeline"></div>
+  </div>
+  <!-- Prestige -->
+  <div class="card" id="prestigeHeldCard">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px;">
+      <div class="sec-title" style="margin-bottom:0;">⚡ Prestige</div>
+      <button class="ctrl-btn" onclick="openPrestige()" style="border-color:var(--gold);color:var(--gold2);font-size:.68rem;">⚡ Übersicht & Reset</button>
+    </div>
+    <div id="prestigeHeldInfo" style="font-size:.72rem;color:var(--text2);line-height:1.8;"></div>
   </div>
 </div>
 
@@ -3613,6 +3701,8 @@ function getStats() {
   const gb = guildBonus();
   if (gb.atk > 0) atk = Math.floor(atk * (1 + gb.atk));
   if (gb.def > 0) def = Math.floor(def * (1 + gb.def));
+  // Prestige ATK-Multiplikator
+  try { atk = Math.floor(atk * prestigeAtkMult()); } catch(e) {}
   // Event buffs
   atk = Math.floor(atk * eventAtkMult());
   def = Math.floor(def * eventDefMult());
@@ -3642,9 +3732,9 @@ function guildBonus() {
     level: lv
   };
 }
-function xpMult()     { const fxX = getEffectMods(); return 1 + ((G.shopBoosts&&G.shopBoosts.xpBoost||0)>Date.now()?0.5:0) + guildBonus().xp + fxX.xp_boost; }
-function goldMult()   { const fxG = getEffectMods(); return Math.min(2.0, 1 + (G.upgrades.gold_mult||0)*0.06 + fxG.gold_find + (G.skills.has('goldSense')?0.08:0) + ((G.shopBoosts&&G.shopBoosts.goldBoost||0)>Date.now()?0.25:0) + guildBonus().gold + (G.skills.has('golden_touch')?0.10:0) + (G.skills.has('phantom')?0.20:0)); }
-function dropBonus()  { return (G.upgrades.drop_rate||0)*0.08 + (G.skills.has('treasureHunt')?0.2:0); }
+function xpMult()     { const fxX = getEffectMods(); const px = (typeof prestigeXpMult==='function') ? prestigeXpMult()-1 : 0; return 1 + ((G.shopBoosts&&G.shopBoosts.xpBoost||0)>Date.now()?0.5:0) + guildBonus().xp + fxX.xp_boost + px; }
+function goldMult()   { const fxG = getEffectMods(); const pg = (typeof prestigeGoldMult==='function') ? prestigeGoldMult()-1 : 0; return Math.min(3.0, 1 + (G.upgrades.gold_mult||0)*0.06 + fxG.gold_find + (G.skills.has('goldSense')?0.08:0) + ((G.shopBoosts&&G.shopBoosts.goldBoost||0)>Date.now()?0.25:0) + guildBonus().gold + (G.skills.has('golden_touch')?0.10:0) + (G.skills.has('phantom')?0.20:0) + pg); }
+function dropBonus()  { const pd = (typeof prestigeDropBonus==='function') ? prestigeDropBonus() : 0; return (G.upgrades.drop_rate||0)*0.08 + (G.skills.has('treasureHunt')?0.2:0) + pd; }
 function idleMult()   { return 1 + (G.upgrades.idle_mul||0)*0.6; }
 function rarBonus()   { return (G.upgrades.item_qual||0)*0.15; }
 function forgeMs() {
@@ -5382,7 +5472,7 @@ function checkLevelUp() {
     leveled = true;
     try { playSfx('levelup'); } catch(e) {}
   }
-  if (leveled) { updateEraUI(); saveToSupabase(); try { checkAchievements(); } catch(e) {} }
+  if (leveled) { updateEraUI(); saveToSupabase(); try { checkAchievements(); } catch(e) {} try { updatePrestigeHeader(); } catch(e) {} }
 }
 
 function renderArena() {
@@ -5891,6 +5981,12 @@ function saveToSupabase() {
   localStorage.setItem('sm3_save', Date.now().toString());
   try { saveEventState(); } catch(e) {}
   try {
+    localStorage.setItem('sm3_prestige', JSON.stringify({
+      prestigeStars:   G.prestigeStars   || 0,
+      prestigeHistory: G.prestigeHistory || [],
+    }));
+  } catch(e) {}
+  try {
     localStorage.setItem('sm3_ach', JSON.stringify({
       achProgress: G.achProgress || {},
       achUnlocked: [...(G.achUnlocked || [])],
@@ -5982,6 +6078,9 @@ async function _doSave() {
       event_buffs:       JSON.stringify(G.eventBuffs      || {}),
       // Daily quest claimed
       daily_claimed:     JSON.stringify([...(G.dailyClaimed  || [])]),
+      // Prestige
+      prestige_stars:   G.prestigeStars   || 0,
+      prestige_history: JSON.stringify(G.prestigeHistory || []),
       // Achievements
       ach_progress:  JSON.stringify(G.achProgress || {}),
       ach_unlocked:  JSON.stringify([...(G.achUnlocked || [])]),
@@ -6155,6 +6254,9 @@ async function loadFromSupabase() {
 
     // Daily quest claimed
     try { G.dailyClaimed   = new Set(JSON.parse(p.daily_claimed   || '[]')); } catch(e) { G.dailyClaimed  = new Set(); }
+    // Prestige
+    G.prestigeStars   = p.prestige_stars || 0;
+    try { G.prestigeHistory = JSON.parse(p.prestige_history || '[]'); } catch(e) { G.prestigeHistory = []; }
     // Achievements
     try { G.achProgress = JSON.parse(p.ach_progress || '{}'); } catch(e) { G.achProgress = {}; }
     try { G.achUnlocked = new Set(JSON.parse(p.ach_unlocked || '[]')); } catch(e) { G.achUnlocked = new Set(); }
@@ -6458,7 +6560,7 @@ function switchTab(name) {
   document.getElementById('page-'+name)?.classList.add('active');
   document.getElementById('tab-'+name)?.classList.add('active');
   if(name==='arena'){renderArena();updateArenaPanel();}
-  if(name==='held'){renderEquipSlots();renderEquipBonus();renderInventory();renderSkills();renderEraTimeline();}
+  if(name==='held'){renderEquipSlots();renderEquipBonus();renderInventory();renderSkills();renderEraTimeline();updatePrestigeHeldCard();}
   if(name==='forge'){renderInventory();renderUpgrades();renderForgedGrid();try{renderMaterials();}catch(e){}try{renderFurnace();}catch(e){}try{renderRecipes();}catch(e){}try{renderAutoSellRules();}catch(e){}}
   if(name==='dungeon'){renderDungeon();}
   if(name==='pvp'){renderPVP();loadPVPOpponents();loadPVPLeaderboard();}
@@ -8286,6 +8388,7 @@ function updateHeaderStats() {
     if (document.getElementById('hLv')) document.getElementById('hLv').textContent = h.level;
     if (document.getElementById('hKills')) document.getElementById('hKills').textContent = G.kills;
   } catch(e) {}
+  try { updatePrestigeHeader(); } catch(e) {}
 }
 
 setInterval(() => {
@@ -8425,6 +8528,12 @@ async function continueInit() {
   await new Promise(r=>setTimeout(r,300));
   removeLoader();
 
+  // Prestige aus localStorage laden (Fallback)
+  try {
+    const pd = JSON.parse(localStorage.getItem('sm3_prestige') || '{}');
+    if (pd.prestigeStars  && !G.prestigeStars)   G.prestigeStars   = pd.prestigeStars;
+    if (pd.prestigeHistory && !G.prestigeHistory?.length) G.prestigeHistory = pd.prestigeHistory;
+  } catch(e) {}
   // Achievements aus localStorage laden (Fallback)
   try {
     const ad = JSON.parse(localStorage.getItem('sm3_ach') || '{}');
@@ -8454,6 +8563,8 @@ async function continueInit() {
   try { spawnMonster(); startCombat(); } catch(e) {}
   // Run achievements check on startup
   try { checkAchievements(); renderAchievements(); updateAchBadge(); } catch(e) {}
+  // Prestige header
+  try { updatePrestigeHeader(); } catch(e) {}
   // Event tab visibility
   try {
     const evTab = document.getElementById('tab-event');
@@ -9629,6 +9740,311 @@ function trackAch(type, amount) {
   if (!G.achProgress) G.achProgress = {};
   G.achProgress[type] = (G.achProgress[type] || 0) + amount;
   checkAchievements();
+}
+
+// ════════════════════════════════════════════
+// ── PRESTIGE SYSTEM
+// ════════════════════════════════════════════
+
+// Prestige-Stufen: jede Stufe braucht höheres Level für Reset
+// Boni stapeln sich — Stufe 3 gibt Boni von Stufe 1+2+3
+const PRESTIGE_TIERS = [
+  { stars:1,  name:'Eiserner Pfad',     reqLv:30,  bonus:{ atk:0.10, gold:0.15, xp:0.10, drop:0.05 }, color:'#cd7f32' },
+  { stars:2,  name:'Silberne Klinge',   reqLv:40,  bonus:{ atk:0.12, gold:0.18, xp:0.12, drop:0.06 }, color:'#aaaaaa' },
+  { stars:3,  name:'Goldener Krieger',  reqLv:50,  bonus:{ atk:0.15, gold:0.20, xp:0.15, drop:0.08 }, color:'#f0cc55' },
+  { stars:4,  name:'Saphir-Recke',      reqLv:60,  bonus:{ atk:0.18, gold:0.22, xp:0.18, drop:0.10 }, color:'#4488ff' },
+  { stars:5,  name:'Rubin-Seele',       reqLv:70,  bonus:{ atk:0.20, gold:0.25, xp:0.20, drop:0.12 }, color:'#ff4466' },
+  { stars:6,  name:'Smaragd-Legende',  reqLv:80,  bonus:{ atk:0.22, gold:0.28, xp:0.22, drop:0.14 }, color:'#44cc88' },
+  { stars:7,  name:'Diamant-Wächter',  reqLv:90,  bonus:{ atk:0.25, gold:0.30, xp:0.25, drop:0.16 }, color:'#aa88ff' },
+  { stars:8,  name:'Astraler Meister', reqLv:100, bonus:{ atk:0.30, gold:0.35, xp:0.30, drop:0.20 }, color:'#ff8800' },
+];
+
+// State
+if (!G.prestigeStars)   G.prestigeStars   = 0;
+if (!G.prestigeHistory) G.prestigeHistory = []; // [{stars, level, ts}]
+
+// ── Boni berechnen (kumulativ über alle bisherigen Stufen) ──
+function getPrestigeBonuses() {
+  if (!G.prestigeStars || G.prestigeStars === 0) return { atk:0, gold:0, xp:0, drop:0 };
+  let atk=0, gold=0, xp=0, drop=0;
+  for (const tier of PRESTIGE_TIERS) {
+    if (tier.stars <= G.prestigeStars) {
+      atk  += tier.bonus.atk;
+      gold += tier.bonus.gold;
+      xp   += tier.bonus.xp;
+      drop += tier.bonus.drop;
+    }
+  }
+  return { atk, gold, xp, drop };
+}
+
+// ── Multiplikatoren für Economy-Funktionen ──
+function prestigeAtkMult()  { return 1 + getPrestigeBonuses().atk;  }
+function prestigeGoldMult() { return 1 + getPrestigeBonuses().gold; }
+function prestigeXpMult()   { return 1 + getPrestigeBonuses().xp;   }
+function prestigeDropBonus(){ return     getPrestigeBonuses().drop;  }
+
+// ── Nächste Prestige-Stufe ───────────────────
+function getNextPrestigeTier() {
+  return PRESTIGE_TIERS.find(t => t.stars === G.prestigeStars + 1) || null;
+}
+
+function canPrestige() {
+  const next = getNextPrestigeTier();
+  if (!next) return false;
+  return G.hero.level >= next.reqLv;
+}
+
+// ── Prestige durchführen ─────────────────────
+function doPrestige() {
+  if (!canPrestige()) {
+    const next = getNextPrestigeTier();
+    if (next) log('❌ Prestige erfordert Level ' + next.reqLv + '!', 'c');
+    return;
+  }
+  const tier = getNextPrestigeTier();
+  const oldLevel = G.hero.level;
+
+  // ── Was bleibt erhalten ──
+  const keep = {
+    prestigeStars:   G.prestigeStars + 1,
+    prestigeHistory: [...(G.prestigeHistory || []), { stars: G.prestigeStars + 1, level: oldLevel, ts: Date.now() }],
+    guildId:         G.guildId,
+    guildRole:       G.guildRole,
+    _localGuild:     G._localGuild,
+    pvpPoints:       G.pvpPoints,
+    pvpWins:         G.pvpWins,
+    pvpLosses:       G.pvpLosses,
+    pvpStreak:       G.pvpStreak,
+    achProgress:     G.achProgress,
+    achUnlocked:     G.achUnlocked,
+    achPoints:       G.achPoints,
+    research:        G.research,       // Forschungen bleiben!
+    dungeonBestFloor: G.dungeonBestFloor,
+    eventProgress:   G.eventProgress,
+    eventClaimed:    G.eventClaimed,
+    eventBuffs:      G.eventBuffs,
+    eventPurchased:  G.eventPurchased,
+    eventCurrency:   G.eventCurrency,
+    eventBoss:       G.eventBoss,
+    inventoryLimit:  G.inventoryLimit,
+    // Materialien bleiben (halbe Menge)
+    materials: Object.fromEntries(
+      Object.entries(G.materials || {}).map(([k,v]) => [k, Math.floor(v * 0.5)])
+    ),
+  };
+
+  // ── Alles zurücksetzen ──
+  const freshHero = { level:1, xp:0, hp:100, maxHp:100, mana:50, maxMana:50,
+    baseAtk:5, baseDef:2, spd:1.0, baseCrit:5, gold:0 };
+
+  G.hero          = freshHero;
+  G.wave          = 1;
+  G.monstersInWave = 0;
+  G.monstersPerWave = 3;
+  G.kills         = 0;
+  G.forgeCount    = 0;
+  G.eraIdx        = 0;
+  G.inventory     = [];
+  G.recentForged  = [];
+  G.equipped      = { weapon:null, helmet:null, chest:null, gloves:null, boots:null, ring:null };
+  G.upgrades      = {};
+  G.skills        = new Set();
+  G.pets          = {};
+  G.activePets    = new Set();
+  G.shopPurchases = {};
+  G.shopBoosts    = {};
+  G.reviveReady   = false;
+  G.furnaceLevel  = 1;
+  G.autoSellRules = {};
+  G.autoSellEarned = 0;
+  G.questProgress = {};
+  G.questClaimed  = new Set();
+  G.dailyClaimed  = new Set();
+  G.dungeonFloor  = 1;
+  G.dungeonKeys   = 3;
+  G._forge2Counter = 0;
+  G.monsterDebuffs = {};
+  G.eventProgress = {};
+
+  // ── Bewahrtes zurückschreiben ──
+  Object.assign(G, keep);
+
+  // ── Prestige-Bonus als Startgold (kleine Starthilfe) ──
+  const startGold = tier.stars * 500;
+  G.hero.gold = startGold;
+
+  log(`⚡ PRESTIGE ${tier.stars}★ — ${tier.name}! Neustart mit Boni! +${startGold}G Starthilfe.`, 'l');
+  try { playSfx('levelup'); } catch(e) {}
+
+  closePrestige();
+
+  // Flash-Animation
+  document.body.style.animation = 'none';
+  setTimeout(() => {
+    document.body.style.transition = 'opacity .4s';
+    document.body.style.opacity = '0';
+    setTimeout(() => {
+      document.body.style.opacity = '1';
+    }, 400);
+  }, 50);
+
+  updateAll();
+  renderSkills();
+  renderFurnace();
+  renderMaterials();
+  renderInventory();
+  updateHeaderStats();
+  saveToSupabase();
+  saveNow();
+}
+
+// ── Overlay öffnen/schließen ─────────────────
+function openPrestige() {
+  renderPrestigeOverlay();
+  document.getElementById('prestigeOverlay').classList.remove('hidden');
+}
+function closePrestige() {
+  document.getElementById('prestigeOverlay').classList.add('hidden');
+}
+
+function updatePrestigeHeldCard() {
+  const pInfo = document.getElementById('prestigeHeldInfo');
+  if (!pInfo) return;
+  const next = getNextPrestigeTier();
+  const cur  = getPrestigeBonuses();
+  const s    = G.prestigeStars;
+  let html = '';
+  if (s > 0) {
+    const tier = PRESTIGE_TIERS[s - 1];
+    html += '<div style="margin-bottom:6px;display:flex;align-items:center;gap:8px;">'
+         +  '<span style="font-size:1.2rem;color:' + tier.color + ';">' + '⚡'.repeat(s) + '</span>'
+         +  '<span style="font-family:Cinzel,serif;font-size:.8rem;color:' + tier.color + ';">' + tier.name + '</span>'
+         +  '</div>';
+    html += '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:6px;">'
+         +  '<span>⚔️ +<b style="color:var(--text);">' + Math.round(cur.atk*100)  + '%</b> ATK</span>'
+         +  '<span>💰 +<b style="color:var(--text);">' + Math.round(cur.gold*100) + '%</b> Gold</span>'
+         +  '<span>⭐ +<b style="color:var(--text);">' + Math.round(cur.xp*100)   + '%</b> XP</span>'
+         +  '<span>🎁 +<b style="color:var(--text);">' + Math.round(cur.drop*100) + '%</b> Drops</span>'
+         +  '</div>';
+  }
+  if (next) {
+    const canDo = canPrestige();
+    if (canDo) {
+      const nb = next.bonus;
+      html += '<div style="background:rgba(255,204,0,.06);border:1px solid rgba(255,204,0,.25);border-radius:8px;padding:8px 10px;">'
+           +  '<div style="color:var(--gold2);font-family:Cinzel,serif;font-size:.75rem;margin-bottom:3px;">✅ Prestige ' + next.stars + '★ verfügbar!</div>'
+           +  '<div>Neue Boni: +' + Math.round(nb.atk*100) + '% ATK · +' + Math.round(nb.gold*100) + '% Gold · +' + Math.round(nb.xp*100) + '% XP · +' + Math.round(nb.drop*100) + '% Drops</div>'
+           +  '<div style="color:var(--text3);font-size:.62rem;margin-top:2px;">Forschungen, Gilde, Achievements und 50% der Materialien bleiben erhalten.</div>'
+           +  '</div>';
+    } else {
+      const lvNeeded = next.reqLv - G.hero.level;
+      const pct = Math.min(100, Math.round(G.hero.level / next.reqLv * 100));
+      html += '<div>Nächste Stufe: <b style="color:var(--gold2);">' + next.name + '</b> (Level ' + next.reqLv + ')</div>'
+           +  '<div style="margin-top:5px;height:6px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;">'
+           +  '<div style="height:100%;width:' + pct + '%;background:linear-gradient(to right,var(--gold),#ffdd55);border-radius:3px;transition:width .5s;"></div></div>'
+           +  '<div style="font-size:.6rem;color:var(--text3);margin-top:2px;">Lv ' + G.hero.level + ' / ' + next.reqLv + ' — noch ' + lvNeeded + ' Level</div>';
+    }
+  } else {
+    html += '<div style="color:var(--gold2);font-family:Cinzel,serif;">👑 Maximales Prestige erreicht!</div>';
+  }
+  pInfo.innerHTML = html;
+}
+
+function renderPrestigeOverlay() {
+  const next     = getNextPrestigeTier();
+  const bonuses  = getPrestigeBonuses();
+  const canDo    = canPrestige();
+  const stars    = G.prestigeStars;
+
+  // Aktuelle Boni anzeigen
+  const infoEl = document.getElementById('prestigeCurrentInfo');
+  if (infoEl) {
+    if (stars === 0) {
+      infoEl.innerHTML = '<div style="text-align:center;font-size:.75rem;color:var(--text2);padding:8px;">Noch kein Prestige durchgeführt.</div>';
+    } else {
+      const starStr = '⚡'.repeat(stars);
+      const cur = PRESTIGE_TIERS[stars - 1];
+      infoEl.innerHTML = `<div style="text-align:center;margin-bottom:8px;">
+        <div style="font-size:1.5rem;color:${cur.color};">${starStr}</div>
+        <div style="font-family:Cinzel,serif;font-size:.9rem;color:${cur.color};">${cur.name}</div>
+        <div style="font-size:.68rem;color:var(--text2);margin-top:4px;">
+          Aktive Boni: ⚔️ +${Math.round(bonuses.atk*100)}% ATK · 💰 +${Math.round(bonuses.gold*100)}% Gold · ⭐ +${Math.round(bonuses.xp*100)}% XP · 🎁 +${Math.round(bonuses.drop*100)}% Drops
+        </div>
+      </div>`;
+    }
+  }
+
+  // Tier-Liste
+  const listEl = document.getElementById('prestigeTierList');
+  if (listEl) {
+    listEl.innerHTML = '';
+    PRESTIGE_TIERS.forEach(tier => {
+      const done    = stars >= tier.stars;
+      const isCur   = stars + 1 === tier.stars;
+      const b       = tier.bonus;
+      const d       = document.createElement('div');
+      d.className   = 'prestige-tier' + (done ? ' done' : isCur ? ' current' : '');
+      d.style.borderColor = isCur ? tier.color + '80' : '';
+      d.innerHTML   = `
+        <div class="prestige-tier-stars" style="color:${tier.color};">
+          ${'⚡'.repeat(tier.stars)}${done ? ' ✅' : ''}
+        </div>
+        <div class="prestige-tier-info">
+          <div class="prestige-tier-name" style="color:${isCur||done ? tier.color : 'var(--text)'};">${tier.name}</div>
+          <div class="prestige-tier-bonus">
+            ⚔️ +${Math.round(b.atk*100)}% · 💰 +${Math.round(b.gold*100)}% · ⭐ +${Math.round(b.xp*100)}% · 🎁 +${Math.round(b.drop*100)}%
+          </div>
+          <div class="prestige-tier-req">Benötigt: Level ${tier.reqLv}</div>
+        </div>`;
+      listEl.appendChild(d);
+    });
+  }
+
+  // Was bleibt
+  const keepsEl = document.getElementById('prestigeKeeps');
+  if (keepsEl) {
+    keepsEl.innerHTML = `✅ <b>Bleibt erhalten:</b> Gilde · PVP-Rang · Achievements · Forschungen · 50% der Materialien · Dungeonrekord · Event-Fortschritt`;
+  }
+
+  // Confirm-Button
+  const btn = document.getElementById('prestigeConfirmBtn');
+  if (btn) {
+    if (!next) {
+      btn.textContent = '👑 Maximales Prestige erreicht!';
+      btn.disabled = true;
+    } else if (!canDo) {
+      btn.textContent = `🔒 Benötigt Level ${next.reqLv} (du bist Lv ${G.hero.level})`;
+      btn.disabled = true;
+    } else {
+      btn.textContent = `⚡ Prestige ${next.stars}★ — ${next.name}`;
+      btn.disabled = false;
+    }
+  }
+}
+
+// ── Header updaten ───────────────────────────
+function updatePrestigeHeader() {
+  const badge = document.getElementById('prestigeBadge');
+  const txt   = document.getElementById('hPrestige');
+  if (!badge || !txt) return;
+
+  if (G.prestigeStars > 0) {
+    badge.style.display = 'inline-flex';
+    const stars = '⚡'.repeat(G.prestigeStars);
+    txt.textContent = stars;
+    const tier = PRESTIGE_TIERS[G.prestigeStars - 1];
+    badge.style.borderColor = (tier?.color || '#ffcc00') + '80';
+    badge.style.color       = tier?.color || '#ffcc00';
+  } else if (canPrestige()) {
+    // Zeige Badge auch wenn Prestige möglich aber noch nicht gemacht
+    badge.style.display = 'inline-flex';
+    txt.textContent = '✦ Prestige verfügbar!';
+    badge.style.borderColor = 'rgba(255,204,0,.4)';
+    badge.style.color = '#ffcc00';
+  } else {
+    badge.style.display = 'none';
+  }
 }
 
 // ════════════════════════════════════════════
