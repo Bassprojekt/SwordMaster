@@ -2384,8 +2384,8 @@ button, .nav-tab, .ctrl-btn, .upg-card, .skill-card,
       </div>
       <div class="vol-row">
         <span>🔇</span>
-        <input type="range" class="vol-slider" id="musicVolSlider" min="0" max="100" value="40" oninput="setMusicVol(this.value)">
-        <span id="musicVolPct">40%</span>
+        <input type="range" class="vol-slider" id="musicVolSlider" min="0" max="100" value="10" oninput="setMusicVol(this.value)">
+        <span id="musicVolPct">10%</span>
       </div>
     </div>
 
@@ -2401,8 +2401,8 @@ button, .nav-tab, .ctrl-btn, .upg-card, .skill-card,
       </div>
       <div class="vol-row">
         <span>🔇</span>
-        <input type="range" class="vol-slider" id="sfxVolSlider" min="0" max="100" value="60" oninput="setSfxVol(this.value)">
-        <span id="sfxVolPct">60%</span>
+        <input type="range" class="vol-slider" id="sfxVolSlider" min="0" max="100" value="10" oninput="setSfxVol(this.value)">
+        <span id="sfxVolPct">10%</span>
       </div>
     </div>
 
@@ -12402,7 +12402,7 @@ let audioCtx = null;
 let musicGain = null, sfxGain = null;
 let musicSource = null, musicLoop = null;
 let musicEnabled = false, sfxEnabled = true;
-let musicVolume = 0.4, sfxVolume = 0.6;
+let musicVolume = 0.1, sfxVolume = 0.1;
 
 function getAudioCtx() {
   if (!audioCtx) {
