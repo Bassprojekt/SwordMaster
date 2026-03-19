@@ -1429,70 +1429,97 @@ body {
 /* ══ TUTORIAL SYSTEM ══ */
 #tutOverlay {
   position: fixed; inset: 0; z-index: 10000;
-  pointer-events: none;
+  pointer-events: none; /* Overlay selbst blockiert nie */
 }
-#tutSpotlight {
-  position: fixed; inset: 0;
+
+/* 4 separate Schatten-Felder die um das Ziel herum liegen — nie über ihm */
+.tut-shade {
+  position: fixed; z-index: 10001;
   background: rgba(0,0,0,.72);
-  transition: clip-path .45s cubic-bezier(.4,0,.2,1);
-  pointer-events: all;
-  z-index: 10001;
+  pointer-events: none; /* Schatten blockieren keine Klicks */
+  transition: left .35s cubic-bezier(.4,0,.2,1),
+              top .35s cubic-bezier(.4,0,.2,1),
+              width .35s cubic-bezier(.4,0,.2,1),
+              height .35s cubic-bezier(.4,0,.2,1);
 }
+/* Fallback Vollbild-Dunkel wenn kein Ziel */
+#tutShadeCenter {
+  position: fixed; inset: 0; z-index: 10001;
+  background: rgba(0,0,0,.72);
+  pointer-events: none;
+  display: none;
+}
+
+/* Pulse-Rahmen um das Ziel-Element */
+#tutPulse {
+  position: fixed; z-index: 10002; pointer-events: none;
+  border: 2.5px solid var(--gold); border-radius: 10px;
+  box-shadow: 0 0 0 0 rgba(201,162,39,.6);
+  animation: tutGlow 1.8s ease-in-out infinite;
+}
+@keyframes tutGlow {
+  0%,100% { box-shadow: 0 0 0 0 rgba(201,162,39,.6), inset 0 0 0 0 rgba(201,162,39,.1); }
+  50%      { box-shadow: 0 0 0 6px rgba(201,162,39,.0), inset 0 0 12px rgba(201,162,39,.12); }
+}
+
+/* Tutorial-Karte */
 #tutCard {
-  position: fixed; z-index: 10002;
-  background: linear-gradient(135deg,rgba(20,14,8,.97),rgba(14,10,4,.97));
+  position: fixed; z-index: 10010;
+  background: linear-gradient(150deg,rgba(18,12,6,.98) 0%,rgba(10,8,4,.98) 100%);
   border: 1.5px solid var(--gold);
   border-radius: 14px;
-  padding: 16px 18px 14px;
-  width: min(320px, 90vw);
-  box-shadow: 0 12px 40px rgba(0,0,0,.7), 0 0 24px rgba(201,162,39,.2);
-  transition: top .4s cubic-bezier(.4,0,.2,1), left .4s cubic-bezier(.4,0,.2,1),
-              bottom .4s, right .4s, opacity .25s;
+  padding: 14px 16px 12px;
+  width: min(300px, 92vw);
+  box-shadow: 0 16px 48px rgba(0,0,0,.85), 0 0 28px rgba(201,162,39,.18);
   pointer-events: all;
+  transition: top .35s cubic-bezier(.4,0,.2,1), left .35s cubic-bezier(.4,0,.2,1), opacity .2s;
 }
-#tutCard .tut-step  { font-size:.55rem; color:var(--gold); font-family:Cinzel,serif; letter-spacing:.12em; margin-bottom:6px; }
-#tutCard .tut-title { font-size:.98rem; font-weight:700; font-family:Cinzel,serif; color:var(--text); margin-bottom:6px; }
-#tutCard .tut-body  { font-size:.75rem; color:var(--text2); line-height:1.65; margin-bottom:12px; }
+/* Kompakter Modus wenn Ziel auf dem Bildschirm ist */
+#tutCard.compact { padding: 10px 14px 10px; }
+#tutCard.compact .tut-body { margin-bottom: 8px; }
+
+#tutCard .tut-step  { font-size:.52rem; color:var(--gold); font-family:Cinzel,serif; letter-spacing:.12em; margin-bottom:4px; }
+#tutCard .tut-title { font-size:.9rem; font-weight:700; font-family:Cinzel,serif; color:var(--text); margin-bottom:5px; line-height:1.3; }
+#tutCard .tut-body  { font-size:.72rem; color:var(--text2); line-height:1.6; margin-bottom:10px; }
 #tutCard .tut-reward {
   background: rgba(201,162,39,.08); border: 1px solid rgba(201,162,39,.25);
-  border-radius: 8px; padding: 6px 10px; margin-bottom: 12px;
-  font-size:.68rem; color:var(--gold2);
+  border-radius: 7px; padding: 5px 9px; margin-bottom: 10px;
+  font-size:.66rem; color:var(--gold2);
 }
-#tutCard .tut-btns  { display:flex; gap:8px; justify-content:flex-end; }
+#tutCard .tut-btns  { display:flex; gap:6px; justify-content:space-between; align-items:center; }
 #tutCard .tut-next  {
-  background: linear-gradient(135deg,rgba(201,162,39,.25),rgba(255,200,50,.1));
+  background: linear-gradient(135deg,rgba(201,162,39,.28),rgba(255,200,50,.12));
   border: 1px solid var(--gold); border-radius: 8px;
-  padding: 7px 18px; font-family:Cinzel,serif; font-size:.72rem;
+  padding: 6px 16px; font-family:Cinzel,serif; font-size:.7rem;
   font-weight:700; color:var(--gold2); cursor:pointer;
-  transition: background .15s; white-space:nowrap;
+  transition: background .15s, opacity .15s; white-space:nowrap; flex-shrink:0;
 }
-#tutCard .tut-next:hover { background: rgba(201,162,39,.35); }
+#tutCard .tut-next:hover:not(:disabled) { background: rgba(201,162,39,.4); }
+#tutCard .tut-next:disabled { opacity:.4; cursor:default; }
 #tutCard .tut-skip  {
-  border:none; background:none; font-size:.65rem; color:var(--text3);
-  cursor:pointer; padding:7px 8px; transition:color .15s;
+  border:none; background:none; font-size:.6rem; color:var(--text3);
+  cursor:pointer; padding:5px 4px; transition:color .15s; white-space:nowrap;
 }
 #tutCard .tut-skip:hover { color:var(--text2); }
+
+/* Pfeil der auf das Ziel zeigt */
 #tutArrow {
-  position: fixed; z-index: 10003;
-  width: 0; height: 0;
-  pointer-events: none;
-  transition: top .4s, left .4s, right .4s, bottom .4s;
+  position: fixed; z-index: 10009; pointer-events: none;
+  font-size: 1.4rem; line-height:1;
+  filter: drop-shadow(0 0 6px rgba(201,162,39,.7));
+  transition: top .35s cubic-bezier(.4,0,.2,1), left .35s cubic-bezier(.4,0,.2,1);
+  display: none;
+  animation: tutBounce 1s ease-in-out infinite;
 }
-.tut-pulse-ring {
-  position: fixed; z-index: 10003;
-  border: 3px solid var(--gold);
-  border-radius: 50%;
-  pointer-events: none;
-  animation: tutPulse 1.5s ease-out infinite;
+@keyframes tutBounce {
+  0%,100% { transform: translateY(0); }
+  50%      { transform: translateY(-5px); }
 }
-@keyframes tutPulse {
-  0%   { transform: scale(1);    opacity: .9; }
-  100% { transform: scale(1.7);  opacity: 0;  }
-}
-.tut-progress { display:flex; gap:4px; justify-content:center; margin-bottom:10px; }
-.tut-dot { width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,.15); transition:background .3s; }
-.tut-dot.done { background:var(--gold); }
-.tut-dot.active { background:var(--gold2); box-shadow:0 0 6px var(--gold); }
+
+.tut-progress { display:flex; gap:4px; justify-content:center; margin-bottom:8px; }
+.tut-dot { width:5px; height:5px; border-radius:50%; background:rgba(255,255,255,.15); transition:background .3s; }
+.tut-dot.done   { background:var(--gold); }
+.tut-dot.active { background:var(--gold2); box-shadow:0 0 5px var(--gold); }
 
 /* ══ SCROLL-TO-TOP & FLOATING ELEMENTS ══ */
 #scrollTopBtn {
@@ -2285,22 +2312,29 @@ input[type=range].vol-slider::-webkit-slider-thumb:hover { transform:scale(1.2);
 
 <!-- ═══ TUTORIAL OVERLAY ═══ -->
 <div id="tutOverlay" style="display:none;" aria-live="polite">
-  <!-- Spotlight: darkens everything except target -->
-  <div id="tutSpotlight" onclick="tutSpotlightClick()"></div>
+  <!-- 4 Schatten-Felder um das Ziel herum (pointer-events:none → Klicks gehen durch!) -->
+  <div id="tutShadeTop"    class="tut-shade"></div>
+  <div id="tutShadeBottom" class="tut-shade"></div>
+  <div id="tutShadeLeft"   class="tut-shade"></div>
+  <div id="tutShadeRight"  class="tut-shade"></div>
+  <!-- Vollbild-Dunkel für zentrierte Schritte (kein Ziel) -->
+  <div id="tutShadeCenter"></div>
 
-  <!-- Pulse ring on target element -->
-  <div id="tutPulse" class="tut-pulse-ring" style="display:none;width:50px;height:50px;"></div>
+  <!-- Glow-Rahmen um das Ziel-Element -->
+  <div id="tutPulse" style="display:none;"></div>
 
-  <!-- Main tutorial card -->
-  <div id="tutCard" style="bottom:80px;left:50%;transform:translateX(-50%);">
-    <!-- Progress dots -->
+  <!-- Pfeil der auf das Ziel zeigt -->
+  <div id="tutArrow">👇</div>
+
+  <!-- Tutorial-Karte -->
+  <div id="tutCard">
     <div class="tut-progress" id="tutDots"></div>
     <div class="tut-step"  id="tutStep">SCHRITT 1 / 8</div>
     <div class="tut-title" id="tutTitle">Willkommen!</div>
     <div class="tut-body"  id="tutBody"></div>
     <div class="tut-reward" id="tutReward" style="display:none;"></div>
     <div class="tut-btns">
-      <button class="tut-skip" onclick="tutSkip()">Tutorial überspringen</button>
+      <button class="tut-skip" onclick="tutSkip()">Überspringen</button>
       <button class="tut-next" id="tutNextBtn" onclick="tutNext()">Weiter →</button>
     </div>
   </div>
@@ -4800,7 +4834,7 @@ function equipItem(item) {
   } catch(e) {}
   updateAll();
   renderInventory();
-  saveToSupabase(); // sofort speichern!
+  markDirty('high'); // Equip: wichtige User-Aktion
 }
 
 function unequipItem(slot) {
@@ -4812,7 +4846,7 @@ function unequipItem(slot) {
   log(`📦 Abgelegt: ${item.emoji} ${item.name}`,'n');
   updateAll();
   renderInventory();
-  saveToSupabase(); // sofort speichern!
+  markDirty('high'); // Unequip: wichtige User-Aktion
 }
 
 // ════════════════════════════════════════════
@@ -5482,7 +5516,7 @@ function upgradeFurnace() {
   renderFurnace();
   renderMaterials();
   renderRecipes();
-  saveToSupabase();
+  markDirty('normal'); // Ofen-Upgrade
 }
 
 // ── Rezept craften ──
@@ -5519,7 +5553,7 @@ function craftRecipe(recipeId) {
   renderInventory();
   renderRecipes();
   renderMaterials();
-  saveToSupabase();
+  markDirty('normal'); // Rezept craften
 }
 
 // ── Forge mit Ofen-Integration ──
@@ -5628,7 +5662,7 @@ function pickRarityWithFurnace() {
 function toggleAutoSell(rarityId, val) {
   G.autoSellRules[rarityId] = val;
   renderAutoSellRules();
-  saveToSupabase();
+  markDirty('normal'); // Auto-Sell Einstellung
 }
 
 function checkAutoSell() {
@@ -5932,7 +5966,7 @@ function _renderActivePetsList() {
     chip.innerHTML = `<span style="font-size:1rem;">${p.emoji}</span>
       <span style="font-family:Cinzel,serif;font-size:.65rem;color:${p.color};">${p.name}</span>
       <span style="font-size:.55rem;color:var(--red2);">✕</span>`;
-    chip.onclick = () => { G.activePets.delete(pid); renderPets(); saveToSupabase(); };
+    chip.onclick = () => { G.activePets.delete(pid); renderPets(); markDirty('normal'); }; // Pet deaktiviert
     el.appendChild(chip);
   });
   if (sum) {
@@ -5952,7 +5986,7 @@ function buyPet(id) {
   if (G.activePets.size < MAX_ACTIVE_PETS) G.activePets.add(id);
   log('🐾 ' + pet.emoji + ' ' + pet.name + ' gekauft! ' + (G.activePets.has(id) ? '(Aktiv)' : '(Kein Slot frei — manuell aktivieren)'), 'i');
   try { checkAchievements(); } catch(e) {}
-  updateAllNow(); renderPets(); saveNow();
+  updateAllNow(); renderPets(); markDirty('high'); // Pet gekauft
 }
 
 function togglePet(id) {
@@ -5965,7 +5999,7 @@ function togglePet(id) {
     }
     G.activePets.add(id);
   }
-  updateAll(); renderPets(); saveToSupabase();
+  updateAll(); renderPets(); markDirty('normal'); // Pet aktiviert
 }
 
 // Pet combat helpers
@@ -6457,7 +6491,7 @@ function checkLevelUp() {
     leveled = true;
     try { playSfx('levelup'); } catch(e) {}
   }
-  if (leveled) { updateEraUI(); saveToSupabase(); try { checkAchievements(); } catch(e) {} try { updatePrestigeHeader(); } catch(e) {} }
+  if (leveled) { updateEraUI(); markDirty('low'); try { checkAchievements(); } catch(e) {} try { updatePrestigeHeader(); } catch(e) {} } // LevelUp: combat-event
 }
 
 function renderArena() {
@@ -6664,7 +6698,7 @@ function autoEquipBest() {
   updateAll();
   renderInventory();
   renderForgedGrid();
-  saveToSupabase(); // sofort speichern!
+  markDirty('high'); // Item geforgt: Inventar-Änderung
 }
 
 // ─── Sell Manager ───
@@ -6966,12 +7000,37 @@ async function sbDelete(table, filter) {
 // ── SPEICHERN ───────────────────────────────
 // ════════════════════════════════════════════
 
-// Debounced save — verhindert zu viele Requests
-let _saveTimer = null;
-let _saveQueued = false;
+// ════════════════════════════════════════════
+// SAVE SYSTEM — Dirty-Flag + Prioritäten
+// ════════════════════════════════════════════
+//
+// Prioritäten:
+//   'low'    → Kampf-Events (LevelUp, Kills, Wave): bündeln, max 1× / 60s
+//   'normal' → Standard-Aktionen (Forge, Pets, Research, Quest): max 1× / 60s
+//   'high'   → Wichtige Aktionen (Equip, Shop, Dungeon, PVP, Gilde): max 1× / 15s
+//   'now'    → Kritisch (Prestige, Init, Tab-Close): sofort
+//
+// localStorage wird bei JEDEM markDirty() sofort geschrieben (kein Datenverlust).
+// Supabase-Netzwerkaufruf wird gebündelt nach Priorität.
+//
+let _saveTimer   = null;    // pending debounce timer
+let _saveLastAt  = 0;       // Timestamp letzter _doSave()
+let _savePriority = null;   // höchste ausstehende Priorität
+const _SAVE_THROTTLE_LOW  = 60000;  // 60s für combat-Noise
+const _SAVE_THROTTLE_HIGH = 15000;  // 15s für wichtige User-Aktionen
 
-function saveToSupabase() {
-  // Lokalen Timestamp immer sofort speichern
+function _priorityDelay(p) {
+  if (p === 'high')   return _SAVE_THROTTLE_HIGH;
+  return _SAVE_THROTTLE_LOW;
+}
+
+function _priorityRank(p) {
+  const r = { low: 0, normal: 1, high: 2, now: 3 };
+  return r[p] ?? 1;
+}
+
+function _saveLocalSnapshot() {
+  // Lokale Kopie sofort schreiben — überlebt F5 / Absturz
   localStorage.setItem('sm3_save', Date.now().toString());
   try { saveEventState(); } catch(e) {}
   try {
@@ -7001,18 +7060,55 @@ function saveToSupabase() {
       autoSellEarned: G.autoSellEarned || 0,
     }));
   } catch(e) {}
-  // Echter Save wird gebündelt — max 1× alle 60 Sekunden
-  if (_saveTimer) return;
-  _saveQueued = true;
-  _saveTimer = setTimeout(async () => {
-    _saveTimer = null;
-    _saveQueued = false;
-    await _doSave();
-  }, 60000);  // 60s Throttle
 }
+
+function markDirty(priority = 'normal') {
+  // 1. localStorage immer sofort aktualisieren
+  _saveLocalSnapshot();
+
+  // 'now' → sofort ohne Timer
+  if (priority === 'now') {
+    if (_saveTimer) { clearTimeout(_saveTimer); _saveTimer = null; }
+    _savePriority = null;
+    _doSave();
+    return;
+  }
+
+  // Priorität hochsetzen wenn nötig
+  if (!_savePriority || _priorityRank(priority) > _priorityRank(_savePriority)) {
+    _savePriority = priority;
+  }
+
+  // Timer neu berechnen
+  const delay = _priorityDelay(_savePriority);
+  const elapsed = Date.now() - _saveLastAt;
+  const remaining = Math.max(0, delay - elapsed);
+
+  // Nur neuen Timer setzen wenn noch keiner läuft
+  // ODER wenn neue Priorität einen kürzeren Delay erfordert
+  if (_saveTimer) {
+    // Prüfen ob bestehender Timer noch innerhalb des neuen Delays liegt
+    // Einfachste Heuristik: bei 'high' immer neu terminieren
+    if (priority === 'high' && elapsed < _SAVE_THROTTLE_HIGH) {
+      clearTimeout(_saveTimer);
+    } else {
+      return; // Timer läuft bereits, kein neues setzen
+    }
+  }
+
+  _saveTimer = setTimeout(async () => {
+    _saveTimer    = null;
+    _savePriority = null;
+    await _doSave();
+  }, remaining);
+}
+
+// Abwärtskompatibilität: alle alten saveToSupabase()-Aufrufe bleiben funktional
+function saveToSupabase() { markDirty('normal'); }
 
 async function saveNow() {
   if (_saveTimer) { clearTimeout(_saveTimer); _saveTimer = null; }
+  _savePriority = null;
   await _doSave();
 }
 
@@ -7040,6 +7136,7 @@ function _sanitizeSaveData() {
 }
 
 async function _doSave() {
+  _saveLastAt = Date.now();
   setSaveStatus('💾 Speichert...', 'var(--gold)');
   const pid = getPlayerId();
 
@@ -7450,7 +7547,7 @@ function collectIdle() {
   renderSkills();
   log(`⏳ Offline: +${r.gold}G +${r.xp}XP +${r.items} Items`, 'i');
   pop.classList.add('hidden');
-  saveToSupabase();
+  markDirty('normal'); // Idle-Belohnung eingesammelt
 }
 
 // ════════════════════════════════════════════
@@ -7541,7 +7638,7 @@ function confirmNameEdit() {
   log(`✏️ Name geändert zu: ${val}`, 'n');
 
   // In Supabase speichern
-  try { saveToSupabase(); } catch(e){}
+  try { markDirty('now'); } catch(e){} // Initialer Load: sofort speichern
 }
 
 // Enter-Taste im Namensfeld
@@ -8182,7 +8279,7 @@ function dungeonAdvance() {
   // Clear temp buffs on boss floors
   if (G.dungeonFloor % 10 === 1) { G._dungTempAtk = 0; G._dungTempDef = 0; }
   renderDungeon();
-  saveToSupabase();
+  markDirty('normal'); // Dungeon: Floor gewechselt
 }
 
 function claimDungeonReward() {
@@ -8198,7 +8295,7 @@ function claimDungeonReward() {
   }
   // Clear temp buffs when crossing tier boundary
   if (G.dungeonFloor % 10 === 1) { G._dungTempAtk = 0; G._dungTempDef = 0; }
-  renderDungeon(); saveToSupabase();
+  renderDungeon(); markDirty('normal'); // Dungeon: Floor gewechselt
 }
 
 function dungeonDefeat() {
@@ -8579,7 +8676,7 @@ function finalizePVPBattle(won, ptsGain, ptsLoss, opp, oppPts, resultEl) {
   }
   G._pvpDailyFights = (G._pvpDailyFights || 0) + 1;
 
-  renderPVP(); updateAll(); saveToSupabase();
+  renderPVP(); updateAll(); markDirty('high'); // PVP-Ergebnis
   // Anti-Abuse sofort in localStorage sichern (überlebt F5)
   _savePVPAntiAbuse();
 }
@@ -8811,7 +8908,7 @@ async function loadGuildData(){
       // Weder lokal noch online — Gilde existiert nicht mehr
       log('⚠️ Gilde nicht gefunden. Mitgliedschaft zurückgesetzt.','c');
       G.guildId=null;G.guildRole='member';G._localGuild=null;
-      renderGuild();saveToSupabase();return;
+      renderGuild();markDirty('high');return; // Gilde-Reset
     }
   } catch(e){}
   loadGuildMembers();loadGuildChat();
@@ -8926,7 +9023,7 @@ async function createGuild(){
     log('🏰 Gilde "'+name+'" gegründet!','l');
     updateAll();
     renderGuild();
-    saveToSupabase();
+    markDirty('high'); // Gilde erstellt
 
     // Supabase im Hintergrund versuchen (nicht blockierend)
     (async()=>{
@@ -8960,27 +9057,27 @@ async function joinGuild(gid){
     const already=await sbGet('sm_guild_members','player_id=eq.'+getPlayerId());
     if(already&&already.length){
       G.guildId=already[0].guild_id;G.guildRole=already[0].role||'member';
-      log('🔄 Gilden-Mitgliedschaft wiederhergestellt!','n');updateAll();renderGuild();saveToSupabase();return;
+      log('🔄 Gilden-Mitgliedschaft wiederhergestellt!','n');updateAll();renderGuild();markDirty('high');return; // Gilde-Sync
     }
     // Gilde lokal laden und cachen
     const guilds=await sbGet('sm_guilds','id=eq.'+gid);
     if(guilds&&guilds.length) G._localGuild=guilds[0];
     // Sofort lokal beitreten
     G.guildId=gid;G.guildRole='member';
-    log('🚪 Gilde beigetreten!','l');updateAll();renderGuild();saveToSupabase();
+    log('🚪 Gilde beigetreten!','l');updateAll();renderGuild();markDirty('high'); // Gilde beigetreten
     // Im Hintergrund Supabase eintragen
     sbPost('sm_guild_members',{id:makeUUID(),guild_id:gid,player_id:getPlayerId(),player_name:getPlayerName(),role:'member',joined_at:new Date().toISOString()});
   } catch(e){
     // Auch bei Netzwerkfehler lokal beitreten
     G.guildId=gid;G.guildRole='member';
-    log('🚪 Gilde beigetreten (Offline-Modus)!','l');updateAll();renderGuild();saveToSupabase();
+    log('🚪 Gilde beigetreten (Offline-Modus)!','l');updateAll();renderGuild();markDirty('high'); // Gilde offline
   }
 }
 
 async function leaveGuild(){
   if(!G.guildId)return;
   await sbDelete('sm_guild_members','guild_id=eq.'+G.guildId+'&player_id=eq.'+getPlayerId());
-  G.guildId=null;G.guildRole='member';log('👋 Gilde verlassen.','n');renderGuild();saveToSupabase();
+  G.guildId=null;G.guildRole='member';log('👋 Gilde verlassen.','n');renderGuild();markDirty('high'); // Gilde verlassen
 }
 
 async function promoteGuildMember(pid,name){
@@ -9152,7 +9249,7 @@ async function donateToGuild() {
   const inp = document.getElementById('donateAmount'); if (inp) inp.value = '';
 
   // 7. Spielstand sofort lokal sichern (Supabase kennt den lokalen Stand via local_guild)
-  saveToSupabase();
+  markDirty('normal'); // Gilden-Spende
 
   // 8. Debounced Supabase-Sync: wartet 1,5s nach der letzten Spende
   //    damit schnelle Mehrfach-Spenden zusammengefasst werden
@@ -9322,7 +9419,7 @@ function buyShopItem(item){
   if(item.eff==='petFood'){G.shopBoosts.petFood=true;log('🍖 Pets stärker!','i');}
   if(item.eff==='forgeScroll'){G.shopBoosts.forgeScrollCount=(G.shopBoosts.forgeScrollCount||0)+10;log('📜 Güte-Scroll aktiv! Nächste 10 Items ≥ Selten.','i');}
   if(item.eff==='forgeMaster'){G.shopBoosts.forgeMaster=true;if(G.autoForge)restartAuto();log('🔨 Meister-Amboss aktiv! Auto-Schmied 25% schneller.','i');}
-  log('🛒 Gekauft: '+item.name,'i');updateAll();renderShop();saveToSupabase();
+  log('🛒 Gekauft: '+item.name,'i');updateAll();renderShop();markDirty('high'); // Shop-Kauf
 }
 
 // ════════════════════════════════════════════
@@ -9370,7 +9467,7 @@ function renderResearch(){
       try{checkAchievements();}catch(e){}
       G.researchActive=null; G.researchEnd=0;
       clearInterval(resTimerInterval);
-      saveToSupabase();  // ← FEHLTE
+      markDirty('normal'); // Forschung abgeschlossen
     }
     if(document.getElementById('activeResearch'))document.getElementById('activeResearch').textContent='—';
     if(document.getElementById('researchTimer'))document.getElementById('researchTimer').textContent='⏳ —';
@@ -9402,7 +9499,7 @@ function startResearch(id){
       if(document.getElementById('researchTimer'))document.getElementById('researchTimer').textContent='⏳ '+m+'m '+s+'s';
     }else{clearInterval(resTimerInterval);renderResearch();}
   },1000);
-  saveToSupabase();
+  markDirty('normal'); // Forschung gestartet
 }
 
 // ════════════════════════════════════════════
@@ -9525,7 +9622,7 @@ function claimQuest(q,tab){
   G.hero.gold+=q.reward.gold;G.hero.xp+=Math.round(q.reward.xp*xpMult());
   if(tab==='daily')G.dailyClaimed.add(q.id);else G.questClaimed.add(q.id);
   log('📜 Quest: '+q.title+' abgeschlossen! +'+q.reward.gold+'G +'+q.reward.xp+'XP','l');
-  checkLevelUp();updateAll();renderQuests();saveToSupabase();
+  checkLevelUp();updateAll();renderQuests();markDirty('normal'); // Quest abgeschlossen
 }
 
 // Quest tracking is done inline in each function directly
@@ -9588,7 +9685,7 @@ setInterval(() => {
         try{checkAchievements();}catch(e){}
         G.researchActive = null; G.researchEnd = 0;
         clearInterval(resTimerInterval);
-        saveToSupabase();  // ← FEHLTE
+        markDirty('normal'); // Forschung fertig (bg-check)
         const page = document.getElementById('page-forschung');
         if (page && page.classList.contains('active')) renderResearch();
         updateAll();
@@ -9614,7 +9711,13 @@ setInterval(() => {
   try { renderShopBoosts(); } catch(e) {}
 }, 500);
 
-setInterval(saveNow, 60000); // Echter Save alle 60 Sekunden
+// Heartbeat: speichert alle 60s nur wenn seit letztem Save etwas passiert ist
+setInterval(() => {
+  const timeSinceSave = Date.now() - _saveLastAt;
+  if (timeSinceSave >= 58000) { // ~60s seit letztem echten Save → Heartbeat
+    _doSave();
+  }
+}, 60000);
 setInterval(() => { try { checkDailyReset(); } catch(e) {} }, 60000);
 
 // ════════════════════════════════════════════
@@ -9818,7 +9921,7 @@ async function continueInit() {
   } else {
     setSaveStatus('⚠️ Offline-Modus', 'var(--orange2)');
     log('⚔ SwordMaster gestartet! SQL-Script in Supabase ausfuhren fur Cloud.', 'n');
-    setTimeout(()=>{ try{saveToSupabase();}catch(e){} }, 3000);
+    setTimeout(()=>{ try{markDirty('now');}catch(e){} }, 3000); // Initial-Save
   }
 }
 
@@ -9900,7 +10003,7 @@ function startRaid() {
   log('🐉 GILDEN-RAID gestartet! ' + boss.emoji + ' ' + boss.name + ' erscheint mit ' + maxHp.toLocaleString() + ' HP!', 'l');
   renderRaid();
   saveRaidToSupabase();
-  saveToSupabase();
+  markDirty('normal'); // Raid-Angriff
 }
 
 function contributeToRaid() {
@@ -9944,7 +10047,7 @@ function contributeToRaid() {
   } else {
     renderRaid();
     saveRaidToSupabase();
-    saveToSupabase();
+    markDirty('normal'); // Raid-Aktion
   }
 }
 
@@ -9976,7 +10079,7 @@ function raidVictory(raid) {
 
   renderRaid();
   saveRaidToSupabase();
-  saveToSupabase();
+  markDirty('normal'); // Raid-Update
 }
 
 async function saveRaidToSupabase() {
@@ -10881,7 +10984,7 @@ function checkAchievements() {
   if (anyNew) {
     updateAll();
     updateAchBadge();
-    saveToSupabase();
+    markDirty('low'); // Achievement freigeschaltet
   }
 }
 
@@ -11157,8 +11260,7 @@ function doPrestige() {
   renderMaterials();
   renderInventory();
   updateHeaderStats();
-  saveToSupabase();
-  saveNow();
+  markDirty('now'); // Prestige-Reset: sofort speichern (beinhaltet _doSave)
 }
 
 // ── Overlay öffnen/schließen ─────────────────
@@ -11403,7 +11505,7 @@ const TUT_STEPS = [
     action: () => {
       G.hero.gold += 300;
       G.hero.xp   += 500;
-      try { checkLevelUp(); updateAll(); saveToSupabase(); } catch(e) {}
+      try { checkLevelUp(); updateAll(); markDirty('now'); } catch(e) {} // Tutorial-Belohnung
     },
   },
 ];
@@ -11432,7 +11534,7 @@ function tutSkip() {
   G.hero.gold += 100;
   updateHeaderStats();
   log('Tutorial übersprungen. +100 Startgold!', 'n');
-  try { saveToSupabase(); } catch(e) {}
+  try { markDirty('now'); } catch(e) {} // Tutorial übersprungen
 }
 
 function tutNext() {
@@ -11455,13 +11557,7 @@ function tutNext() {
   }
 }
 
-function tutSpotlightClick() {
-  // If current step has a waitFor, check if it's satisfied
-  const step = TUT_STEPS[G.tutorialStep];
-  if (step && step.waitFor && step.waitFor()) {
-    tutNext();
-  }
-}
+// tutSpotlightClick nicht mehr benötigt — 4-Schatten-System hat pointer-events:none
 
 function _tutFinish() {
   _tutCleanup();
@@ -11474,12 +11570,19 @@ function _tutFinish() {
     setTimeout(() => { if (overlay) overlay.style.display = 'none'; overlay.style.opacity = ''; }, 400);
   }
   try { updateAll(); } catch(e) {}
-  try { saveToSupabase(); } catch(e) {}
+  try { markDirty('now'); } catch(e) {} // Tutorial abgeschlossen
 }
 
 function _tutCleanup() {
   if (_tutWaitInterval) { clearInterval(_tutWaitInterval); _tutWaitInterval = null; }
   _tutClearPulse();
+  // Schatten verstecken
+  ['tutShadeTop','tutShadeBottom','tutShadeLeft','tutShadeRight'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.style.width = '0'; el.style.height = '0'; }
+  });
+  const sc = document.getElementById('tutShadeCenter');
+  if (sc) sc.style.display = 'none';
 }
 
 function _renderTutStep() {
@@ -11558,102 +11661,153 @@ function _renderTutStep() {
 }
 
 function _tutPositionCard(step) {
-  const card     = document.getElementById('tutCard');
-  const spotlight= document.getElementById('tutSpotlight');
-  if (!card || !spotlight) return;
+  const card = document.getElementById('tutCard');
+  if (!card) return;
 
-  // Reset positioning
-  card.style.cssText = 'transition: top .4s, left .4s, bottom .4s, right .4s, opacity .25s;';
+  const shadeTop    = document.getElementById('tutShadeTop');
+  const shadeBottom = document.getElementById('tutShadeBottom');
+  const shadeLeft   = document.getElementById('tutShadeLeft');
+  const shadeRight  = document.getElementById('tutShadeRight');
+  const shadeCenter = document.getElementById('tutShadeCenter');
+  const pulse       = document.getElementById('tutPulse');
+  const arrow       = document.getElementById('tutArrow');
 
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+
+  // ── Kein Ziel: Vollbild-Dunkel + zentrierte Karte ────────────────────
   if (!step.target || step.position === 'center') {
-    // Centered card, no spotlight cutout
-    spotlight.style.clipPath = 'none';
-    spotlight.style.background = 'rgba(0,0,0,.72)';
-    card.style.bottom = '80px';
-    card.style.left   = '50%';
-    card.style.transform = 'translateX(-50%)';
-    _tutClearPulse();
+    [shadeTop, shadeBottom, shadeLeft, shadeRight].forEach(s => {
+      if (s) { s.style.width = '0'; s.style.height = '0'; }
+    });
+    if (shadeCenter) shadeCenter.style.display = 'block';
+    if (pulse)  pulse.style.display  = 'none';
+    if (arrow)  arrow.style.display  = 'none';
+
+    // Karte zentriert, etwas unterhalb der Mitte
+    const cardW = Math.min(300, vw * 0.92);
+    card.className = '';
+    card.style.cssText = `
+      position:fixed; z-index:10010; pointer-events:all;
+      width:${cardW}px;
+      left:${(vw - cardW) / 2}px;
+      top:${Math.max(60, (vh - 340) / 2)}px;
+      transition: top .35s cubic-bezier(.4,0,.2,1), left .35s cubic-bezier(.4,0,.2,1), opacity .2s;
+    `;
     return;
   }
 
-  // Find target element
+  // ── Mit Ziel: 4-Schatten-Technik ──────────────────────────────────────
+  if (shadeCenter) shadeCenter.style.display = 'none';
+
   const target = document.getElementById(step.target);
   if (!target) {
-    spotlight.style.clipPath = 'none';
-    card.style.bottom = '80px';
-    card.style.left   = '50%';
-    card.style.transform = 'translateX(-50%)';
+    // Fallback: zentriert
+    _tutPositionCard({ ...step, target: null, position: 'center' });
     return;
   }
 
-  const r    = target.getBoundingClientRect();
-  const pad  = 10;
-  const rx   = r.left   - pad;
-  const ry   = r.top    - pad;
-  const rw   = r.width  + pad*2;
-  const rh   = r.height + pad*2;
-  const vw   = window.innerWidth;
-  const vh   = window.innerHeight;
+  const r   = target.getBoundingClientRect();
+  const pad = 8; // Luft um das Ziel-Element
+  const tx  = Math.max(0, r.left   - pad);
+  const ty  = Math.max(0, r.top    - pad);
+  const tx2 = Math.min(vw, r.right  + pad);
+  const ty2 = Math.min(vh, r.bottom + pad);
+  const tw  = tx2 - tx;
+  const th  = ty2 - ty;
 
-  // Spotlight with rounded cutout using polygon approximation
-  spotlight.style.background = 'rgba(0,0,0,.72)';
-  // Use a CSS mask approach — two overlapping clips
-  // Simpler: use backdrop with box-shadow inset trick
-  spotlight.style.cssText = `
-    position:fixed; inset:0; pointer-events:all; z-index:10001;
-    background: transparent;
-    box-shadow: 0 0 0 9999px rgba(0,0,0,.72);
-    border-radius: 8px;
-    left:   ${rx}px;
-    top:    ${ry}px;
-    width:  ${rw}px;
-    height: ${rh}px;
-    transition: left .4s, top .4s, width .4s, height .4s;
-  `;
+  // 4 Schatten: top / bottom / left / right — keiner liegt ÜBER dem Ziel
+  const applyShade = (el, l, t, w, h) => {
+    if (!el) return;
+    el.style.left   = l + 'px';
+    el.style.top    = t + 'px';
+    el.style.width  = w + 'px';
+    el.style.height = h + 'px';
+  };
+  applyShade(shadeTop,    0,   0,   vw,  ty);          // über dem Ziel
+  applyShade(shadeBottom, 0,   ty2, vw,  vh - ty2);    // unter dem Ziel
+  applyShade(shadeLeft,   0,   ty,  tx,  th);          // links
+  applyShade(shadeRight,  tx2, ty,  vw - tx2, th);     // rechts
 
-  // Pulse ring on target
-  _tutClearPulse();
-  const pulse = document.getElementById('tutPulse');
+  // Glow-Rahmen direkt ums Ziel
   if (pulse) {
-    const cx = rx + rw/2;
-    const cy = ry + rh/2;
-    const sz = Math.max(rw, rh) * 0.7;
     pulse.style.cssText = `
-      display:block; position:fixed; z-index:10003; pointer-events:none;
-      width:${sz}px; height:${sz}px;
-      left:${cx - sz/2}px; top:${cy - sz/2}px;
-      border:3px solid var(--gold); border-radius:50%;
-      animation:tutPulse 1.5s ease-out infinite;
+      display:block; position:fixed; z-index:10002; pointer-events:none;
+      left:${tx}px; top:${ty}px; width:${tw}px; height:${th}px;
+      border:2.5px solid var(--gold); border-radius:10px;
+      box-shadow:0 0 0 0 rgba(201,162,39,.6);
+      animation:tutGlow 1.8s ease-in-out infinite;
+      transition: left .35s, top .35s, width .35s, height .35s;
     `;
   }
 
-  // Position card — prefer below target, or above if not enough space
-  const cardH = 220;
-  const cardW = Math.min(320, vw * 0.92);
+  // ── Karte positionieren — immer im freien Bereich ─────────────────────
+  const cardW = Math.min(300, vw * 0.92);
+  // Wie viel Platz ist ober-/unterhalb des Ziels?
+  const spaceAbove = ty - 8;
+  const spaceBelow = vh - ty2 - 8;
+  const cardH = 230; // geschätzte Kartenhöhe
+
   let cardTop, cardLeft;
+  let arrowDir = null;
 
-  if (step.position === 'above' || (ry + rh + cardH + 20 > vh && ry > cardH + 20)) {
-    cardTop  = Math.max(8, ry - cardH - 16);
+  if (step.position === 'above' || (spaceAbove >= cardH + 16 && spaceBelow < cardH + 16)) {
+    // Über dem Ziel
+    cardTop  = Math.max(8, ty - cardH - 14);
+    arrowDir = 'down';
+  } else if (spaceBelow >= cardH + 16 || spaceBelow >= spaceAbove) {
+    // Unter dem Ziel
+    cardTop  = Math.min(vh - cardH - 8, ty2 + 14);
+    arrowDir = 'up';
   } else {
-    cardTop  = Math.min(vh - cardH - 8, ry + rh + 16);
+    // Fallback: über
+    cardTop  = Math.max(8, ty - cardH - 14);
+    arrowDir = 'down';
   }
-  cardLeft = Math.max(8, Math.min(vw - cardW - 8, rx + rw/2 - cardW/2));
 
+  // Horizontal: zentriert zum Ziel, aber innerhalb des Bildschirms
+  cardLeft = Math.max(8, Math.min(vw - cardW - 8, tx + tw / 2 - cardW / 2));
+
+  card.className = 'compact';
   card.style.cssText = `
-    position:fixed; z-index:10002; pointer-events:all;
-    background:linear-gradient(135deg,rgba(20,14,8,.97),rgba(14,10,4,.97));
-    border:1.5px solid var(--gold); border-radius:14px;
-    padding:16px 18px 14px;
+    position:fixed; z-index:10010; pointer-events:all;
     width:${cardW}px;
-    box-shadow:0 12px 40px rgba(0,0,0,.7),0 0 24px rgba(201,162,39,.2);
-    top:${cardTop}px; left:${cardLeft}px;
-    transition: top .4s cubic-bezier(.4,0,.2,1), left .4s cubic-bezier(.4,0,.2,1), opacity .25s;
+    left:${cardLeft}px; top:${cardTop}px;
+    transition: top .35s cubic-bezier(.4,0,.2,1), left .35s cubic-bezier(.4,0,.2,1), opacity .2s;
   `;
+
+  // Pfeil zwischen Karte und Ziel
+  if (arrow && arrowDir) {
+    const arrowX = cardLeft + cardW / 2 - 12;
+    let arrowY, arrowChar;
+    if (arrowDir === 'down') {
+      // Karte ist über dem Ziel → Pfeil nach unten unter der Karte
+      arrowY    = cardTop + cardH - 12;
+      arrowChar = '👇';
+    } else {
+      // Karte ist unter dem Ziel → Pfeil nach oben über der Karte
+      arrowY    = cardTop - 28;
+      arrowChar = '👆';
+    }
+    arrow.textContent  = arrowChar;
+    arrow.style.cssText = `
+      display:block; position:fixed; z-index:10009; pointer-events:none;
+      left:${arrowX}px; top:${arrowY}px;
+      font-size:1.3rem; line-height:1;
+      filter:drop-shadow(0 0 5px rgba(201,162,39,.8));
+      animation:tutBounce 1s ease-in-out infinite;
+      transition: left .35s, top .35s;
+    `;
+  }
 }
+
+// tutSpotlightClick entfernt — kein Spotlight-Element mehr das Klicks schluckt
 
 function _tutClearPulse() {
   const pulse = document.getElementById('tutPulse');
   if (pulse) pulse.style.display = 'none';
+  const arrow = document.getElementById('tutArrow');
+  if (arrow) arrow.style.display = 'none';
 }
 
 // ── Public API ────────────────────────────────
@@ -11810,7 +11964,7 @@ function doEnchant() {
   updateAll();
   renderEnchanting();
   renderInventory();
-  saveToSupabase();
+  markDirty('high'); // Verzauberung angelegt
 }
 
 // ── Verzauberung entfernen ────────────────
@@ -11830,7 +11984,7 @@ function removeEnchant(slot) {
   updateAll();
   renderEnchanting();
   renderInventory();
-  saveToSupabase();
+  markDirty('high'); // Verzauberung entfernt
 }
 
 // ── Render ────────────────────────────────
