@@ -337,7 +337,7 @@ body {
 /* ══ FLOATING DMG ══ */
 .dmg-float {
   position:fixed; font-family:'Cinzel',serif; font-weight:700; font-size:1rem;
-  pointer-events:none; animation:floatUp 1s ease-out forwards; z-index:9999;
+  pointer-events:none; animation:floatUp 1s ease-out forwards; z-index:150;
   text-shadow:0 2px 4px #000;
 }
 @keyframes floatUp{0%{opacity:1;transform:translateY(0) scale(1)}50%{opacity:1;transform:translateY(-28px) scale(1.2)}100%{opacity:0;transform:translateY(-50px) scale(.9)}}
@@ -570,7 +570,7 @@ body {
 
 /* ══ OFFLINE PROGRESS POPUP ══ */
 .idle-overlay {
-  position:fixed; inset:0; z-index:500;
+  position:fixed; inset:0; z-index:10050;
   background:rgba(0,0,0,.88);
   display:flex; align-items:center; justify-content:center;
   backdrop-filter:blur(4px);
@@ -2291,7 +2291,7 @@ input[type=range].vol-slider::-webkit-slider-thumb:hover { transform:scale(1.2);
 
 /* ══ DAILY LOGIN POPUP ══ */
 #dailyLoginOverlay {
-  position: fixed; inset: 0; z-index: 600;
+  position: fixed; inset: 0; z-index: 10100;
   background: rgba(0,0,0,.88);
   display: flex; align-items: center; justify-content: center;
   backdrop-filter: blur(4px);
@@ -2351,7 +2351,7 @@ input[type=range].vol-slider::-webkit-slider-thumb:hover { transform:scale(1.2);
 
 /* ══ SPIELER-PROFIL ══ */
 .profile-overlay {
-  position: fixed; inset: 0; z-index: 400;
+  position: fixed; inset: 0; z-index: 10100;
   background: rgba(0,0,0,.85); backdrop-filter: blur(4px);
   display: flex; align-items: center; justify-content: center;
 }
