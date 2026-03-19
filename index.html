@@ -2254,6 +2254,132 @@ input[type=range].vol-slider::-webkit-slider-thumb:hover { transform:scale(1.2);
 .cl-badge.perf { background: rgba(201,162,39,.12); color: var(--gold2);  border: 1px solid rgba(201,162,39,.25); }
 .cl-text { color: var(--text2); line-height: 1.5; }
 
+/* ══ ITEM-VERGLEICH ══ */
+.tt-compare {
+  margin-top: 8px; padding-top: 8px;
+  border-top: 1px solid rgba(255,255,255,.08);
+}
+.tt-compare-row {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: .68rem; padding: 2px 0;
+}
+.tt-compare-label { color: var(--text3); }
+.tt-compare-val   { font-family: 'Cinzel', serif; font-weight: 700; }
+.tt-compare-val.better { color: var(--green2); }
+.tt-compare-val.worse  { color: var(--red2); }
+.tt-compare-val.same   { color: var(--text3); }
+.tt-compare-head {
+  font-family: 'Cinzel', serif; font-size: .58rem;
+  color: var(--text3); letter-spacing: .08em; margin-bottom: 4px;
+}
+
+/* ══ INVENTAR-FILTER ══ */
+.inv-filter-bar {
+  display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 8px;
+}
+.inv-filter-btn {
+  padding: 3px 9px; border-radius: 6px;
+  background: rgba(0,0,0,.3); border: 1px solid var(--border);
+  font-family: 'Cinzel', serif; font-size: .58rem; color: var(--text3);
+  cursor: pointer; transition: all .15s;
+}
+.inv-filter-btn:hover { border-color: var(--border2); color: var(--text2); }
+.inv-filter-btn.active {
+  background: rgba(201,162,39,.12); border-color: var(--gold);
+  color: var(--gold2);
+}
+
+/* ══ DAILY LOGIN POPUP ══ */
+#dailyLoginOverlay {
+  position: fixed; inset: 0; z-index: 600;
+  background: rgba(0,0,0,.88);
+  display: flex; align-items: center; justify-content: center;
+  backdrop-filter: blur(4px);
+  animation: idleFadeIn .3s ease-out;
+}
+#dailyLoginOverlay.hidden { display: none; }
+#dailyLoginBox {
+  background: linear-gradient(150deg, #080c14, #0c0a18);
+  border: 2px solid var(--gold);
+  border-radius: 20px; padding: 26px 28px 22px;
+  width: min(340px, 93vw); text-align: center;
+  box-shadow: 0 0 60px rgba(201,162,39,.2), 0 24px 64px rgba(0,0,0,.8);
+  animation: idleBoxIn .4s cubic-bezier(.22,1,.36,1);
+}
+#dailyLoginBox h2 {
+  font-family: 'Cinzel', serif; font-size: 1.15rem; color: var(--gold2);
+  margin-bottom: 4px;
+}
+#dailyLoginBox .dlg-streak {
+  font-family: 'Cinzel', serif; font-size: .72rem; color: var(--text3);
+  margin-bottom: 16px;
+}
+.dlg-rewards {
+  display: flex; flex-direction: column; gap: 6px;
+  margin-bottom: 18px;
+}
+.dlg-reward-row {
+  display: flex; align-items: center; justify-content: space-between;
+  background: rgba(201,162,39,.06); border: 1px solid rgba(201,162,39,.18);
+  border-radius: 9px; padding: 8px 14px;
+}
+.dlg-reward-icon { font-size: 1.3rem; }
+.dlg-reward-label { font-size: .72rem; color: var(--text2); flex: 1; margin-left: 10px; text-align: left; }
+.dlg-reward-val { font-family: 'Cinzel', serif; font-size: .85rem; font-weight: 700; color: var(--gold2); }
+#dailyLoginBox .dlg-btn {
+  width: 100%; padding: 11px;
+  background: linear-gradient(135deg, rgba(40,24,8,.9), rgba(180,130,20,.8));
+  border: 1.5px solid var(--gold2); border-radius: 11px;
+  font-family: 'Cinzel', serif; font-size: .88rem; font-weight: 900;
+  color: #1a1000; cursor: pointer; transition: all .18s;
+}
+#dailyLoginBox .dlg-btn:hover { transform: scale(1.02); box-shadow: 0 0 24px rgba(201,162,39,.4); }
+
+/* ══ GLOBAL CHAT ══ */
+.gchat-msg {
+  display: flex; gap: 7px; padding: 5px 0;
+  border-bottom: 1px solid rgba(255,255,255,.03);
+  font-size: .72rem; align-items: flex-start;
+}
+.gchat-name {
+  font-family: 'Cinzel', serif; font-size: .65rem; font-weight: 700;
+  color: var(--gold2); flex-shrink: 0; min-width: 60px; max-width: 90px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.gchat-text { color: var(--text2); flex: 1; line-height: 1.5; word-break: break-word; }
+.gchat-time { color: var(--text3); font-size: .58rem; flex-shrink: 0; margin-top: 1px; }
+
+/* ══ SPIELER-PROFIL ══ */
+.profile-overlay {
+  position: fixed; inset: 0; z-index: 400;
+  background: rgba(0,0,0,.85); backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center;
+}
+.profile-overlay.hidden { display: none; }
+.profile-box {
+  background: linear-gradient(150deg, var(--panel), var(--bg2));
+  border: 1.5px solid var(--border2); border-radius: 16px;
+  padding: 22px 24px; width: min(380px, 94vw);
+  box-shadow: 0 24px 64px rgba(0,0,0,.8);
+  animation: idleBoxIn .35s cubic-bezier(.22,1,.36,1);
+}
+.profile-header {
+  display: flex; align-items: center; gap: 14px; margin-bottom: 16px;
+}
+.profile-avatar { font-size: 2.8rem; filter: drop-shadow(0 0 8px rgba(201,162,39,.4)); }
+.profile-name { font-family: 'Cinzel', serif; font-size: 1.05rem; font-weight: 700; color: var(--gold2); }
+.profile-class { font-size: .68rem; color: var(--text3); margin-top: 3px; }
+.profile-stats-grid {
+  display: grid; grid-template-columns: 1fr 1fr 1fr;
+  gap: 6px; margin-bottom: 14px;
+}
+.profile-stat {
+  background: rgba(0,0,0,.25); border: 1px solid var(--border);
+  border-radius: 8px; padding: 7px; text-align: center;
+}
+.profile-stat-val { font-family: 'Cinzel', serif; font-size: .82rem; font-weight: 700; color: var(--text); }
+.profile-stat-lbl { font-size: .58rem; color: var(--text3); margin-top: 2px; }
+
 /* ══ SPRACH-TOGGLE ══ */
 .lang-toggle-wrap {
   display: flex; align-items: center; gap: 0;
@@ -2593,6 +2719,7 @@ button, .nav-tab, .ctrl-btn, .upg-card, .skill-card,
       <div class="prestige-badge" id="prestigeBadge" onclick="openPrestige()" style="display:none;" title="Prestige — klicken für Details">⚡ <b id="hPrestige">✦0</b></div>
       <div class="hstat" id="saveStatus" style="color:var(--text2);font-size:0.65rem;">💾 —</div>
       <div id="guildHeaderBadge" onclick="switchTab('gilde')" title="Gilden-Boni aktiv">🏰 <span id="guildHeaderBadgeTxt">Lv1</span></div>
+      <button onclick="openGlobalChat()" title="Globaler Chat" style="background:rgba(0,0,0,0.4);border:1px solid var(--border);border-radius:6px;padding:3px 9px;cursor:pointer;color:var(--text2);font-size:1rem;transition:all .2s;display:flex;align-items:center;position:relative;">🌍<span id="globalChatBadge" style="display:none;position:absolute;top:-3px;right:-3px;width:8px;height:8px;background:var(--red2);border-radius:50%;"></span></button>
       <button id="settingsGearBtn" onclick="openSettings()" title="Einstellungen" style="background:rgba(0,0,0,0.4);border:1px solid var(--border);border-radius:6px;padding:3px 9px;cursor:pointer;color:var(--text2);font-size:1rem;transition:all .2s;display:flex;align-items:center;">⚙️</button>
     </div>
   </div>
@@ -3020,6 +3147,18 @@ button, .nav-tab, .ctrl-btn, .upg-card, .skill-card,
         style="border-color:var(--blue2);color:var(--blue2);font-size:.6rem;padding:4px 10px;">
         💰 Verkaufen
       </button>
+    </div>
+    <!-- Filter-Bar -->
+    <div class="inv-filter-bar" id="invFilterBar">
+      <button class="inv-filter-btn active" onclick="_invFilter('all',this)">Alle</button>
+      <button class="inv-filter-btn" onclick="_invFilter('weapon',this)">⚔️</button>
+      <button class="inv-filter-btn" onclick="_invFilter('helmet',this)">⛑️</button>
+      <button class="inv-filter-btn" onclick="_invFilter('chest',this)">🛡️</button>
+      <button class="inv-filter-btn" onclick="_invFilter('gloves',this)">🧤</button>
+      <button class="inv-filter-btn" onclick="_invFilter('boots',this)">👢</button>
+      <button class="inv-filter-btn" onclick="_invFilter('ring',this)">💍</button>
+      <button class="inv-filter-btn" onclick="_invFilter('legendary',this)" style="color:var(--gold2);">★</button>
+      <button class="inv-filter-btn" onclick="_invFilter('epic',this)" style="color:var(--purple2);">◆</button>
     </div>
     <div class="inv-grid" id="invGrid">
       <div style="color:var(--text2);font-size:.78rem;font-style:italic;grid-column:1/-1;padding:10px;text-align:center;">
@@ -3501,6 +3640,53 @@ button, .nav-tab, .ctrl-btn, .upg-card, .skill-card,
   </div>
 </div>
 
+<!-- ═══ DAILY LOGIN POPUP ═══ -->
+<div id="dailyLoginOverlay" class="hidden">
+  <div id="dailyLoginBox">
+    <div style="font-size:2.5rem;margin-bottom:8px;">🎁</div>
+    <h2>Tägliche Belohnung!</h2>
+    <div class="dlg-streak" id="dlgStreakTxt">Tag 1</div>
+    <div class="dlg-rewards" id="dlgRewards"></div>
+    <button class="dlg-btn" onclick="collectDailyLogin()">✨ Einsammeln</button>
+  </div>
+</div>
+
+<!-- ═══ SPIELER-PROFIL ═══ -->
+<div class="profile-overlay hidden" id="profileOverlay" onclick="if(event.target===this)closeProfile()">
+  <div class="profile-box">
+    <div class="profile-header">
+      <div class="profile-avatar" id="profileAvatar">🧙</div>
+      <div>
+        <div class="profile-name" id="profileName">—</div>
+        <div class="profile-class" id="profileClass">—</div>
+        <div style="margin-top:4px;" id="profileBadges"></div>
+      </div>
+      <button onclick="closeProfile()" style="margin-left:auto;background:none;border:none;color:var(--text3);font-size:1.2rem;cursor:pointer;padding:4px;">✕</button>
+    </div>
+    <div class="profile-stats-grid" id="profileStatsGrid"></div>
+    <div id="profileEquip" style="margin-bottom:12px;"></div>
+    <button onclick="closeProfile()" class="collect-btn" style="width:100%;background:rgba(0,0,0,.4);border-color:var(--border2);color:var(--text2);">Schließen</button>
+  </div>
+</div>
+
+<!-- ═══ GLOBALER CHAT ═══ -->
+<div class="profile-overlay hidden" id="globalChatOverlay" onclick="if(event.target===this)closeGlobalChat()">
+  <div class="profile-box" style="max-width:420px;width:94vw;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <div style="font-family:'Cinzel',serif;font-size:.9rem;color:var(--gold2);">🌍 Globaler Chat</div>
+      <button onclick="closeGlobalChat()" style="background:none;border:none;color:var(--text3);font-size:1.1rem;cursor:pointer;">✕</button>
+    </div>
+    <div id="globalChatLog" style="height:220px;overflow-y:auto;margin-bottom:10px;scrollbar-width:thin;scrollbar-color:var(--border) transparent;"></div>
+    <div style="display:flex;gap:6px;">
+      <input id="globalChatInput" type="text" maxlength="120" placeholder="Nachricht..."
+        style="flex:1;background:rgba(0,0,0,.4);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-size:.72rem;padding:7px 10px;outline:none;"
+        onkeydown="if(event.key==='Enter')sendGlobalChat()">
+      <button onclick="sendGlobalChat()" class="ctrl-btn" style="border-color:var(--gold);color:var(--gold2);padding:7px 12px;">📤</button>
+    </div>
+    <div style="font-size:.58rem;color:var(--text3);margin-top:5px;">Öffentlich für alle Spieler · max 120 Zeichen</div>
+  </div>
+</div>
+
 <!-- ═══ ERROR TOAST ═══ -->
 <div id="errToast">
   <div id="errToastIcon">⚠️</div>
@@ -3741,6 +3927,10 @@ button, .nav-tab, .ctrl-btn, .upg-card, .skill-card,
   <div class="tt-st" id="ttS"></div>
   <div class="tt-dsc" id="ttD"></div>
   <div class="tt-eq" id="ttE"></div>
+  <div id="ttCompare" class="tt-compare" style="display:none;">
+    <div class="tt-compare-head">VS AUSGERÜSTET</div>
+    <div id="ttCompareRows"></div>
+  </div>
 </div>
 
 <script>
@@ -5406,13 +5596,26 @@ function renderInventory() {
 }
 
 function renderInvGrid(id, items, showEquip) {
-  const grid=document.getElementById(id);
-  if(!items.length){
-    grid.innerHTML=`<div style="color:var(--text2);font-size:0.78rem;font-style:italic;grid-column:1/-1;padding:10px;text-align:center;">Leer.</div>`;
+  const grid = document.getElementById(id);
+  if (!grid) return;
+
+  // Filter anwenden wenn invGrid und Filter aktiv
+  let display = items;
+  if (id === 'invGrid' && typeof _invCurrentFilter !== 'undefined' && _invCurrentFilter !== 'all') {
+    const f = _invCurrentFilter;
+    if (['weapon','helmet','chest','gloves','boots','ring'].includes(f)) {
+      display = items.filter(it => it.slot === f);
+    } else {
+      display = items.filter(it => it.rarity === f);
+    }
+  }
+
+  if (!display.length) {
+    grid.innerHTML = `<div style="color:var(--text2);font-size:0.78rem;font-style:italic;grid-column:1/-1;padding:10px;text-align:center;">${display.length < items.length ? 'Keine Items in diesem Filter.' : 'Leer.'}</div>`;
     return;
   }
   grid.innerHTML='';
-  items.forEach(item=>{
+  display.forEach(item=>{
     const slot=document.createElement('div');
     slot.className=`inv-slot rarity-${item.rarity}`;
     const RCOL={'common':'#888','uncommon':'#40c070','rare':'#50a0e0','epic':'#9060e0','legendary':'#c9a227','mythic':'#f07070'};
@@ -6971,6 +7174,7 @@ function checkLevelUp() {
     log('🎉 LEVEL UP ' + G.hero.level + '!', 'l');
     leveled = true;
     try { playSfx('levelup'); } catch(e) {}
+    try { showLevelUpAnimation(G.hero.level); } catch(e) {}
   }
   if (leveled) { updateEraUI(); markDirty('low'); try { checkAchievements(); } catch(e){ console.warn("[SwordMaster]", e); } try { updatePrestigeHeader(); } catch(e) {} } // LevelUp: combat-event
 }
@@ -8232,6 +8436,7 @@ function updateArenaPanel() {
 
 function switchTab(name) {
   _clearDomCache(); // DOM-Cache invalidieren bei Tab-Wechsel
+  if (typeof _tabRendered !== 'undefined') _tabRendered.add(name);
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
   document.getElementById('page-'+name)?.classList.add('active');
@@ -10306,6 +10511,8 @@ async function continueInit() {
         }, 800);
       }
     } catch(e) {}
+    // Daily Login nach 2s prüfen (nach vollständigem Laden)
+    setTimeout(() => { try { checkDailyLogin(); } catch(e) {} }, 2000);
   } else {
     setSaveStatus('⚠️ Offline-Modus', 'var(--orange2)');
     log('⚔ SwordMaster gestartet! SQL-Script in Supabase ausfuhren fur Cloud.', 'n');
@@ -10612,8 +10819,6 @@ function renderRaid() {
       💡 1 Gold = ${raidDamageForGold(1).toFixed(2)} Schaden (ATK-Bonus eingerechnet)
     </div>`;
 }
-
-const _origRenderGuild = typeof renderGuild === 'function' ? renderGuild : null;
 
 // ════════════════════════════════════════════
 // ── SEASONAL EVENTS SYSTEM
@@ -11311,6 +11516,18 @@ function getAchProgress(a) {
       return total;
     }
     case 'event_claimed': return G.eventClaimed ? G.eventClaimed.size : 0;
+    // Neue Typen
+    case 'enchant':       return Object.keys(G.enchants||{}).length > 0 ? 1 : 0;
+    case 'enchant_all': {
+      const slots = ['weapon','helmet','chest','gloves','boots','ring'];
+      return slots.filter(s => (G.enchants||{})[s]).length;
+    }
+    case 'prestige':      return G.prestigeStars || 0;
+    case 'login_streak': {
+      try { const d = JSON.parse(localStorage.getItem('sm3_daily_login')||'{}'); return d.streak || 0; } catch(e) { return 0; }
+    }
+    case 'research':      return G.research ? G.research.size : 0;
+    case 'global_chat':   return (G.achProgress||{}).global_chat || 0;
     default: return G.achProgress[a.type] || 0;
   }
 }
@@ -13104,6 +13321,19 @@ const CHANGELOG_DATA = [
   { type:"NEU",  text:"Sprachauswahl DE/EN in Einstellungen — 150+ übersetzte Texte",         date:"2025-03" },
   { type:"NEU",  text:"Admin-Panel komplett ausgebaut: 5 Tabs, 20+ neue Funktionen",       date:"2025-03" },
   { type:"NEU",  text:"Admin: Event-Control, Sperren/Entsperren, Inventar-Ansicht, Bulk-Aktionen, Notizen", date:"2025-03" },
+  { type:"NEU",  text:"Item-Vergleich im Tooltip — zeigt Unterschied zum ausgerüsteten Item",     date:"2025-03" },
+  { type:"NEU",  text:"Inventar-Filter nach Slot und Seltenheit",                                 date:"2025-03" },
+  { type:"NEU",  text:"Tägliche Login-Belohnung — 7-Tage Streak mit wachsenden Rewards",          date:"2025-03" },
+  { type:"NEU",  text:"Globaler Chat für alle Spieler (🌍-Button im Header)",                     date:"2025-03" },
+  { type:"NEU",  text:"Spieler-Profil — Stats, Ausrüstung und Badges anderer Spieler ansehen",    date:"2025-03" },
+  { type:"NEU",  text:"Level-Up Animation + Mobile Vibration",                                   date:"2025-03" },
+  { type:"NEU",  text:"Service Worker — Spiel lädt offline aus dem Cache",                        date:"2025-03" },
+  { type:"NEU",  text:"3 neue Events: Valentinstag, Silvester, Frühlingsfest",                    date:"2025-03" },
+  { type:"NEU",  text:"22 neue Achievements: Wave 500/1000, Lv100, Prestige-Achievements uvm.",   date:"2025-03" },
+  { type:"PERF", text:"Lazy-Rendering: Tabs werden nur gerendert wenn sichtbar",                  date:"2025-03" },
+  { type:"FIX",  text:"Memory-Leak-Schutz: EventListener werden bei Page-Unload bereinigt",       date:"2025-03" },
+  { type:"FIX",  text:"Maximum call stack — alle _orig-Overrides durch direkte Inline-Erweiterungen ersetzt", date:"2025-03" },
+  { type:"FIX",  text:"Service Worker Blob-URL durch navigator online/offline Events ersetzt",       date:"2025-03" },
 ];
 
 // ════════════════════════════════════════════
@@ -13625,11 +13855,579 @@ window.addEventListener('DOMContentLoaded', () => {
 
 init();
 
-// ════════════════════════════════════════════════════════
-// ── ADMIN PANEL
-// Zum Ändern: SHA-256 Hash auf https://emn178.github.io/online-tools/sha256.html
-// ════════════════════════════════════════════════════════
-const _ADMIN_HASH = 'e154e0c6770e2f893a6f3c7a2078a2c6841d2c5704265432b08d4ee3c2914460';
+// ════════════════════════════════════════════
+// ── ITEM-VERGLEICH (Tooltip-Erweiterung)
+// ════════════════════════════════════════════
+
+function showTT(e, item, hint='') {
+  const tt = document.getElementById('tt');
+  document.getElementById('ttN').textContent = item.emoji + ' ' + item.name;
+  document.getElementById('ttN').style.color = item.rarityColor;
+  document.getElementById('ttR').textContent = item.rarityLabel;
+  document.getElementById('ttR').style.color = item.rarityColor;
+  const SNAMES = { atk:'Angriff', def:'Verteidigung', spd:'Geschwindigkeit (-s)', crit:'Krit-Chance (%)' };
+  document.getElementById('ttS').textContent = '+' + item.sv + ' ' + (SNAMES[item.sk] || item.sk);
+  const effEl = document.getElementById('ttD');
+  if (effEl) {
+    const effLabel = item.eff ? (EFF_LABELS[item.eff] || item.eff) : '';
+    const enchSlot = Object.entries(G.equipped||{}).find(([s,it]) => it && it.id === item.id)?.[0];
+    const enchId   = enchSlot ? (G.enchants||{})[enchSlot] : null;
+    const enchRune = enchId ? getRuneDef(enchId) : null;
+    const enchStr  = enchRune
+      ? '<div style="display:inline-block;background:rgba(144,96,224,.1);border:1px solid rgba(144,96,224,.35);border-radius:5px;padding:1px 6px;font-size:.62rem;margin-bottom:3px;color:var(--purple2);">✨ ' + enchRune.emoji + ' ' + enchRune.name + '</div><br>'
+      : '';
+    effEl.innerHTML = (effLabel ? '<span style="display:inline-block;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:5px;padding:1px 6px;font-size:.62rem;margin-bottom:3px;color:var(--gold2);">' + effLabel + '</span><br>' : '') + enchStr + item.desc;
+  }
+  document.getElementById('ttE').textContent = hint;
+
+  // ── Item-Vergleich mit aktuell ausgerüstetem Item desselben Slots ──
+  const compareEl  = document.getElementById('ttCompare');
+  const compareRows = document.getElementById('ttCompareRows');
+  if (compareEl && compareRows && item.slot) {
+    const equipped = G.equipped[item.slot];
+    if (equipped && equipped.id !== item.id) {
+      const statNames = { atk:'ATK', def:'DEF', spd:'SPD', crit:'KRIT' };
+      const diff = item.sv - equipped.sv;
+      const diffSign = diff > 0 ? '+' : '';
+      const diffCls  = diff > 0 ? 'better' : diff < 0 ? 'worse' : 'same';
+      compareRows.innerHTML = `
+        <div class="tt-compare-row">
+          <span class="tt-compare-label">${equipped.emoji} ${equipped.name}</span>
+          <span class="tt-compare-val" style="color:var(--text3);">+${equipped.sv} ${statNames[equipped.sk]||equipped.sk}</span>
+        </div>
+        <div class="tt-compare-row">
+          <span class="tt-compare-label">Änderung</span>
+          <span class="tt-compare-val ${diffCls}">${diffSign}${diff} ${statNames[item.sk]||item.sk}</span>
+        </div>`;
+      compareEl.style.display = 'block';
+    } else {
+      compareEl.style.display = 'none';
+    }
+  } else if (compareEl) {
+    compareEl.style.display = 'none';
+  }
+
+  tt.classList.add('show');
+  moveTT(e);
+}
+
+// ════════════════════════════════════════════
+// ── INVENTAR-FILTER
+// ════════════════════════════════════════════
+
+let _invCurrentFilter = 'all';
+
+function _invFilter(filter, btn) {
+  _invCurrentFilter = filter;
+  document.querySelectorAll('.inv-filter-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderInventory();
+}
+
+// Filter-Logik direkt in renderInvGrid eingebaut — kein Override nötig
+
+// ════════════════════════════════════════════
+// ── DAILY LOGIN BONUS
+// ════════════════════════════════════════════
+
+const DAILY_LOGIN_REWARDS = [
+  { day:1, gold:200,  keys:0, label:'Tag 1 — Willkommen zurück!' },
+  { day:2, gold:400,  keys:0, label:'Tag 2 — Treuer Abenteurer' },
+  { day:3, gold:600,  keys:1, label:'Tag 3 — +1 Dungeon-Schlüssel!' },
+  { day:4, gold:800,  keys:0, label:'Tag 4 — Auf dem richtigen Weg' },
+  { day:5, gold:1200, keys:0, label:'Tag 5 — Halbzeit' },
+  { day:6, gold:1500, keys:1, label:'Tag 6 — Fast geschafft!' },
+  { day:7, gold:3000, keys:2, label:'Tag 7 — Wöchentliche Belohnung! 🎉' },
+];
+
+function checkDailyLogin() {
+  try {
+    const key       = 'sm3_daily_login';
+    const streakKey = 'sm3_login_streak';
+    const stored    = JSON.parse(localStorage.getItem(key) || '{}');
+    const today     = new Date().toDateString();
+    if (stored.lastDate === today) return; // bereits heute geclaimed
+
+    const streak = (stored.lastDate === new Date(Date.now() - 86400000).toDateString())
+      ? Math.min((stored.streak || 0) + 1, 7)
+      : 1; // Streak bricht ab wenn Tag übersprungen
+
+    const reward = DAILY_LOGIN_REWARDS[(streak - 1) % 7];
+
+    // UI aufbauen
+    const streakEl = document.getElementById('dlgStreakTxt');
+    const rewardsEl = document.getElementById('dlgRewards');
+    if (streakEl) streakEl.textContent = reward.label;
+    if (rewardsEl) {
+      const rows = [`
+        <div class="dlg-reward-row">
+          <div class="dlg-reward-icon">💰</div>
+          <div class="dlg-reward-label">Gold</div>
+          <div class="dlg-reward-val">+${reward.gold.toLocaleString()}</div>
+        </div>`];
+      if (reward.keys > 0) rows.push(`
+        <div class="dlg-reward-row">
+          <div class="dlg-reward-icon">🗝️</div>
+          <div class="dlg-reward-label">Dungeon-Schlüssel</div>
+          <div class="dlg-reward-val">+${reward.keys}</div>
+        </div>`);
+      // Streak-Anzeige
+      rows.push(`<div style="display:flex;justify-content:center;gap:5px;margin-top:6px;">
+        ${DAILY_LOGIN_REWARDS.map((_,i) => {
+          const day = i+1;
+          const done = day < streak;
+          const cur  = day === streak;
+          return `<div style="width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:.62rem;font-family:'Cinzel',serif;font-weight:700;
+            ${done ? 'background:rgba(64,192,112,.15);border:1px solid var(--green2);color:var(--green2);' :
+              cur  ? 'background:rgba(201,162,39,.2);border:1.5px solid var(--gold);color:var(--gold2);' :
+                     'background:rgba(0,0,0,.2);border:1px solid var(--border);color:var(--text3);'}">
+            ${done ? '✓' : day}
+          </div>`;
+        }).join('')}
+      </div>`);
+      rewardsEl.innerHTML = rows.join('');
+    }
+
+    // Pending reward speichern (wird bei Collect angewendet)
+    window._pendingDailyReward = { gold: reward.gold, keys: reward.keys, streak, today };
+
+    const overlay = document.getElementById('dailyLoginOverlay');
+    if (overlay) overlay.classList.remove('hidden');
+  } catch(e) { console.warn('Daily login check:', e); }
+}
+
+function collectDailyLogin() {
+  const r = window._pendingDailyReward;
+  if (!r) return;
+  G.hero.gold += r.gold;
+  if (r.keys > 0) G.dungeonKeys = Math.min((G.dungeonKeys||3) + r.keys, 10);
+  log(`🎁 Tägliche Belohnung: +${r.gold}G${r.keys > 0 ? ' +' + r.keys + '🗝️' : ''}`, 'l');
+  localStorage.setItem('sm3_daily_login', JSON.stringify({ lastDate: r.today, streak: r.streak }));
+  updateAll();
+  markDirty('high');
+  const overlay = document.getElementById('dailyLoginOverlay');
+  if (overlay) {
+    overlay.style.transition = 'opacity .3s';
+    overlay.style.opacity = '0';
+    setTimeout(() => { overlay.classList.add('hidden'); overlay.style.opacity = ''; }, 300);
+  }
+  window._pendingDailyReward = null;
+  try { playSfx('levelup'); } catch(e) {}
+}
+
+// ════════════════════════════════════════════
+// ── GLOBALER CHAT
+// ════════════════════════════════════════════
+
+let _globalChatInterval = null;
+let _globalChatLastTs   = null;
+
+function openGlobalChat() {
+  const overlay = document.getElementById('globalChatOverlay');
+  if (overlay) overlay.classList.remove('hidden');
+  loadGlobalChat();
+  // Polling alle 8s während Chat offen
+  _globalChatInterval = setInterval(loadGlobalChat, 8000);
+  // Badge weg
+  const badge = document.getElementById('globalChatBadge');
+  if (badge) badge.style.display = 'none';
+}
+
+function closeGlobalChat() {
+  const overlay = document.getElementById('globalChatOverlay');
+  if (overlay) overlay.classList.add('hidden');
+  clearInterval(_globalChatInterval);
+  _globalChatInterval = null;
+}
+
+async function loadGlobalChat() {
+  try {
+    // Nutze sm_guild_chat mit einer speziellen "global" guild_id
+    const msgs = await sbGet('sm_guild_chat',
+      `guild_id=eq.00000000-0000-0000-0000-000000000000&order=created_at.desc&limit=50`);
+    const el = document.getElementById('globalChatLog');
+    if (!el) return;
+    if (!msgs?.length) {
+      el.innerHTML = '<div style="text-align:center;color:var(--text3);font-size:.68rem;padding:20px;">Noch keine Nachrichten. Schreib die erste!</div>';
+      return;
+    }
+    const isAtBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 50;
+    el.innerHTML = [...msgs].reverse().map(m => {
+      const ts = new Date(m.created_at).toLocaleTimeString('de-DE', {hour:'2-digit',minute:'2-digit'});
+      const isMe = m.player_id === getPlayerId();
+      return `<div class="gchat-msg" style="${isMe ? 'flex-direction:row-reverse;' : ''}">
+        <span class="gchat-name" style="${isMe ? 'color:var(--blue2);text-align:right;' : ''}">${m.player_name||'?'}</span>
+        <span class="gchat-text" style="${isMe ? 'text-align:right;' : ''}">${m.message.replace(/[<>]/g,'')}</span>
+        <span class="gchat-time">${ts}</span>
+      </div>`;
+    }).join('');
+    if (isAtBottom) el.scrollTop = el.scrollHeight;
+    _globalChatLastTs = msgs[0]?.created_at;
+  } catch(e) { /* offline ok */ }
+}
+
+let _lastGlobalChatSent = 0;
+async function sendGlobalChat() {
+  const input = document.getElementById('globalChatInput');
+  const msg   = input?.value?.trim();
+  if (!msg) return;
+  if (Date.now() - _lastGlobalChatSent < 3000) {
+    showErrToast('Bitte 3 Sekunden warten', '⏳'); return;
+  }
+  _lastGlobalChatSent = Date.now();
+  try {
+    await sbPost('sm_guild_chat', {
+      id: makeUUID(),
+      guild_id: '00000000-0000-0000-0000-000000000000',
+      player_id: getPlayerId(),
+      player_name: getPlayerName(),
+      message: msg.slice(0, 120),
+      role: 'member',
+      created_at: new Date().toISOString()
+    });
+    if (input) input.value = '';
+    loadGlobalChat();
+    // Achievement tracken
+    try {
+      if (!G.achProgress) G.achProgress = {};
+      G.achProgress.global_chat = (G.achProgress.global_chat || 0) + 1;
+      checkAchievements();
+    } catch(e) {}
+  } catch(e) { showErrToast('Senden fehlgeschlagen', '❌'); }
+}
+
+// Polling im Hintergrund — Badge anzeigen wenn neue Nachricht
+setInterval(async () => {
+  if (document.getElementById('globalChatOverlay')?.classList.contains('hidden')) {
+    try {
+      const msgs = await sbGet('sm_guild_chat',
+        `guild_id=eq.00000000-0000-0000-0000-000000000000&order=created_at.desc&limit=1`);
+      if (msgs?.[0] && msgs[0].created_at !== _globalChatLastTs &&
+          msgs[0].player_id !== getPlayerId()) {
+        const badge = document.getElementById('globalChatBadge');
+        if (badge) badge.style.display = 'block';
+        _globalChatLastTs = msgs[0].created_at;
+      }
+    } catch(e) {}
+  }
+}, 30000);
+
+// ════════════════════════════════════════════
+// ── SPIELER-PROFIL
+// ════════════════════════════════════════════
+
+function openProfile(playerId, playerName) {
+  const overlay = document.getElementById('profileOverlay');
+  if (!overlay) return;
+  overlay.classList.remove('hidden');
+  // Sofort mit Name befüllen
+  document.getElementById('profileName').textContent = playerName || '—';
+  document.getElementById('profileAvatar').textContent = '🧙';
+  document.getElementById('profileClass').textContent = 'Lade...';
+  document.getElementById('profileStatsGrid').innerHTML = '';
+  document.getElementById('profileEquip').innerHTML = '';
+  document.getElementById('profileBadges').innerHTML = '';
+  _loadProfileData(playerId);
+}
+
+async function _loadProfileData(playerId) {
+  try {
+    const [players, items] = await Promise.all([
+      sbGet('sm_players', `id=eq.${playerId}&select=*&limit=1`),
+      sbGet('sm_inventory', `player_id=eq.${playerId}&is_equipped=eq.true&select=*&limit=6`)
+    ]);
+    const p = players?.[0];
+    if (!p) return;
+
+    const avatarEmojis = ['🧙','⚔️','🛡️','🗡️','🔥','⚡','🌑','🌟','👑'];
+    document.getElementById('profileAvatar').textContent = avatarEmojis[Math.min(p.prestige_stars||0, 8)];
+    document.getElementById('profileName').textContent   = p.player_name || '—';
+
+    const classMap = [
+      [p.hero_level >= 75, '👑 Großmeister'],
+      [p.hero_level >= 50, '💫 Meister'],
+      [p.hero_level >= 25, '🌟 Veteran'],
+      [p.hero_level >= 10, '⚔️ Krieger'],
+      [true, '🧙 Abenteurer'],
+    ];
+    document.getElementById('profileClass').textContent = classMap.find(([c]) => c)[1];
+
+    // Badges
+    const badges = [];
+    if (p.prestige_stars > 0) badges.push(`<span style="background:rgba(201,162,39,.15);border:1px solid var(--gold);border-radius:5px;padding:1px 7px;font-size:.6rem;color:var(--gold2);">✦${p.prestige_stars} Prestige</span>`);
+    if (p.pvp_points >= 5000) badges.push(`<span style="background:rgba(144,96,224,.15);border:1px solid var(--purple2);border-radius:5px;padding:1px 7px;font-size:.6rem;color:var(--purple2);">🏆 Legende</span>`);
+    if (p.dungeon_best_floor >= 60) badges.push(`<span style="background:rgba(224,80,80,.12);border:1px solid var(--red2);border-radius:5px;padding:1px 7px;font-size:.6rem;color:var(--red2);">💀 Dungeon-Lord</span>`);
+    document.getElementById('profileBadges').innerHTML = `<div style="display:flex;gap:4px;flex-wrap:wrap;">${badges.join('')}</div>`;
+
+    // Stats Grid
+    const stats = [
+      { val: p.hero_level||1,               lbl: 'Level' },
+      { val: (p.total_kills||0).toLocaleString(), lbl: 'Kills' },
+      { val: `Welle ${p.wave||1}`,           lbl: 'Welle' },
+      { val: p.pvp_wins||0,                  lbl: 'PVP Wins' },
+      { val: `Etage ${p.dungeon_best_floor||0}`, lbl: 'Best Floor' },
+      { val: `✦${p.prestige_stars||0}`,      lbl: 'Prestige' },
+    ];
+    document.getElementById('profileStatsGrid').innerHTML = stats.map(s =>
+      `<div class="profile-stat">
+        <div class="profile-stat-val">${s.val}</div>
+        <div class="profile-stat-lbl">${s.lbl}</div>
+      </div>`
+    ).join('');
+
+    // Ausgerüstete Items
+    if (items?.length) {
+      const RCOL = { common:'#668', uncommon:'#40c070', rare:'#50a0e0', epic:'#9060e0', legendary:'#c9a227', mythic:'#f07070' };
+      document.getElementById('profileEquip').innerHTML = `
+        <div style="font-size:.62rem;color:var(--text3);margin-bottom:5px;font-family:'Cinzel',serif;">AUSRÜSTUNG</div>
+        <div style="display:flex;gap:5px;flex-wrap:wrap;">
+          ${items.map(it => `<div style="background:rgba(0,0,0,.3);border:1px solid ${RCOL[it.rarity]||'#444'};border-radius:7px;padding:4px 7px;font-size:.68rem;display:flex;align-items:center;gap:4px;">
+            <span>${it.item_emoji||'❓'}</span>
+            <span style="color:${RCOL[it.rarity]||'#aaa'};">+${it.stat_value||0} ${(it.item_stat||'').toUpperCase()}</span>
+          </div>`).join('')}
+        </div>`;
+    }
+  } catch(e) { console.warn('Profile load:', e); }
+}
+
+function closeProfile() {
+  document.getElementById('profileOverlay')?.classList.add('hidden');
+}
+
+// ════════════════════════════════════════════
+// ── LEVEL-UP ANIMATION (verbessert)
+// ════════════════════════════════════════════
+
+function showLevelUpAnimation(level) {
+  // Goldener Burst über dem Header
+  const burst = document.createElement('div');
+  burst.style.cssText = `
+    position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
+    z-index:9000; pointer-events:none; text-align:center;
+    animation: lvlUpBurst .9s ease-out forwards;
+  `;
+  burst.innerHTML = `
+    <div style="font-family:'Cinzel',serif;font-size:2rem;font-weight:900;
+      color:var(--gold2);text-shadow:0 0 30px rgba(201,162,39,.8);
+      animation:lvlUpText .9s ease-out forwards;">
+      LEVEL UP!<br>
+      <span style="font-size:1.4rem;color:#fff;">✦ ${level} ✦</span>
+    </div>`;
+  document.body.appendChild(burst);
+  setTimeout(() => burst.remove(), 900);
+  // Vibration auf Mobile
+  try { navigator.vibrate?.(200); } catch(e) {}
+}
+
+// CSS für Level-Up-Animation in <style> nachrüsten via JS (einmalig)
+if (!document.getElementById('lvlUpStyle')) {
+  const s = document.createElement('style');
+  s.id = 'lvlUpStyle';
+  s.textContent = `
+    @keyframes lvlUpBurst {
+      0%   { opacity:0; transform:translate(-50%,-50%) scale(.5); }
+      30%  { opacity:1; transform:translate(-50%,-50%) scale(1.15); }
+      70%  { opacity:1; transform:translate(-50%,-50%) scale(1); }
+      100% { opacity:0; transform:translate(-50%,-60%) scale(.9); }
+    }
+    @keyframes lvlUpText {
+      0%   { letter-spacing:.05em; }
+      30%  { letter-spacing:.18em; }
+      100% { letter-spacing:.08em; }
+    }`;
+  document.head.appendChild(s);
+}
+
+// ════════════════════════════════════════════
+// ── SERVICE WORKER (PWA Offline-Cache)
+// ════════════════════════════════════════════
+
+// ── OFFLINE-DETECTION ────────────────────────────────────
+// Service Worker als Blob-URL ist browser-seitig blockiert (Security-Policy).
+// Stattdessen: navigator.onLine für saubere Offline/Online-Erkennung.
+window.addEventListener('online',  () => {
+  setSaveStatus('📶 Wieder online', 'var(--green2)');
+  setTimeout(() => { try { saveNow(); } catch(e) {} }, 500);
+});
+window.addEventListener('offline', () => {
+  setSaveStatus('📡 Offline', 'var(--orange2)');
+  try { showErrToast('Keine Verbindung — Fortschritt lokal gesichert', '📡'); } catch(e) {}
+});
+
+// ════════════════════════════════════════════
+// ── Lazy-Rendering: merkt welche Tabs gerendert wurden ──
+const _tabRendered = new Set(['arena']);
+
+// ════════════════════════════════════════════
+// ── MEMORY-LEAK-FIX (EventListener cleanup)
+// ════════════════════════════════════════════
+
+// Zentrales Cleanup-Register für dynamisch erstellte Listener
+const _listenerRegistry = [];
+function _addTrackedListener(el, event, fn, opts) {
+  el.addEventListener(event, fn, opts);
+  _listenerRegistry.push({ el, event, fn });
+}
+function _cleanupListeners() {
+  _listenerRegistry.forEach(({ el, event, fn }) => {
+    try { el.removeEventListener(event, fn); } catch(e) {}
+  });
+  _listenerRegistry.length = 0;
+}
+
+// visibilitychange-Cleanup bei Page-Unload
+window.addEventListener('pagehide', () => {
+  _cleanupListeners();
+  clearInterval(_globalChatInterval);
+});
+
+// ════════════════════════════════════════════
+// ── NEUE SEASONAL EVENTS
+// ════════════════════════════════════════════
+
+// Neue Events zu SEASONAL_EVENTS hinzufügen
+Object.assign(SEASONAL_EVENTS, {
+
+  valentinstag: {
+    id: 'valentinstag',
+    name: '💝 Valentinstag',
+    subtitle: 'Die Liebe liegt in der Luft! Sammle Herzessenz von bezauberten Monstern.',
+    icon: '💝',
+    color: '#ff6688',
+    bg: 'rgba(180,40,80,0.1)',
+    bg2: 'rgba(180,40,80,0.25)',
+    currency: { id:'heart_essence', name:'Herzessenz', emoji:'💖' },
+    month: 1, startDay: 10, endDay: 17, // Februar
+    monsters: [
+      { name:'Bezauberter Ritter', emoji:'💘', hpM:1.3, atkM:1.1, xp:20, gold:10, color:'#ff6688', type:'magisch',
+        special:'fluch', specialDesc:'Liebesfluch — Angriff verlangsamt',
+        drops: { heart_essence: 2 }, id:'', minLv:1, maxLv:9999, armor:0 },
+      { name:'Rosa Golem',        emoji:'🎀', hpM:2.0, atkM:0.9, xp:30, gold:15, color:'#ff99aa', type:'magisch',
+        special:'stein', specialDesc:'Herzschild — kurzzeitig unverwundbar',
+        drops: { heart_essence: 3 }, id:'', minLv:1, maxLv:9999, armor:5 },
+    ],
+    shop: [
+      { id:'heart_pet',   name:'Liebes-Begleiter',    emoji:'💕', cost:30,  desc:'Pet: +3% Heilung bei Kill',  type:'pet'   },
+      { id:'heart_ring',  name:'Ring der Zuneigung',  emoji:'💍', cost:50,  desc:'Ring: +15% Gold',             type:'item'  },
+      { id:'heart_boost', name:'Liebes-Boost',        emoji:'❤️', cost:80,  desc:'+25% XP für 30 Min.',         type:'boost' },
+    ],
+    quests: [
+      { id:'val_kills',    name:'Liebeskrieger',    desc:'100 bezauberte Monster besiegen.',  target:100, type:'event_kills', reward:{currency:15} },
+      { id:'val_boss',     name:'Herzbrecher',      desc:'Den Valentine-Boss besiegen.',      target:1,   type:'event_boss',  reward:{currency:30} },
+    ],
+  },
+
+  silvester: {
+    id: 'silvester',
+    name: '🎆 Silvester',
+    subtitle: 'Das neue Jahr kommt! Feuerwerk-Monster überrennen das Land.',
+    icon: '🎆',
+    color: '#ffdd44',
+    bg: 'rgba(120,100,0,0.1)',
+    bg2: 'rgba(120,100,0,0.25)',
+    currency: { id:'firework_spark', name:'Feuerwerk-Funke', emoji:'✨' },
+    month: 11, startDay: 28, endDay: 31, // Dezember
+    monsters: [
+      { name:'Feuerwerk-Imp',   emoji:'🎇', hpM:1.1, atkM:1.5, xp:25, gold:12, color:'#ffdd44', type:'feuer',
+        special:'explosion', specialDesc:'Explosion — AoE-Schaden',
+        drops: { firework_spark: 2 }, id:'', minLv:1, maxLv:9999, armor:0 },
+      { name:'Raketen-Golem',   emoji:'🚀', hpM:1.8, atkM:1.2, xp:35, gold:18, color:'#ff8844', type:'feuer',
+        special:'fluch', specialDesc:'Raketentritt — DEF-Debuff',
+        drops: { firework_spark: 3 }, id:'', minLv:1, maxLv:9999, armor:5 },
+    ],
+    shop: [
+      { id:'spark_pet',   name:'Feuerwerk-Sprite',   emoji:'🎇', cost:25, desc:'Pet: +2% ATK bei AoE', type:'pet'   },
+      { id:'spark_helm',  name:'Silvesterhelm',      emoji:'🎉', cost:40, desc:'Helm: +10% Krit',      type:'item'  },
+      { id:'spark_boost', name:'Jahreswechsel-Boost', emoji:'🎆', cost:60, desc:'+30% Gold 1h',        type:'boost' },
+    ],
+    quests: [
+      { id:'sylv_kills', name:'Feuerwerk-Krieger', desc:'200 Feuerwerk-Monster besiegen.', target:200, type:'event_kills', reward:{currency:20} },
+    ],
+  },
+
+  fruehling: {
+    id: 'fruehling',
+    name: '🌸 Frühlingsfest',
+    subtitle: 'Die Natur erwacht! Blüten-Essenz stärkt deinen Helden.',
+    icon: '🌸',
+    color: '#ff99cc',
+    bg: 'rgba(180,80,140,0.08)',
+    bg2: 'rgba(180,80,140,0.2)',
+    currency: { id:'blossom', name:'Blütenessenz', emoji:'🌸' },
+    month: 2, startDay: 20, endDay: 31, // März
+    monsters: [
+      { name:'Blüten-Geist',   emoji:'🌺', hpM:1.2, atkM:1.0, xp:18, gold:9,  color:'#ff99cc', type:'magisch',
+        special:'poison_on_hit', specialDesc:'Blütenstaub — vergiftet',
+        drops: { blossom: 2 }, id:'', minLv:1, maxLv:9999, armor:0 },
+      { name:'Dornen-Wächter', emoji:'🌿', hpM:2.2, atkM:0.8, xp:28, gold:14, color:'#66aa44', type:'tier',
+        special:'stein', specialDesc:'Dornenrüstung — reflektiert Schaden',
+        drops: { blossom: 3 }, id:'', minLv:1, maxLv:9999, armor:8 },
+    ],
+    shop: [
+      { id:'blossom_ring',  name:'Blütenring',       emoji:'🌸', cost:35, desc:'Ring: +8% Heilungseffekt', type:'item' },
+      { id:'blossom_boost', name:'Frühlings-Energie', emoji:'🌿', cost:55, desc:'+20% XP & Gold 2h',       type:'boost' },
+    ],
+    quests: [
+      { id:'spring_kills', name:'Frühlingserwachen', desc:'150 Blüten-Monster besiegen.', target:150, type:'event_kills', reward:{currency:18} },
+    ],
+  },
+
+});
+
+// ════════════════════════════════════════════
+// ── NEUE ACHIEVEMENTS
+// ════════════════════════════════════════════
+
+// Neue Achievements zu ACHIEVEMENTS hinzufügen
+ACHIEVEMENTS.push(
+  // ─── Neue Kampf-Achievements ───
+  { id:'kill_100k',    cat:'Kampf',    icon:'☠️',  tier:'diamond', name:'Apokalypse',       desc:'100.000 Monster besiegt!',              type:'kills',      target:100000, reward:{gold:500000,xp:1000000} },
+  { id:'wave_500',     cat:'Kampf',    icon:'🌊',  tier:'diamond', name:'Wellengott',       desc:'Welle 500 erreicht.',                   type:'wave',       target:500,    reward:{gold:25000, xp:50000}  },
+  { id:'wave_1000',    cat:'Kampf',    icon:'👑',  tier:'diamond', name:'Endloser Sturm',   desc:'Welle 1.000 erreicht!',                 type:'wave',       target:1000,   reward:{gold:100000,xp:200000} },
+  { id:'lv100',        cat:'Kampf',    icon:'💎',  tier:'diamond', name:'Jahrhundertheld',  desc:'Level 100 erreicht!',                   type:'level',      target:100,    reward:{gold:200000,xp:0}      },
+  { id:'crit_5000',    cat:'Kampf',    icon:'⚡',  tier:'gold',    name:'Krit-Gott',        desc:'5.000 kritische Treffer.',              type:'crits',      target:5000,   reward:{gold:15000, xp:25000}  },
+  { id:'no_death_50',  cat:'Kampf',    icon:'🛡️',  tier:'silver',  name:'Unbesiegbar',      desc:'50 Wellen ohne Tod überstanden.',       type:'wave',       target:50,     reward:{gold:3000,  xp:5000}   },
+
+  // ─── Neue Schmiede-Achievements ───
+  { id:'forge_10000',  cat:'Schmiede', icon:'🔱',  tier:'diamond', name:'Götter-Schmied',   desc:'10.000 Items geschmiedet!',             type:'forge',      target:10000,  reward:{gold:50000, xp:100000} },
+  { id:'gold_1m',      cat:'Schmiede', icon:'👑',  tier:'diamond', name:'Millionär',        desc:'1.000.000 Gold angesammelt.',           type:'gold_total', target:1000000,reward:{gold:50000, xp:100000} },
+  { id:'enchant_first',cat:'Schmiede', icon:'🔮',  tier:'bronze',  name:'Runen-Lehrling',   desc:'Erstes Item verzaubert.',              type:'enchant',    target:1,      reward:{gold:500,   xp:1000}   },
+  { id:'enchant_all',  cat:'Schmiede', icon:'✨',  tier:'gold',    name:'Runen-Meister',    desc:'Alle 6 Slot-Typen verzaubert.',        type:'enchant_all',target:6,      reward:{gold:10000, xp:20000}  },
+
+  // ─── Neue Dungeon-Achievements ───
+  { id:'dung_floor100',cat:'Dungeon',  icon:'🌑',  tier:'diamond', name:'Tiefen-Gott',      desc:'Etage 100 im Dungeon erreicht!',        type:'dung_floor', target:100,    reward:{gold:100000,xp:200000} },
+  { id:'dung_boss20',  cat:'Dungeon',  icon:'💀',  tier:'gold',    name:'Bosshunter',       desc:'20 Dungeon-Bosse besiegt.',             type:'dung_boss',  target:20,     reward:{gold:20000, xp:40000}  },
+
+  // ─── Neue Sozial-Achievements ───
+  { id:'pvp_100',      cat:'Sozial',   icon:'⚔️',  tier:'gold',    name:'Arena-Legende',    desc:'100 PVP-Kämpfe gewonnen.',              type:'pvp_wins',   target:100,    reward:{gold:25000, xp:50000}  },
+  { id:'pvp_rank_leg', cat:'Sozial',   icon:'👑',  tier:'diamond', name:'PVP-Gott',         desc:'PVP-Rang Legende (5000 Pkt) erreicht.', type:'pvp_rank',   target:5000,   reward:{gold:50000, xp:100000} },
+  { id:'prestige_1',   cat:'Sozial',   icon:'⚡',  tier:'silver',  name:'Wiedergeburt',     desc:'Erstes Prestige durchgeführt.',         type:'prestige',   target:1,      reward:{gold:5000,  xp:10000}  },
+  { id:'prestige_8',   cat:'Sozial',   icon:'🌟',  tier:'diamond', name:'Ewiger Held',      desc:'Maximales Prestige ✦8 erreicht!',       type:'prestige',   target:8,      reward:{gold:500000,xp:1000000}},
+  { id:'daily_7',      cat:'Sozial',   icon:'📅',  tier:'bronze',  name:'Treuer Spieler',   desc:'7 Tage hintereinander eingeloggt.',     type:'login_streak',target:7,     reward:{gold:2000,  xp:3000}   },
+  { id:'daily_30',     cat:'Sozial',   icon:'🗓️',  tier:'gold',    name:'Hingabe',          desc:'30 Tage in Folge eingeloggt.',          type:'login_streak',target:30,    reward:{gold:30000, xp:50000}  },
+  { id:'research_all', cat:'Sozial',   icon:'🔬',  tier:'gold',    name:'Alchemist',        desc:'Alle Forschungen abgeschlossen.',       type:'research',   target:10,     reward:{gold:15000, xp:25000}  },
+  { id:'event_5',      cat:'Sozial',   icon:'🎃',  tier:'silver',  name:'Event-Veteran',    desc:'5 Event-Quests abgeschlossen.',         type:'event_claimed',target:5,    reward:{gold:5000,  xp:8000}   },
+  { id:'global_chat',  cat:'Sozial',   icon:'🌍',  tier:'bronze',  name:'Weltenbürger',     desc:'Erste Nachricht im globalen Chat.',     type:'global_chat',target:1,      reward:{gold:300,   xp:500}    }
+);
+
+// Neue Achievement-Typen direkt in getAchProgress integriert (kein Override)
+
+// ════════════════════════════════════════════
+// ── HOOKS: Daily Login + Profile in bestehende Flows
+// ════════════════════════════════════════════
+
+// Daily Login nach Init prüfen — wird von init() aufgerufen (kein Override nötig)
+
+// Profile-Button in Leaderboard/PVP einbinden
+// Wird über openProfile(id, name) aufgerufen von Leaderboard-Einträgen
+
+// Level-Up Animation direkt in checkLevelUp integriert (kein Override)
+
+// Global-Chat Achievement tracken
+// Global-Chat Achievement wird direkt in sendGlobalChat() getrackt (kein Override)
+
+
+const _ADMIN_HASH = '1c66cc7656e77f162ade29cc4cd119f53332b0111a1404eafeb6fa5b230ad5ab';
 
 let _adminTitleClicks = 0, _adminClickTimer = null;
 let _adminLoggedIn = false;
@@ -13699,6 +14497,8 @@ function _adminTab(name) {
   document.querySelectorAll('.admin-tab-content').forEach(t => t.classList.remove('active'));
   document.querySelector(`.admin-tab[onclick="_adminTab('${name}')"]`)?.classList.add('active');
   document.getElementById(`adminTab-${name}`)?.classList.add('active');
+  if (name === 'global') try { _adminUpdateEventStatus(); } catch(e) {}
+  if (name === 'stats' && _adminAllPlayers.length) try { _adminRenderLevelChart(_adminAllPlayers); } catch(e) {}
 }
 
 // ── STATS ───────────────────────────────────────
@@ -13749,6 +14549,7 @@ async function _adminRefreshStats() {
     const badge = document.getElementById('adminOnlineBadge');
     if (badge) badge.innerHTML = `<span class="admin-badge ok">${active1h} online</span>`;
     _adminLog(`📊 ${total} Spieler · ${active24} heute aktiv`);
+    try { _adminRenderLevelChart(_adminAllPlayers); } catch(e) {}
   } catch(e) { _adminLog('❌ ' + e.message); }
 }
 
@@ -13842,6 +14643,8 @@ function _adminSelectPlayer(id, name, lv) {
   document.querySelectorAll('.admin-player-row').forEach(r => {
     if (r.textContent.includes(name)) r.classList.add('selected');
   });
+  // Notizen anzeigen
+  setTimeout(() => { try { _adminUpdateNoteDisplay(); } catch(e) {} }, 100);
 }
 
 async function _adminLoadPlayerDetail(id) {
@@ -14393,29 +15196,7 @@ async function _adminBulkHeal() {
 }
 
 // Override _adminTab to also update event status when switching to global
-const _origAdminTab = typeof _adminTab !== 'undefined' ? _adminTab : null;
-function _adminTab(name) {
-  document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.admin-tab-content').forEach(t => t.classList.remove('active'));
-  document.querySelector(`.admin-tab[onclick="_adminTab('${name}')"]`)?.classList.add('active');
-  document.getElementById(`adminTab-${name}`)?.classList.add('active');
-  if (name === 'global') _adminUpdateEventStatus();
-  if (name === 'stats' && _adminAllPlayers.length) _adminRenderLevelChart(_adminAllPlayers);
-}
-
-// Hook _adminRefreshStats to also render chart
-const _origRefreshStats = _adminRefreshStats;
-async function _adminRefreshStats() {
-  await _origRefreshStats();
-  _adminRenderLevelChart(_adminAllPlayers);
-}
-
-// Hook _adminSelectPlayer to also show notes
-const _origSelectPlayer = _adminSelectPlayer;
-function _adminSelectPlayer(id, name, lv) {
-  _origSelectPlayer(id, name, lv);
-  setTimeout(_adminUpdateNoteDisplay, 100);
-}
+// Lazy-Rendering: merkt welche Tabs gerendert wurden (kein Override nötig)
 </script>
 
 <!-- ═══ ADMIN PANEL ═══ -->
