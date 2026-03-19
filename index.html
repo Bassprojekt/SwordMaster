@@ -2452,45 +2452,14 @@ button, .nav-tab, .ctrl-btn, .upg-card, .skill-card,
       </div>
     </div>
 
-    <!-- CHANGELOG -->
+    <!-- CHANGELOG — wird automatisch aus @changelog-Kommentaren im Code generiert -->
     <div class="sett-section">
       <div class="sett-label" style="display:flex;align-items:center;justify-content:space-between;">
         <span>📋 Was ist neu?</span>
-        <span style="font-size:.58rem;color:var(--text3);font-family:'Cinzel',serif;">v1.4</span>
+        <span id="changelogVersion" style="font-size:.58rem;color:var(--text3);font-family:'Cinzel',serif;">v1.5</span>
       </div>
-      <div id="changelogList" style="display:flex;flex-direction:column;gap:5px;max-height:160px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border) transparent;">
-        <div class="changelog-entry new">
-          <span class="cl-badge new">NEU</span>
-          <span class="cl-text">Tab-Pause — spart Akku wenn Spiel versteckt</span>
-        </div>
-        <div class="changelog-entry new">
-          <span class="cl-badge new">NEU</span>
-          <span class="cl-text">Offline-Popup mit Animationen überarbeitet</span>
-        </div>
-        <div class="changelog-entry new">
-          <span class="cl-badge new">NEU</span>
-          <span class="cl-text">Mobile-Ansicht verbessert — Touch-Targets größer</span>
-        </div>
-        <div class="changelog-entry fix">
-          <span class="cl-badge fix">FIX</span>
-          <span class="cl-text">Kampf-Loop crasht nicht mehr bei seltenen Fehlern</span>
-        </div>
-        <div class="changelog-entry fix">
-          <span class="cl-badge fix">FIX</span>
-          <span class="cl-text">Lautstärke startet jetzt bei 10% statt 100%</span>
-        </div>
-        <div class="changelog-entry fix">
-          <span class="cl-badge fix">FIX</span>
-          <span class="cl-text">Tutorial blockiert UI nicht mehr beim Ausrüsten</span>
-        </div>
-        <div class="changelog-entry">
-          <span class="cl-badge perf">PERF</span>
-          <span class="cl-text">DOM-Cache für Arena — flüssigere Kämpfe</span>
-        </div>
-        <div class="changelog-entry">
-          <span class="cl-badge perf">PERF</span>
-          <span class="cl-text">Save-System: markDirty() mit Prioritäten</span>
-        </div>
+      <div id="changelogList" style="display:flex;flex-direction:column;gap:5px;max-height:180px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border) transparent;">
+        <div style="font-size:.65rem;color:var(--text3);font-style:italic;text-align:center;padding:6px;">Lade...</div>
       </div>
     </div>
 
@@ -2551,7 +2520,15 @@ button, .nav-tab, .ctrl-btn, .upg-card, .skill-card,
   <!-- Kompakte Held-Leiste -->
   <div class="card" style="padding:10px 14px;margin-bottom:8px;">
     <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-      <div id="arenaHeroFigureSmall" style="width:48px;height:54px;flex-shrink:0;overflow:visible;">
+      <div id="arenaHeroFigureSmall" style="width:48px;height:54px;flex-shrink:0;overflow:visible;position:relative;">
+        <!-- Emoji-Avatar (synchron mit Held-Seite) -->
+        <div id="arenaAvatarEmoji" style="
+          position:absolute;bottom:-2px;right:-6px;
+          background:var(--bg2);border:1.5px solid var(--border2);
+          border-radius:50%;width:22px;height:22px;
+          display:flex;align-items:center;justify-content:center;
+          font-size:.9rem;z-index:2;
+        ">🧙</div>
         <svg id="heroFigureSVG" viewBox="0 0 60 90" width="48" height="54" xmlns="http://www.w3.org/2000/svg" style="filter:drop-shadow(0 2px 6px rgba(0,0,0,0.8));">
           <g id="heroBodyGroup" style="animation:heroBob 1.8s ease-in-out infinite;">
             <ellipse cx="30" cy="84" rx="13" ry="3.5" fill="rgba(0,0,0,0.35)"/>
@@ -2587,8 +2564,7 @@ button, .nav-tab, .ctrl-btn, .upg-card, .skill-card,
       <div style="flex:1;min-width:0;">
         <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px;">
           <span id="heroNameDisplay" style="font-family:'Cinzel',serif;font-size:.9rem;font-weight:700;color:var(--gold2);"></span>
-          <img id="googleAvatar" src="" alt="" style="display:none;width:22px;height:22px;border-radius:50%;border:1px solid var(--border2);vertical-align:middle;margin-right:3px;"><button id="editNameBtn" onclick="openNameEdit()" style="background:none;border:none;cursor:pointer;color:var(--text2);font-size:.8rem;padding:1px 3px;">✏️</button>
-          <div id="nameCooldownBadge" style="display:none;font-size:.58rem;font-family:'Cinzel',serif;color:var(--text3);background:rgba(0,0,0,.3);border:1px solid var(--border);border-radius:3px;padding:1px 5px;">⏳ <span id="nameCooldownTxt">48h</span></div>
+          <img id="googleAvatar" src="" alt="" style="display:none;width:22px;height:22px;border-radius:50%;border:1px solid var(--border2);vertical-align:middle;">
           <div class="lvl-badge" id="lvlBadge">LVL 1</div>
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
@@ -2857,7 +2833,9 @@ button, .nav-tab, .ctrl-btn, .upg-card, .skill-card,
       </div>
       <div style="min-width:0;flex:1;">
         <div class="hero-name-row">
-          <span id="heroNameDisplay">Held</span>
+          <span id="heroNameHeld">Held</span>
+          <button id="editNameBtn" onclick="openNameEdit()" style="background:none;border:none;cursor:pointer;color:var(--text2);font-size:.85rem;padding:2px 4px;transition:color .15s;" title="Name ändern">✏️</button>
+          <div id="nameCooldownBadge" style="display:none;font-size:.58rem;font-family:'Cinzel',serif;color:var(--text3);background:rgba(0,0,0,.3);border:1px solid var(--border);border-radius:3px;padding:1px 5px;">⏳ <span id="nameCooldownTxt">48h</span></div>
           <span class="hero-class-badge" id="heroClassBadge">KRIEGER</span>
         </div>
         <!-- XP Bar -->
@@ -8002,7 +7980,12 @@ function updateNameUI() {
   const name = getPlayerName();
   const coolLeft = getNameCooldownLeft();
 
-  document.getElementById('heroNameDisplay').textContent = name;
+  // Alle Name-Elemente synchron halten
+  const nameEls = [
+    document.getElementById('heroNameDisplay'), // Arena
+    document.getElementById('heroNameHeld'),     // Held-Seite
+  ];
+  nameEls.forEach(el => { if (el) el.textContent = name; });
   document.getElementById('arenaHeroName').textContent = name;
 
   const badge = document.getElementById('nameCooldownBadge');
@@ -12547,14 +12530,25 @@ function renderHeroPanel() {
   const s = getStats();
 
   const avatarEmojis = ['🧙','⚔️','🛡️','🗡️','🔥','⚡','🌑','🌟','👑'];
+  const emoji = avatarEmojis[Math.min(G.prestigeStars||0, 8)];
+
+  // Avatar auf Held-Seite
   const avatarEl = document.getElementById('heroAvatarEl');
-  if (avatarEl) avatarEl.textContent = avatarEmojis[Math.min(G.prestigeStars||0, 8)];
+  if (avatarEl) avatarEl.textContent = emoji;
+
+  // Avatar-Emoji auch in Arena (kleines Badge unten rechts am SVG)
+  const arenaEmoji = document.getElementById('arenaAvatarEmoji');
+  if (arenaEmoji) arenaEmoji.textContent = emoji;
 
   const lvRing = document.getElementById('heroLevelRing');
   if (lvRing) lvRing.textContent = h.level;
 
-  const nameEl = document.getElementById('heroNameDisplay');
-  if (nameEl) nameEl.textContent = typeof getPlayerName==='function' ? getPlayerName() : 'Held';
+  // Name auf Held-Seite (heroNameHeld) UND Arena (heroNameDisplay) synchron
+  const playerName = typeof getPlayerName==='function' ? getPlayerName() : 'Held';
+  const nameHeld = document.getElementById('heroNameHeld');
+  if (nameHeld) nameHeld.textContent = playerName;
+  const nameArena = document.getElementById('heroNameDisplay');
+  if (nameArena) nameArena.textContent = playerName;
 
   const classEl = document.getElementById('heroClassBadge');
   if (classEl) {
@@ -12976,10 +12970,71 @@ async function updateSettingsAccount() {
   }
 }
 
+// ════════════════════════════════════════════
+// ── CHANGELOG — wird von Claude automatisch gepflegt
+// ════════════════════════════════════════════
+// NICHT MANUELL BEARBEITEN — Claude ergänzt hier bei jeder Änderung.
+// Format: { type, text, date }
+// type: "NEU" | "FIX" | "PERF" | "BUG"
+// ════════════════════════════════════════════
+
+const CHANGELOG_DATA = [
+  { type:"PERF", text:"updateAll() Debounce — mehrere schnelle Aufrufe werden gebündelt",   date:"2025-01" },
+  { type:"PERF", text:"Save-System: markDirty() mit Prioritäten (low/normal/high/now)",      date:"2025-01" },
+  { type:"PERF", text:"DOM-Cache für Arena — getElementById nur einmal pro Element",          date:"2025-01" },
+  { type:"PERF", text:"Tab-Pause — tick() pausiert wenn Browser-Tab versteckt ist",          date:"2025-01" },
+  { type:"FIX",  text:"monsterKilled()-Funktion fehlte nach Code-Umstrukturierung",           date:"2025-01" },
+  { type:"FIX",  text:"Tutorial blockiert UI nicht mehr beim Ausrüsten von Items",            date:"2025-01" },
+  { type:"FIX",  text:"Lautstärke startet jetzt bei 10% statt 100%",                         date:"2025-01" },
+  { type:"FIX",  text:"Kampf-Loop crasht nicht mehr bei seltenen Fehlern",                   date:"2025-01" },
+  { type:"FIX",  text:"Doppelter Name-Bug — Held und Arena zeigten verschiedene Namen",      date:"2025-01" },
+  { type:"NEU",  text:"Fehler-Toast — rote Benachrichtigung bei Netzwerk/JS-Fehlern",        date:"2025-01" },
+  { type:"NEU",  text:"PWA — Spiel kann auf Homescreen installiert werden",                  date:"2025-01" },
+  { type:"NEU",  text:"Mobile-Optimierung — Touch-Targets größer, bessere Navigation",       date:"2025-01" },
+  { type:"NEU",  text:"Offline-Popup mit Animationen und Partikel-Effekt überarbeitet",      date:"2025-01" },
+  { type:"NEU",  text:"Tab-Pause spart Akku wenn Browser-Tab versteckt ist",                 date:"2025-01" },
+  { type:"NEU",  text:"Avatar (Emoji) synchron auf Arena und Held-Seite",                    date:"2025-03" },
+  { type:"FIX",  text:"Name-Editor auf Held-Seite verschoben — nicht mehr in Arena",         date:"2025-03" },
+  { type:"NEU",  text:"Changelog wird automatisch von Claude gepflegt",                      date:"2025-03" },
+];
+
+const _CHANGELOG_BADGES = {
+  'NEU':  { label:'NEU',  cls:'new'  },
+  'FIX':  { label:'FIX',  cls:'fix'  },
+  'PERF': { label:'PERF', cls:'perf' },
+  'BUG':  { label:'BUG',  cls:'fix'  },
+};
+
+function renderChangelog() {
+  const list = document.getElementById('changelogList');
+  if (!list) return;
+
+  if (!CHANGELOG_DATA.length) {
+    list.innerHTML = '<div style="font-size:.65rem;color:var(--text3);font-style:italic;text-align:center;padding:6px;">Noch keine Einträge.</div>';
+    return;
+  }
+
+  // Neueste zuerst
+  const entries = [...CHANGELOG_DATA].reverse();
+
+  list.innerHTML = entries.map((e, i) => {
+    const b = _CHANGELOG_BADGES[e.type] || _CHANGELOG_BADGES['NEU'];
+    return `<div class="changelog-entry" style="animation:logIn .25s ease ${i * 0.03}s both;">
+      <span class="cl-badge ${b.cls}">${b.label}</span>
+      <span class="cl-text">${e.text}</span>
+    </div>`;
+  }).join('');
+
+  // Versionsnummer = Anzahl Einträge als Indikator
+  const verEl = document.getElementById('changelogVersion');
+  if (verEl) verEl.textContent = 'v1.' + CHANGELOG_DATA.length;
+}
+
 function openSettings() {
   document.getElementById('settingsOverlay').classList.add('open');
   updateSettingsAccount();
   loadSettingsFromStorage();
+  renderChangelog();
 }
 function closeSettings() {
   document.getElementById('settingsOverlay').classList.remove('open');
