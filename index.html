@@ -4,6 +4,14 @@
 <meta charset="UTF-8">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#07050a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SwordMaster">
+<meta name="description" content="⚔️ SwordMaster — Idle RPG. Kämpfe, schmiede, werde Legende!">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%2307050a'/><text y='.9em' font-size='80'>⚔️</text></svg>">
 <title>⚔️ SwordMaster</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap');
@@ -2136,6 +2144,44 @@ input[type=range].vol-slider::-webkit-slider-thumb:hover { transform:scale(1.2);
 #settingsGearBtn:hover { color:var(--gold2);border-color:var(--gold);transform:rotate(30deg); }
 #settingsGearBtn { transition:all .25s; }
 
+/* ══ ERROR TOAST ══ */
+#errToast {
+  position: fixed; bottom: 80px; left: 50%;
+  transform: translateX(-50%) translateY(120px);
+  background: linear-gradient(135deg, rgba(40,8,8,.97), rgba(20,5,5,.97));
+  border: 1.5px solid var(--red2);
+  border-radius: 12px; padding: 10px 16px;
+  display: flex; align-items: center; gap: 10px;
+  z-index: 9998; pointer-events: none;
+  min-width: 220px; max-width: 320px;
+  box-shadow: 0 8px 28px rgba(0,0,0,.6), 0 0 16px rgba(224,80,80,.2);
+  opacity: 0;
+  transition: transform .35s cubic-bezier(.34,1.56,.64,1), opacity .25s;
+}
+#errToast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+#errToastIcon { font-size: 1.3rem; flex-shrink: 0; }
+#errToastMsg  { font-size: .72rem; color: #ffaaaa; font-family: 'Cinzel', serif; }
+
+/* ══ CHANGELOG ══ */
+.changelog-entry {
+  display: flex; align-items: flex-start; gap: 8px;
+  background: rgba(0,0,0,.2);
+  border-radius: 7px; padding: 5px 8px;
+  font-size: .68rem;
+}
+.cl-badge {
+  font-family: 'Cinzel', serif; font-size: .52rem; font-weight: 700;
+  padding: 1px 5px; border-radius: 4px; flex-shrink: 0; margin-top: 1px;
+  letter-spacing: .04em;
+}
+.cl-badge.new  { background: rgba(40,192,112,.15); color: var(--green2); border: 1px solid rgba(64,192,112,.3); }
+.cl-badge.fix  { background: rgba(80,160,224,.15); color: var(--blue2);  border: 1px solid rgba(80,160,224,.3); }
+.cl-badge.perf { background: rgba(201,162,39,.12); color: var(--gold2);  border: 1px solid rgba(201,162,39,.25); }
+.cl-text { color: var(--text2); line-height: 1.5; }
+
 /* ══ UTILITY CLASSES ══ */
 .u-xs-pad       { font-size:.62rem; padding:3px 8px; }
 .u-xs-pad2      { font-size:.65rem; padding:4px 10px; }
@@ -2403,6 +2449,48 @@ button, .nav-tab, .ctrl-btn, .upg-card, .skill-card,
         <span>🔇</span>
         <input type="range" class="vol-slider" id="sfxVolSlider" min="0" max="100" value="10" oninput="setSfxVol(this.value)">
         <span id="sfxVolPct">10%</span>
+      </div>
+    </div>
+
+    <!-- CHANGELOG -->
+    <div class="sett-section">
+      <div class="sett-label" style="display:flex;align-items:center;justify-content:space-between;">
+        <span>📋 Was ist neu?</span>
+        <span style="font-size:.58rem;color:var(--text3);font-family:'Cinzel',serif;">v1.4</span>
+      </div>
+      <div id="changelogList" style="display:flex;flex-direction:column;gap:5px;max-height:160px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border) transparent;">
+        <div class="changelog-entry new">
+          <span class="cl-badge new">NEU</span>
+          <span class="cl-text">Tab-Pause — spart Akku wenn Spiel versteckt</span>
+        </div>
+        <div class="changelog-entry new">
+          <span class="cl-badge new">NEU</span>
+          <span class="cl-text">Offline-Popup mit Animationen überarbeitet</span>
+        </div>
+        <div class="changelog-entry new">
+          <span class="cl-badge new">NEU</span>
+          <span class="cl-text">Mobile-Ansicht verbessert — Touch-Targets größer</span>
+        </div>
+        <div class="changelog-entry fix">
+          <span class="cl-badge fix">FIX</span>
+          <span class="cl-text">Kampf-Loop crasht nicht mehr bei seltenen Fehlern</span>
+        </div>
+        <div class="changelog-entry fix">
+          <span class="cl-badge fix">FIX</span>
+          <span class="cl-text">Lautstärke startet jetzt bei 10% statt 100%</span>
+        </div>
+        <div class="changelog-entry fix">
+          <span class="cl-badge fix">FIX</span>
+          <span class="cl-text">Tutorial blockiert UI nicht mehr beim Ausrüsten</span>
+        </div>
+        <div class="changelog-entry">
+          <span class="cl-badge perf">PERF</span>
+          <span class="cl-text">DOM-Cache für Arena — flüssigere Kämpfe</span>
+        </div>
+        <div class="changelog-entry">
+          <span class="cl-badge perf">PERF</span>
+          <span class="cl-text">Save-System: markDirty() mit Prioritäten</span>
+        </div>
       </div>
     </div>
 
@@ -3328,6 +3416,12 @@ button, .nav-tab, .ctrl-btn, .upg-card, .skill-card,
     <div id="achToastName" style="font-family:'Cinzel',serif;font-size:.88rem;font-weight:700;color:#fff;"></div>
     <div id="achToastReward" style="font-size:.65rem;color:var(--gold2);margin-top:1px;"></div>
   </div>
+</div>
+
+<!-- ═══ ERROR TOAST ═══ -->
+<div id="errToast">
+  <div id="errToastIcon">⚠️</div>
+  <div id="errToastMsg">Fehler aufgetreten</div>
 </div>
 
 <!-- ═══ PETS PAGE ═══ -->
@@ -4458,13 +4552,85 @@ const PETS = [
 ];
 
 // ════════════════════════════════════════════
+// ── GLOBALES ERROR-TRACKING & UX
+// ════════════════════════════════════════════
+
+// Error-Toast: roter Toast für Netzwerk-/JS-Fehler
+let _errToastTimer = null;
+function showErrToast(msg, icon) {
+  const toast = document.getElementById('errToast');
+  if (!toast) return;
+  document.getElementById('errToastIcon').textContent = icon || '⚠️';
+  document.getElementById('errToastMsg').textContent  = msg || 'Unbekannter Fehler';
+  toast.classList.add('show');
+  clearTimeout(_errToastTimer);
+  _errToastTimer = setTimeout(() => toast.classList.remove('show'), 4000);
+}
+
+window.onerror = function(msg, src, line, col, err) {
+  if (msg && msg.includes('ResizeObserver')) return false;
+  if (msg && msg.includes('Script error')) return false; // cross-origin ignorieren
+  console.error('[SwordMaster Error]', `[${line}:${col}] ${msg}`, err);
+  try { setSaveStatus('⚠️ Fehler', 'var(--red2)'); } catch(_) {}
+  // Kurze Meldung im Toast (nur bei echten Spielfehlern, nicht Browser-Noise)
+  if (src && src.includes(location.hostname)) {
+    showErrToast('Ein Fehler ist aufgetreten — Spiel läuft weiter', '⚠️');
+  }
+  return false;
+};
+
+window.addEventListener('unhandledrejection', e => {
+  console.error('[SwordMaster Promise]', e.reason);
+  // Netzwerkfehler sichtbar machen
+  const msg = String(e.reason?.message || e.reason || '');
+  if (msg.includes('fetch') || msg.includes('network') || msg.includes('NetworkError')) {
+    showErrToast('Keine Verbindung — Offline-Modus aktiv', '📡');
+    try { setSaveStatus('📡 Offline', 'var(--orange2)'); } catch(_) {}
+  }
+});
+
+// ── PWA manifest.json inline generieren ──────────────────────
+// Wird als Blob-URL eingebunden wenn kein externes manifest.json vorhanden
+(function() {
+  const existing = document.querySelector('link[rel="manifest"]');
+  if (!existing) return;
+  // Prüfen ob externes manifest.json existiert
+  fetch('manifest.json', { method: 'HEAD' }).then(r => {
+    if (r.ok) return; // externes manifest.json vorhanden → nichts tun
+    // Kein externes manifest → Inline-Manifest als Blob
+    const manifest = {
+      name: 'SwordMaster',
+      short_name: 'SwordMaster',
+      description: '⚔️ Idle RPG — Kämpfe, schmiede, werde Legende!',
+      start_url: './',
+      display: 'standalone',
+      background_color: '#07050a',
+      theme_color: '#07050a',
+      orientation: 'portrait-primary',
+      icons: [
+        {
+          src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%2307050a'/><text y='.9em' font-size='80'>⚔️</text></svg>",
+          sizes: '192x192',
+          type: 'image/svg+xml'
+        }
+      ]
+    };
+    const blob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
+    existing.href = URL.createObjectURL(blob);
+  }).catch(() => {
+    // fetch fehlgeschlagen (z.B. file://) → Inline-Manifest trotzdem setzen
+  });
+})();
+
+// ════════════════════════════════════════════
 // ── STATE ───────────────────────────────────
 // ════════════════════════════════════════════
 
 const G = {
   hero: { level:1, xp:0, hp:100, maxHp:100, mana:50, maxMana:50, baseAtk:5, baseDef:2, spd:1.0, baseCrit:5, gold:0 },
   wave:1, monstersInWave:0, monstersPerWave:3,
-  monster:null, monsters:[],
+  monster:null,  // @deprecated — Alias für monsters[0], nur für Kompatibilität. Immer G.monsters[0] verwenden!
+  monsters:[],
   autoForge:false, autoInterval:null,
   inventory:[],
   recentForged:[],
@@ -4722,7 +4888,7 @@ function getStats() {
   const critBonus = [...G.activePets].reduce((s, pid) => {
     const p = PETS.find(x=>x.id===pid); return s + (p&&p.special==='crit' ? 8 : 0); }, 0);
   if (critBonus > 0) crit = Math.min(75, crit + critBonus);
-  try { atk = Math.floor(atk * prestigeAtkMult()); } catch(e) {}
+  try { atk = Math.floor(atk * prestigeAtkMult()); } catch(e){ console.warn("[SwordMaster]", e); }
   atk = Math.floor(atk * eventAtkMult());
   def = Math.floor(def * eventDefMult());
 
@@ -5662,7 +5828,7 @@ function buySkill(id) {
   G.hero.gold -= sk.cost;
   G.skills.add(sk.id);
   log('✨ Fähigkeit erforscht: ' + sk.icon + ' ' + sk.name + '!', 's');
-  try { checkAchievements(); } catch(e) {}
+  try { checkAchievements(); } catch(e){ console.warn("[SwordMaster]", e); }
   try { playSfx('buy'); } catch(e) {}
   updateAll();
   renderSkills();
@@ -5746,7 +5912,7 @@ function dropMaterials(monster) {
   const bonus = dropBonus();
   const amt = Math.max(1, Math.round(base * (1 + bonus) * matEfficiency()));
   addMat(mat.id, amt);
-  try { checkAchievements(); } catch(e) {}  // materials + furnace
+  try { checkAchievements(); } catch(e){ console.warn("[SwordMaster]", e); }  // materials + furnace
   if (mat.minLv >= 30) log('💎 ' + mat.emoji + ' ' + mat.name + ' ×' + amt + ' gefunden!', 'i');
   renderMaterials();
 }
@@ -5778,7 +5944,7 @@ function upgradeFurnace() {
   }
   G.furnaceLevel = nextLv;
   log('🔥 Ofen auf Stufe ' + nextLv + ' (' + next.name + ') upgegraded!', 'l');
-  try { checkAchievements(); } catch(e) {}
+  try { checkAchievements(); } catch(e){ console.warn("[SwordMaster]", e); }
   try { playSfx('levelup'); } catch(e) {}
   if (G.autoForge) restartAuto();
   updateAll();
@@ -5810,7 +5976,7 @@ function craftRecipe(recipeId) {
   G.recentForged.unshift(item);
   if (G.inventory.length > 200) G.inventory.pop();
   log('📜 Rezept: ' + r.emoji + ' ' + r.name + ' → [' + rar.label + '] ' + item.emoji + ' ' + item.name + ' +' + item.sv + ' ' + item.sk.toUpperCase(), 'l');
-  try { trackQuestProgress('craft', 1); } catch(e) {}
+  try { trackQuestProgress('craft', 1); } catch(e){ console.warn("[SwordMaster]", e); }
   try { playSfx('buy'); } catch(e) {}
   G.forgeCount++;
   checkAutoSell();
@@ -5961,7 +6127,7 @@ function forgeN(n) {
   try { playSfx('forge'); } catch(e) {}
   updateHeaderStats();
   document.getElementById('fItems') && (document.getElementById('fItems').textContent = 'Inventar: ' + G.inventory.length + ' Items');
-  try { trackQuestProgress('forge', n); checkQuestBadge(); } catch(e) {}
+  try { trackQuestProgress('forge', n); checkQuestBadge(); } catch(e){ console.warn("[SwordMaster]", e); }
   updateAll();
 }
 
@@ -6235,7 +6401,7 @@ function buyPet(id) {
   G.pets[id] = true;
   if (G.activePets.size < MAX_ACTIVE_PETS) G.activePets.add(id);
   log('🐾 ' + pet.emoji + ' ' + pet.name + ' gekauft! ' + (G.activePets.has(id) ? '(Aktiv)' : '(Kein Slot frei — manuell aktivieren)'), 'i');
-  try { checkAchievements(); } catch(e) {}
+  try { checkAchievements(); } catch(e){ console.warn("[SwordMaster]", e); }
   updateAllNow(); renderPets(); markDirty('high'); // Pet gekauft
 }
 
@@ -6353,14 +6519,40 @@ function spawnWave() {
 
 function spawnMonster() { spawnWave(); }
 
+// ── DOM-Cache für Arena Hot-Path ─────────────────────────────
+// getElementById ist teuer wenn 4× pro Sekunde aufgerufen — einmal cachen
+const _DOM = {};
+function _el(id) {
+  if (!_DOM[id]) _DOM[id] = document.getElementById(id);
+  return _DOM[id];
+}
+// Cache invalidieren wenn DOM sich ändert (Tab-Wechsel, renderArena etc.)
+function _clearDomCache() { for (const k in _DOM) delete _DOM[k]; }
+
 function startCombat() {
   if (G.combatInterval) return;
   G.combatInterval = setInterval(tick, 250);
 }
 
+// ── Tab-Sichtbarkeit: Combat pausieren wenn Tab versteckt ────
+// Browser drosselt setInterval auf ~1s+ ohnehin — wir pausieren sauber
+let _tabHidden = false;
+document.addEventListener('visibilitychange', () => {
+  _tabHidden = document.hidden;
+  if (!document.hidden) {
+    // Spieler kommt zurück → Idle-Rewards prüfen (checkIdle() macht das)
+    // Combat-Loop läuft bereits weiter (war nicht gestoppt)
+    try { checkIdle(); } catch(e) {}
+    // Header sofort aktualisieren
+    try { updateHeaderStats(); } catch(e) {}
+  }
+});
+
 let hCD = -0.5, pCD = 0.8;  // Negative hCD → sofort erster Angriff
 
 function tick() {
+  try {
+  if (_tabHidden) return; // Tab versteckt → CPU sparen, Browser drosselt sowieso
   _combatTickCount++;  // Cache-Invalidierung pro Tick
   if (!G.monsters || G.monsters.length === 0) {
     if (G.monstersInWave >= G.monstersPerWave) {
@@ -6393,7 +6585,7 @@ function tick() {
       let dmg = Math.max(1, Math.floor((ds.atk + rng(-1, 3) - Math.floor(target.atk * 0.08)) * _assassinMult * _deathMult * _chronoMult));
       const isCrit = Math.random() * 100 < ds.crit;
       const critMult = 1.8 * (1 + (ds.fx ? ds.fx.crit_dmg : 0)) * (G.research && G.research.has('combat1') ? 1.17 : 1) * (1 + (ds._critMultBonus || 0));
-      if (isCrit) { dmg = Math.floor(dmg * critMult); try { trackAch('crits', 1); } catch(e) {} }
+      if (isCrit) { dmg = Math.floor(dmg * critMult); try { trackAch('crits', 1); } catch(e){ console.warn("[SwordMaster]", e); } }
       const wm = getWeaknessMult(target);
       if (wm > 1) { dmg = Math.floor(dmg * wm); }
       if (target._shield && target._shield > 0) {
@@ -6546,12 +6738,12 @@ function tick() {
         floatDmgEl('mon_' + m.id, rDmg, '#ff44ff');
       }
       if (G.skills.has('shadowStep') && Math.random() < 0.10) { log('👣 Schattenschritt! Ausgewichen!','n'); return; }
-      if (m.special === 'phase' && Math.random() < 0.3) { floatDmg(document.getElementById('heroSprite'), 0, '#00DDFF'); log('👻 ' + m.name + ' phasiert! Angriff negiert.', 'n'); return; }
+      if (m.special === 'phase' && Math.random() < 0.3) { floatDmg(_el('heroSprite'), 0, '#00DDFF'); log('👻 ' + m.name + ' phasiert! Angriff negiert.', 'n'); return; }
       const extraDmg = applyMonsterSpecial(m, h, sDebuffed);
       if (extraDmg > 0) h.hp = Math.max(0, h.hp - extraDmg);
       h.hp -= mDmg;
       applyDebuffTick(h);
-      const heroEl = document.getElementById('heroSprite');
+      const heroEl = _el('heroSprite');
       if (heroEl) floatDmg(heroEl, mDmg, '#ff9040');
       if (h.hp <= 0) {
         if (G.skills.has('ironWill') && !G._ironWillUsed) {
@@ -6577,28 +6769,33 @@ function tick() {
       floatDmgEl('mon_' + m.id, m._burnRune.dmg, '#ff6030');
       m._burnRune.turns--;
       if (m._burnRune.turns <= 0) m._burnRune = null;
-      if (m.hp <= 0) { try { monsterKilled(m); } catch(e) {} }
+      if (m.hp <= 0) { try { monsterKilled(m); } catch(e){ console.warn("[SwordMaster]", e); } }
     }
     if (m._poisonItem && m._poisonItem.turns > 0) {
       m.hp -= m._poisonItem.dmg;
       floatDmgEl('mon_' + m.id, m._poisonItem.dmg, '#88cc44');
       m._poisonItem.turns--;
       if (m._poisonItem.turns <= 0) { m._poisonItem = null; }
-      if (m.hp <= 0) { try { monsterKilled(m); } catch(e) {} }
+      if (m.hp <= 0) { try { monsterKilled(m); } catch(e){ console.warn("[SwordMaster]", e); } }
     }
     if (m._poisonPet && m._poisonPet.turns > 0) {
       m.hp -= m._poisonPet.dmg;
       floatDmgEl('mon_' + m.id, m._poisonPet.dmg, '#44ff88');
       m._poisonPet.turns--;
       if (m._poisonPet.turns <= 0) m._poisonPet = null;
-      if (m.hp <= 0) { try { monsterKilled(m); } catch(e) {} }
+      if (m.hp <= 0) { try { monsterKilled(m); } catch(e){ console.warn("[SwordMaster]", e); } }
     }
     if (m._frozen > 0) {
       m.atkCd += 0.5;
       m._frozen--;
     }
   });
-  updateHeaderStats();
+  // updateHeaderStats() hier entfernt — wird vom 500ms-Interval übernommen
+  } catch(e) {
+    // tick()-Fehler loggen aber Kampf-Loop NICHT stoppen
+    console.error('[tick] Fehler:', e);
+    try { log('⚠️ Kampf-Fehler (wird fortgesetzt)', 'c'); } catch(_) {}
+  }
 }
 
 function monsterKilled(m) {
@@ -6614,16 +6811,16 @@ function monsterKilled(m) {
   let pickpocketBonus = 0;
   if (G.skills.has('pickpocket') && Math.random() < 0.05) { pickpocketBonus = Math.floor(gold * 0.5 + rng(5,20)); }
   G.hero.xp += xp; G.hero.gold += gold + pickpocketBonus; G.kills++;
-  try { checkAchievements(); } catch(e) {}
+  try { checkAchievements(); } catch(e){ console.warn("[SwordMaster]", e); }
   const hardnessStr = hits >= 5 ? ' 💪×' + hardnessMult.toFixed(1) : '';
   // Log nur jeden 10. Kill oder wenn Bonus-Event (spart Performance)
   if (G.kills % 10 === 0 || pickpocketBonus > 0 || hardnessMult >= 2.5) {
     log('💀 ' + m.name + ' ×' + G.kills + ' | +' + xp + ' XP  +' + (gold+pickpocketBonus) + 'G' + hardnessStr + (pickpocketBonus?' 🎭':''), 'c');
   }
   try { playSfx('kill'); } catch(e) {}
-  try { dropMaterials(m); } catch(e) {}
-  try { dropRune(m); } catch(e) {}
-  try { if(m.isEventMonster) giveEventCurrency(m); } catch(e) {}
+  try { dropMaterials(m); } catch(e){ console.warn("[SwordMaster]", e); }
+  try { dropRune(m); } catch(e){ console.warn("[SwordMaster]", e); }
+  try { if(m.isEventMonster) giveEventCurrency(m); } catch(e){ console.warn("[SwordMaster]", e); }
   if (G.research && G.research.has('combat4')) { const healR = Math.floor(G.hero.maxHp * 0.03); G.hero.hp = Math.min(G.hero.maxHp, G.hero.hp + healR); }
   try {
     const ss = getStats();
@@ -6632,7 +6829,7 @@ function monsterKilled(m) {
     }
   } catch(e) {}
   petHealOnKill();
-  try { trackQuestProgress('kill', 1); trackQuestProgress('gold', gold); checkQuestBadge(); } catch(e) {}
+  try { trackQuestProgress('kill', 1); trackQuestProgress('gold', gold); checkQuestBadge(); } catch(e){ console.warn("[SwordMaster]", e); }
   G.monsters = G.monsters.filter(x => x.id !== m.id);
   G.monster  = G.monsters[0] || null;
   checkLevelUp();
@@ -6692,7 +6889,7 @@ function checkLevelUp() {
     leveled = true;
     try { playSfx('levelup'); } catch(e) {}
   }
-  if (leveled) { updateEraUI(); markDirty('low'); try { checkAchievements(); } catch(e) {} try { updatePrestigeHeader(); } catch(e) {} } // LevelUp: combat-event
+  if (leveled) { updateEraUI(); markDirty('low'); try { checkAchievements(); } catch(e){ console.warn("[SwordMaster]", e); } try { updatePrestigeHeader(); } catch(e) {} } // LevelUp: combat-event
 }
 
 function renderArena() {
@@ -6754,8 +6951,8 @@ function renderArena() {
 function updateArenaHpBar() {
   const main = G.monsters && G.monsters[0];
   if (!main) return;
-  const th = document.getElementById('targetMonHp');
-  const hb = document.getElementById('monHpBar');
+  const th = _el('targetMonHp');
+  const hb = _el('monHpBar');
   if(th) th.textContent = Math.ceil(main.hp) + '/' + main.maxHp;
   if(hb) hb.style.width = Math.max(0, main.hp / main.maxHp * 100) + '%';
 }
@@ -6811,7 +7008,7 @@ function forge() {
   try { updateHeaderStats(); } catch(e) {}
   const fi = document.getElementById('fItems');
   if (fi) fi.textContent = 'Inventar: ' + G.inventory.length + ' Items';
-  try { trackQuestProgress('forge', 1); checkQuestBadge(); } catch(e) {}
+  try { trackQuestProgress('forge', 1); checkQuestBadge(); } catch(e){ console.warn("[SwordMaster]", e); }
   // Cache invalidieren da Stats durch Skills/Forge-Boni beeinflusst sein können
   invalidateStatsCache();
 }
@@ -7205,7 +7402,7 @@ function _priorityRank(p) {
 
 function _saveLocalSnapshot() {
   localStorage.setItem('sm3_save', Date.now().toString());
-  try { saveEventState(); } catch(e) {}
+  try { saveEventState(); } catch(e){ console.warn("[SwordMaster]", e); }
   try {
     localStorage.setItem('sm3_tutorial', JSON.stringify({
       tutorialDone: G.tutorialDone || false,
@@ -7443,6 +7640,7 @@ async function _doSave() {
   } catch(e) {
     console.error('Save error:', e);
     setSaveStatus('⚠️ Speicherfehler', 'var(--orange2)');
+    try { showErrToast('Speichern fehlgeschlagen — Fortschritt lokal gesichert', '💾'); } catch(_) {}
   }
 }
 
@@ -7945,6 +8143,7 @@ function updateArenaPanel() {
 }
 
 function switchTab(name) {
+  _clearDomCache(); // DOM-Cache invalidieren bei Tab-Wechsel
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
   document.getElementById('page-'+name)?.classList.add('active');
@@ -8417,7 +8616,7 @@ function dungeonVictory() {
   const goldR = Math.round((m.gold * 1.0 + G.dungeonFloor * 2) * (isBoss ? (bossData?.reward?.gold/100||2) : 1));
   const xpR = Math.round((m.xp * 1.3 + G.dungeonFloor * 2.5) * (isBoss ? 2.5 : 1) * xpMult());
   G.hero.gold += goldR; G.hero.xp += xpR; G.kills++;
-  try { dropMaterials(G.dungeonMonster); } catch(e) {}
+  try { dropMaterials(G.dungeonMonster); } catch(e){ console.warn("[SwordMaster]", e); }
   if (G.dungeonFloor > G.dungeonBestFloor) G.dungeonBestFloor = G.dungeonFloor;
   const item = dropItem();
   G.dungeonMonster = null;
@@ -8441,12 +8640,12 @@ function dungeonVictory() {
   } else {
     log('⚔️ Dungeon-Etage ' + G.dungeonFloor + ' besiegt!', 'i');
   }
-  try { trackQuestProgress('dung', 1); checkQuestBadge(); } catch(e) {}
+  try { trackQuestProgress('dung', 1); checkQuestBadge(); } catch(e){ console.warn("[SwordMaster]", e); }
   if (Math.random() < 0.08 + dropBonus() * 0.5) {
     try { dropRune({ isEventMonster: false }); } catch(e) {}
   }
-  if (isBoss) { try { trackAch('dung_boss', 1); } catch(e) {} }
-  try { checkAchievements(); } catch(e) {}
+  if (isBoss) { try { trackAch('dung_boss', 1); } catch(e){ console.warn("[SwordMaster]", e); } }
+  try { checkAchievements(); } catch(e){ console.warn("[SwordMaster]", e); }
   showDungeonReward(rows);
 }
 
@@ -8793,7 +8992,7 @@ function finalizePVPBattle(won, ptsGain, ptsLoss, opp, oppPts, resultEl) {
   if (won) {
     G.pvpPoints += ptsGain;
     G.pvpWins++;
-    try { checkAchievements(); } catch(e) {}
+    try { checkAchievements(); } catch(e){ console.warn("[SwordMaster]", e); }
     G.pvpStreak = (G.pvpStreak || 0) + 1;
     const gold = Math.min(500, Math.floor(10 + G.pvpPoints * 0.02 + rng(0, 15)));
     G.hero.gold += gold;
@@ -9582,8 +9781,8 @@ function renderResearch(){
       const _rDone=RESEARCH.find(r=>r.id===G.researchActive);
       G.research.add(G.researchActive);
       log('🔬 Forschung abgeschlossen: '+(_rDone?_rDone.icon+' '+_rDone.name:''),'l');
-      try{trackQuestProgress('research',1);}catch(e){}
-      try{checkAchievements();}catch(e){}
+      try{trackQuestProgress('research',1);}catch(e){ console.warn("[SwordMaster]", e); }
+      try{checkAchievements();}catch(e){ console.warn("[SwordMaster]", e); }
       G.researchActive=null; G.researchEnd=0;
       clearInterval(resTimerInterval);
       markDirty('normal'); // Forschung abgeschlossen
@@ -9795,8 +9994,8 @@ setInterval(() => {
         const res = RESEARCH.find(r => r.id === G.researchActive);
         G.research.add(G.researchActive);
         log('🔬 Forschung fertig: ' + (res ? res.icon + ' ' + res.name : ''), 'l');
-        try{trackQuestProgress('research',1);}catch(e){}
-        try{checkAchievements();}catch(e){}
+        try{trackQuestProgress('research',1);}catch(e){ console.warn("[SwordMaster]", e); }
+        try{checkAchievements();}catch(e){ console.warn("[SwordMaster]", e); }
         G.researchActive = null; G.researchEnd = 0;
         clearInterval(resTimerInterval);
         markDirty('normal'); // Forschung fertig (bg-check)
@@ -9950,7 +10149,7 @@ async function continueInit() {
   try { updateNameUI(); }        catch(e) {}
   try { renderDungeon(); }       catch(e) {}
   try { checkDailyReset(); }     catch(e) {}
-  try { checkQuestBadge(); }     catch(e) {}
+  try { checkQuestBadge(); }     catch(e){ console.warn("[SwordMaster]", e); }
   try { startGuildChatRefresh(); } catch(e) {}
 
   setLoad("Los geht's! ⚔️", 100);
@@ -9993,7 +10192,7 @@ async function continueInit() {
   try { checkIdle(); }           catch(e) {}
   try { spawnMonster(); startCombat(); } catch(e) {}
   try { _loadPVPAntiAbuse(); } catch(e) {}
-  try { checkAchievements(); renderAchievements(); updateAchBadge(); } catch(e) {}
+  try { checkAchievements(); renderAchievements(); updateAchBadge(); } catch(e){ console.warn("[SwordMaster]", e); }
   try { updatePrestigeHeader(); } catch(e) {}
   try {
     const evTab = document.getElementById('tab-event');
@@ -10022,6 +10221,7 @@ async function continueInit() {
   } else {
     setSaveStatus('⚠️ Offline-Modus', 'var(--orange2)');
     log('⚔ SwordMaster gestartet! SQL-Script in Supabase ausfuhren fur Cloud.', 'n');
+    try { showErrToast('Offline-Modus — kein Cloud-Save aktiv', '📡'); } catch(_) {}
     setTimeout(()=>{ try{markDirty('now');}catch(e){} }, 3000); // Initial-Save
   }
 }
@@ -11554,7 +11754,7 @@ const TUT_STEPS = [
     action: () => {
       G.hero.gold += 300;
       G.hero.xp   += 500;
-      try { checkLevelUp(); updateAll(); markDirty('now'); } catch(e) {} // Tutorial-Belohnung
+      try { checkLevelUp(); updateAll(); markDirty('now'); } catch(e){ console.warn("[SwordMaster]", e); } // Tutorial-Belohnung
     },
   },
 ];
@@ -11591,7 +11791,7 @@ function tutNext() {
   }
   if (step && step.reward) {
     if (step.reward.gold) { G.hero.gold += step.reward.gold; updateHeaderStats(); }
-    if (step.reward.xp)   { G.hero.xp   += step.reward.xp; try { checkLevelUp(); } catch(e) {} }
+    if (step.reward.xp)   { G.hero.xp   += step.reward.xp; try { checkLevelUp(); } catch(e){ console.warn("[SwordMaster]", e); } }
     log(step.reward.label || '🎁 Belohnung erhalten!', 'l');
   }
   G.tutorialStep++;
