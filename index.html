@@ -5476,6 +5476,20 @@ function renderEquipSlots() {
   if (!grid) return;
   grid.innerHTML = '';
 
+  // ── Event-Delegation: 1 Listener auf Container statt n×2 auf Kindelementen ──
+  if (!grid._ttDelegated) {
+    grid._ttDelegated = true;
+    grid.addEventListener('mouseenter', e => {
+      const slot = e.target.closest('[data-ttSlot]');
+      if (!slot) return;
+      const item = G.equipped[slot.dataset.ttSlot];
+      if (item) showTT(e, item, 'Klicken zum Ablegen');
+    }, true);
+    grid.addEventListener('mouseleave', e => {
+      if (!e.relatedTarget || !grid.contains(e.relatedTarget)) hideTT();
+    }, true);
+  }
+
   const RCOL = { common:'#668', uncommon:'#40c070', rare:'#50a0e0',
                   epic:'#9060e0', legendary:'#c9a227', mythic:'#f07070' };
 
@@ -5507,8 +5521,7 @@ function renderEquipSlots() {
         <div class="es-icon">${item.emoji}</div>
         <div class="es-stat" style="color:${col};">${statLabel}</div>
         <div class="es-name" style="color:${col};">${item.name}</div>`;
-      div.addEventListener('mouseenter', e => showTT(e, item, 'Klicken zum Ablegen'));
-      div.addEventListener('mouseleave', hideTT);
+      div.dataset.ttSlot = slot; // für Event-Delegation
       div.onclick = () => unequipItem(slot);
     } else {
       div.innerHTML = `
@@ -5599,6 +5612,19 @@ function renderInvGrid(id, items, showEquip) {
   const grid = document.getElementById(id);
   if (!grid) return;
 
+  // ── Event-Delegation: einmaliger Listener auf Container ──
+  if (!grid._ttDelegated) {
+    grid._ttDelegated = true;
+    grid.addEventListener('mouseover', e => {
+      const slot = e.target.closest('.inv-slot');
+      if (!slot || slot._ttItem === undefined) return;
+      showTT(e, slot._ttItem, slot._ttHint || '');
+    });
+    grid.addEventListener('mouseout', e => {
+      if (!e.relatedTarget || !grid.contains(e.relatedTarget)) hideTT();
+    });
+  }
+
   // Filter anwenden wenn invGrid und Filter aktiv
   let display = items;
   if (id === 'invGrid' && typeof _invCurrentFilter !== 'undefined' && _invCurrentFilter !== 'all') {
@@ -5628,8 +5654,9 @@ function renderInvGrid(id, items, showEquip) {
       <div class="is" style="color:${RCOL[item.rarity]}">+${item.sv} ${item.sk.toUpperCase()}</div>
       ${effTag}
     `;
-    slot.addEventListener('mouseenter',e=>showTT(e,item,showEquip&&!item.equipped?'Klicken zum Ausrüsten':item.equipped?'Klicken zum Ablegen':''));
-    slot.addEventListener('mouseleave',hideTT);
+    // Daten für Event-Delegation am Element speichern (kein Listener nötig)
+    slot._ttItem = item;
+    slot._ttHint = showEquip && !item.equipped ? 'Klicken zum Ausrüsten' : item.equipped ? 'Klicken zum Ablegen' : '';
     slot.onclick=()=>{
       item.isNew=false;
       if(showEquip){
@@ -7173,7 +7200,7 @@ function checkLevelUp() {
     if (G.hero.level % 5 === 0) G.hero.spd = Math.max(0.25, G.hero.spd - 0.1);
     log('🎉 LEVEL UP ' + G.hero.level + '!', 'l');
     leveled = true;
-    try { playSfx('levelup'); } catch(e) {}
+    try { playSfxSafe('levelup'); } catch(e) {}
     try { showLevelUpAnimation(G.hero.level); } catch(e) {}
   }
   if (leveled) { updateEraUI(); markDirty('low'); try { checkAchievements(); } catch(e){ console.warn("[SwordMaster]", e); } try { updatePrestigeHeader(); } catch(e) {} } // LevelUp: combat-event
@@ -7326,6 +7353,20 @@ function renderForgedGrid() {
     grid.innerHTML=`<div style="color:var(--text2);font-size:0.8rem;font-style:italic;grid-column:1/-1;padding:10px;text-align:center;">Noch nichts geschmiedet.</div>`;
     return;
   }
+
+  // Event-Delegation — einmaliger Listener auf Container
+  if (!grid._ttDelegated) {
+    grid._ttDelegated = true;
+    grid.addEventListener('mouseover', e => {
+      const slot = e.target.closest('.inv-slot');
+      if (!slot || slot._ttItem === undefined) return;
+      showTT(e, slot._ttItem, slot._ttHint || '');
+    });
+    grid.addEventListener('mouseout', e => {
+      if (!e.relatedTarget || !grid.contains(e.relatedTarget)) hideTT();
+    });
+  }
+
   grid.innerHTML='';
   list.forEach(item=>{
     const slot=document.createElement('div');
@@ -7338,8 +7379,8 @@ function renderForgedGrid() {
       <div class="in">${item.name.length>7?item.name.slice(0,6)+'…':item.name}</div>
       <div class="is" style="color:${RCOL[item.rarity]}">+${item.sv} ${item.sk.toUpperCase()}</div>
     `;
-    slot.addEventListener('mouseenter',e=>showTT(e,item,item.equipped?'Klicken zum Ablegen':'Klicken zum Ausrüsten'));
-    slot.addEventListener('mouseleave',hideTT);
+    slot._ttItem = item;
+    slot._ttHint = item.equipped ? 'Klicken zum Ablegen' : 'Klicken zum Ausrüsten';
     slot.onclick=()=>{
       item.isNew=false;
       if(item.equipped) unequipItem(item.slot);
@@ -11481,6 +11522,38 @@ const ACHIEVEMENTS = [
   { id:'pet_first',   cat:'Sozial',   icon:'🐾',  tier:'bronze',  name:'Tierfreund',          desc:'Erstes Pet gekauft.',                              type:'pets',         target:1,      reward:{gold:300,  xp:500}  },
   { id:'mat_collect', cat:'Sozial',   icon:'⚗️',  tier:'bronze',  name:'Sammler',             desc:'100 Materialien gesammelt.',                       type:'materials',    target:100,    reward:{gold:400,  xp:600}  },
   { id:'event_done',  cat:'Sozial',   icon:'🎃',  tier:'silver',  name:'Event-Held',          desc:'Eine Event-Quest abgeschlossen.',                  type:'event_claimed',target:1,      reward:{gold:1000, xp:1500} },
+
+  // ─── 🏰 GILDE ────────────────────────────────────────────
+  { id:'guild_create',  cat:'Gilde', icon:'🏰', tier:'silver',  name:'Gründer',           desc:'Eine eigene Gilde gegründet.',                        type:'guild_create', target:1,      reward:{gold:2000, xp:3000}  },
+  { id:'guild_lv3',     cat:'Gilde', icon:'⬆️', tier:'silver',  name:'Wachstum',          desc:'Gilde auf Level 3 gebracht.',                         type:'guild_level',  target:3,      reward:{gold:5000, xp:8000}  },
+  { id:'guild_lv5',     cat:'Gilde', icon:'🌟', tier:'gold',    name:'Blühende Gilde',    desc:'Gilde auf Level 5 gebracht.',                         type:'guild_level',  target:5,      reward:{gold:15000,xp:25000} },
+  { id:'guild_donate1', cat:'Gilde', icon:'💰', tier:'bronze',  name:'Großzügig',         desc:'Zum ersten Mal Gold an die Gilde gespendet.',         type:'guild_donate', target:1,      reward:{gold:500,  xp:800}   },
+  { id:'guild_donate10',cat:'Gilde', icon:'💎', tier:'silver',  name:'Mäzen',             desc:'10 Mal Gold an die Gilde gespendet.',                 type:'guild_donate', target:10,     reward:{gold:3000, xp:5000}  },
+  { id:'guild_raid1',   cat:'Gilde', icon:'⚔️', tier:'silver',  name:'Raid-Krieger',      desc:'An einem Gilden-Raid teilgenommen.',                  type:'guild_raid',   target:1,      reward:{gold:2000, xp:3000}  },
+  { id:'guild_raid10',  cat:'Gilde', icon:'🔥', tier:'gold',    name:'Raid-Legende',      desc:'10 Gilden-Raids abgeschlossen.',                      type:'guild_raid',   target:10,     reward:{gold:20000,xp:35000} },
+
+  // ─── 🎃 EVENT ────────────────────────────────────────────
+  { id:'event_3',       cat:'Event',  icon:'🎃', tier:'silver',  name:'Festteilnehmer',    desc:'3 verschiedene Events abgeschlossen.',                type:'event_claimed',target:3,      reward:{gold:3000, xp:5000}  },
+  { id:'event_10',      cat:'Event',  icon:'🌟', tier:'gold',    name:'Event-Champion',    desc:'10 Event-Quests abgeschlossen.',                      type:'event_claimed',target:10,     reward:{gold:10000,xp:18000} },
+  { id:'event_shop1',   cat:'Event',  icon:'🛒', tier:'bronze',  name:'Event-Shopper',     desc:'Ersten Event-Shop-Kauf getätigt.',                    type:'event_purchase',target:1,     reward:{gold:500,  xp:800}   },
+  { id:'event_shop5',   cat:'Event',  icon:'💰', tier:'silver',  name:'Event-Sammler',     desc:'5 Event-Shop-Käufe getätigt.',                        type:'event_purchase',target:5,     reward:{gold:3000, xp:5000}  },
+  { id:'event_halloween',cat:'Event', icon:'🎃', tier:'gold',    name:'Kürbis-König',      desc:'Halloween-Event vollständig abgeschlossen.',          type:'event_complete',target:1,     reward:{gold:8000, xp:12000} },
+  { id:'event_xmas',    cat:'Event',  icon:'🎄', tier:'gold',    name:'Weihnachtsheld',    desc:'Weihnachts-Event vollständig abgeschlossen.',         type:'event_complete',target:2,     reward:{gold:8000, xp:12000} },
+
+  // ─── ✨ VERZAUBERUNG ─────────────────────────────────────
+  { id:'ench_first',    cat:'Verzauberung', icon:'✨', tier:'bronze', name:'Runen-Lehrling',  desc:'Erstes Item verzaubert.',                           type:'enchant',      target:1,      reward:{gold:500,  xp:1000}  },
+  { id:'ench_3',        cat:'Verzauberung', icon:'🔮', tier:'silver', name:'Runen-Meister',   desc:'3 Items gleichzeitig verzaubert.',                  type:'enchant_slots',target:3,      reward:{gold:3000, xp:5000}  },
+  { id:'ench_all',      cat:'Verzauberung', icon:'🌟', tier:'gold',   name:'Runen-Gott',      desc:'Alle 6 Slots verzaubert.',                          type:'enchant_all',  target:6,      reward:{gold:10000,xp:18000} },
+  { id:'ench_epic',     cat:'Verzauberung', icon:'💎', tier:'gold',   name:'Epische Runen',   desc:'Eine epische Rune eingesetzt.',                     type:'enchant_tier', target:2,      reward:{gold:5000, xp:8000}  },
+  { id:'ench_100',      cat:'Verzauberung', icon:'🔱', tier:'diamond',name:'Runen-Legende',   desc:'100 Verzauberungen durchgeführt.',                  type:'enchant_total',target:100,    reward:{gold:50000,xp:80000} },
+
+  // ─── ⚡ PRESTIGE ─────────────────────────────────────────
+  { id:'pres_first',    cat:'Prestige', icon:'⚡', tier:'silver',  name:'Erste Wiedergeburt', desc:'Erstes Prestige durchgeführt.',                     type:'prestige',     target:1,      reward:{gold:5000, xp:10000} },
+  { id:'pres_3',        cat:'Prestige', icon:'🌟', tier:'gold',    name:'Dreifach-Held',    desc:'Dreimal Prestige durchgeführt.',                      type:'prestige',     target:3,      reward:{gold:30000,xp:50000} },
+  { id:'pres_5',        cat:'Prestige', icon:'👑', tier:'gold',    name:'Fünffacher Held',  desc:'Fünfmal Prestige durchgeführt.',                      type:'prestige',     target:5,      reward:{gold:80000,xp:120000}},
+  { id:'pres_max',      cat:'Prestige', icon:'💎', tier:'diamond', name:'Ewiger Held',      desc:'Maximales Prestige ✦8 erreicht!',                    type:'prestige',     target:8,      reward:{gold:500000,xp:1000000}},
+  { id:'pres_gold',     cat:'Prestige', icon:'💰', tier:'silver',  name:'Prestige-Schatz',  desc:'Nach Prestige 1M Gold gesammelt.',                   type:'gold_total',   target:1000000,reward:{gold:10000,xp:20000} },
+  { id:'pres_kills',    cat:'Prestige', icon:'💀', tier:'gold',    name:'Ewiger Kämpfer',   desc:'Nach Prestige 50.000 Monster besiegt.',              type:'kills',        target:50000,  reward:{gold:50000,xp:100000}},
 ];
 
 if (!G.achProgress) G.achProgress = {};
@@ -11518,6 +11591,9 @@ function getAchProgress(a) {
     case 'event_claimed': return G.eventClaimed ? G.eventClaimed.size : 0;
     // Neue Typen
     case 'enchant':       return Object.keys(G.enchants||{}).length > 0 ? 1 : 0;
+    case 'enchant_slots': return Object.keys(G.enchants||{}).length;
+    case 'enchant_tier':  return (G.achProgress||{}).enchant_tier || 0;
+    case 'enchant_total': return (G.achProgress||{}).enchant_total || 0;
     case 'enchant_all': {
       const slots = ['weapon','helmet','chest','gloves','boots','ring'];
       return slots.filter(s => (G.enchants||{})[s]).length;
@@ -11527,6 +11603,12 @@ function getAchProgress(a) {
       try { const d = JSON.parse(localStorage.getItem('sm3_daily_login')||'{}'); return d.streak || 0; } catch(e) { return 0; }
     }
     case 'research':      return G.research ? G.research.size : 0;
+    case 'guild_create':  return (G.achProgress||{}).guild_create || 0;
+    case 'guild_level':   return G._localGuild ? (G._localGuild.level||0) : 0;
+    case 'guild_donate':  return (G.achProgress||{}).guild_donate || 0;
+    case 'guild_raid':    return (G.achProgress||{}).guild_raid || 0;
+    case 'event_purchase':return G.eventPurchased ? (G.eventPurchased.size||0) : 0;
+    case 'event_complete':return (G.achProgress||{}).event_complete || 0;
     case 'global_chat':   return (G.achProgress||{}).global_chat || 0;
     default: return G.achProgress[a.type] || 0;
   }
@@ -12926,8 +13008,23 @@ function getAudioCtx() {
     musicGain = audioCtx.createGain(); musicGain.gain.value = 0; musicGain.connect(audioCtx.destination);
     sfxGain   = audioCtx.createGain(); sfxGain.gain.value   = sfxVolume; sfxGain.connect(audioCtx.destination);
   }
-  if (audioCtx.state === 'suspended') audioCtx.resume();
+  // resume() ist async — wir rufen es an aber warten nicht, 
+  // da playSfx sofort weitermacht. Das ist OK für kurze Sounds.
+  if (audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
   return audioCtx;
+}
+
+// Spielt Sound — stellt sicher dass AudioContext entsperrt ist
+function playSfxSafe(type) {
+  if (!sfxEnabled) return;
+  if (!audioCtx || audioCtx.state === 'suspended') {
+    // Context ist noch gesperrt (kein User-Interaction) — queuen
+    const play = () => { try { playSfx(type); } catch(e) {} };
+    if (!audioCtx) { try { play(); } catch(e) {} return; }
+    audioCtx.resume().then(play).catch(()=>{});
+    return;
+  }
+  try { playSfx(type); } catch(e) {}
 }
 
 // ════════════════════════════════════════════════════════
@@ -13334,6 +13431,10 @@ const CHANGELOG_DATA = [
   { type:"FIX",  text:"Memory-Leak-Schutz: EventListener werden bei Page-Unload bereinigt",       date:"2025-03" },
   { type:"FIX",  text:"Maximum call stack — alle _orig-Overrides durch direkte Inline-Erweiterungen ersetzt", date:"2025-03" },
   { type:"FIX",  text:"Service Worker Blob-URL durch navigator online/offline Events ersetzt",       date:"2025-03" },
+  { type:"NEU",  text:"4 neue Events: Neujahrsfest, Maifest, Sommerfest, Erntedankfest",               date:"2025-03" },
+  { type:"NEU",  text:"30 neue Achievements in 4 neuen Kategorien: Gilde, Event, Verzauberung, Prestige", date:"2025-03" },
+  { type:"FIX",  text:"Level-Up Sound: playSfxSafe() stellt sicher dass AudioContext entsperrt ist",    date:"2025-03" },
+  { type:"PERF", text:"Memory-Leak-Fix: Event-Delegation auf Inventar/Equip-Containern",                date:"2025-03" },
 ];
 
 // ════════════════════════════════════════════
@@ -14369,6 +14470,108 @@ Object.assign(SEASONAL_EVENTS, {
     ],
     quests: [
       { id:'spring_kills', name:'Frühlingserwachen', desc:'150 Blüten-Monster besiegen.', target:150, type:'event_kills', reward:{currency:18} },
+    ],
+  },
+
+  neujahrsfest: {
+    id: 'neujahrsfest',
+    name: '🎊 Neujahrsfest',
+    subtitle: 'Ein neues Jahr beginnt! Sammle Goldmünzen und starte stark ins Jahr.',
+    icon: '🎊', color: '#ffd700',
+    bg: 'rgba(150,120,0,0.1)', bg2: 'rgba(150,120,0,0.22)',
+    currency: { id:'gold_coin', name:'Goldmünze', emoji:'🪙' },
+    month: 0, startDay: 1, endDay: 7, // Januar
+    monsters: [
+      { name:'Jahres-Wächter', emoji:'🎊', hpM:1.2, atkM:1.1, xp:22, gold:14, color:'#ffd700', type:'magisch',
+        special:'fluch', specialDesc:'Jahreszauber — DEF-Debuff',
+        drops:{ gold_coin:2 }, id:'', minLv:1, maxLv:9999, armor:0 },
+      { name:'Feuer-Phoenix',  emoji:'🔥', hpM:1.9, atkM:1.3, xp:32, gold:20, color:'#ff8800', type:'feuer',
+        special:'feuer', specialDesc:'Phönix-Flamme — Brenn-DOT',
+        drops:{ gold_coin:4 }, id:'', minLv:1, maxLv:9999, armor:4 },
+    ],
+    shop: [
+      { id:'coin_amulet', name:'Glücks-Amulett',   emoji:'🪙', cost:30, desc:'Ring: +12% Gold-Drop',     type:'item'  },
+      { id:'coin_boost',  name:'Jahres-Segen',      emoji:'🎊', cost:50, desc:'+20% XP & Gold für 2h',   type:'boost' },
+      { id:'coin_keys',   name:'Dungeon-Schlüsselbund', emoji:'🗝️', cost:40, desc:'+3 Dungeon-Schlüssel', type:'keys'  },
+    ],
+    quests: [
+      { id:'ny_kills', name:'Neujahrs-Krieger', desc:'100 Jahres-Wächter besiegen.', target:100, type:'event_kills', reward:{currency:15} },
+    ],
+  },
+
+  maifest: {
+    id: 'maifest',
+    name: '🌼 Maifest',
+    subtitle: 'Die Natur blüht auf! Besiege Blüten-Kreaturen und sammel Pollen.',
+    icon: '🌼', color: '#88dd44',
+    bg: 'rgba(80,160,20,0.08)', bg2: 'rgba(80,160,20,0.2)',
+    currency: { id:'pollen', name:'Blütenpollen', emoji:'🌼' },
+    month: 4, startDay: 1, endDay: 31, // Mai
+    monsters: [
+      { name:'Pollen-Geist',   emoji:'🌸', hpM:1.1, atkM:1.0, xp:20, gold:10, color:'#ffaabb', type:'tier',
+        special:'poison_on_hit', specialDesc:'Pollenstaub — vergiftet',
+        drops:{ pollen:2 }, id:'', minLv:1, maxLv:9999, armor:0 },
+      { name:'Efeu-Koloss',    emoji:'🌿', hpM:2.5, atkM:0.9, xp:30, gold:15, color:'#44aa44', type:'tier',
+        special:'stein', specialDesc:'Pflanzenpanzer — Schadensreduktion',
+        drops:{ pollen:3 }, id:'', minLv:1, maxLv:9999, armor:10 },
+    ],
+    shop: [
+      { id:'pollen_boots', name:'Windlauf-Stiefel', emoji:'🌿', cost:35, desc:'Boots: +0.15s SPD',     type:'item'  },
+      { id:'pollen_boost', name:'Frühjahrs-Energie',emoji:'🌼', cost:55, desc:'+15% XP für 3h',        type:'boost' },
+    ],
+    quests: [
+      { id:'mai_kills',  name:'Gärtner-Held', desc:'150 Blüten-Kreaturen besiegen.', target:150, type:'event_kills', reward:{currency:18} },
+    ],
+  },
+
+  sommersolstiz: {
+    id: 'sommersolstiz',
+    name: '☀️ Sommerfest',
+    subtitle: 'Die Sommerhitze bringt feurige Gegner! Bezwinge sie und sammle Sonnenkristalle.',
+    icon: '☀️', color: '#ff9900',
+    bg: 'rgba(180,100,0,0.1)', bg2: 'rgba(180,100,0,0.22)',
+    currency: { id:'sun_crystal', name:'Sonnenkristall', emoji:'🔆' },
+    month: 6, startDay: 1, endDay: 31, // Juli
+    monsters: [
+      { name:'Sonnen-Salamander', emoji:'🦎', hpM:1.3, atkM:1.3, xp:25, gold:13, color:'#ff9900', type:'feuer',
+        special:'feuer', specialDesc:'Sonnenstrahl — Brenn-DOT',
+        drops:{ sun_crystal:2 }, id:'', minLv:1, maxLv:9999, armor:2 },
+      { name:'Wüsten-Skorpion',   emoji:'🦂', hpM:1.6, atkM:1.5, xp:35, gold:18, color:'#cc6600', type:'tier',
+        special:'fluch', specialDesc:'Giftschlag — DOT + ATK-Debuff',
+        drops:{ sun_crystal:3 }, id:'', minLv:1, maxLv:9999, armor:5 },
+    ],
+    shop: [
+      { id:'sun_helm',  name:'Sonnenhelm',      emoji:'☀️', cost:40, desc:'Helm: +18% KRIT',         type:'item'  },
+      { id:'sun_boost', name:'Sonnen-Energie',  emoji:'🔆', cost:60, desc:'+25% ATK für 2h',         type:'boost' },
+    ],
+    quests: [
+      { id:'sum_kills', name:'Sonnen-Krieger',  desc:'200 Hitze-Monster besiegen.', target:200, type:'event_kills', reward:{currency:22} },
+    ],
+  },
+
+  erntedank: {
+    id: 'erntedank',
+    name: '🍂 Erntedankfest',
+    subtitle: 'Der Herbst bringt goldene Blätter und hungrige Kreaturen!',
+    icon: '🍂', color: '#cc7700',
+    bg: 'rgba(140,80,0,0.1)', bg2: 'rgba(140,80,0,0.22)',
+    currency: { id:'harvest_token', name:'Ernte-Token', emoji:'🌾' },
+    month: 9, startDay: 1, endDay: 14, // Oktober (vor Halloween)
+    monsters: [
+      { name:'Herbst-Geist',  emoji:'🍂', hpM:1.2, atkM:1.0, xp:20, gold:11, color:'#cc7700', type:'magisch',
+        special:'fluch', specialDesc:'Herbstfluch — SPD-Debuff',
+        drops:{ harvest_token:2 }, id:'', minLv:1, maxLv:9999, armor:0 },
+      { name:'Ernte-Golem',   emoji:'🌾', hpM:2.0, atkM:1.1, xp:28, gold:16, color:'#aa8833', type:'tier',
+        special:'stein', specialDesc:'Stroh-Panzer — hohe Rüstung',
+        drops:{ harvest_token:3 }, id:'', minLv:1, maxLv:9999, armor:12 },
+    ],
+    shop: [
+      { id:'harvest_ring', name:'Ernte-Ring',     emoji:'🌾', cost:30, desc:'Ring: +10% Gold-Drop',     type:'item'  },
+      { id:'harvest_pet',  name:'Herbst-Fuchs',   emoji:'🦊', cost:45, desc:'Pet: +5% XP',              type:'pet'   },
+      { id:'harvest_boost',name:'Ernte-Segen',    emoji:'🍂', cost:50, desc:'+20% Gold für 3h',         type:'boost' },
+    ],
+    quests: [
+      { id:'harv_kills', name:'Ernte-Wächter', desc:'120 Herbst-Kreaturen besiegen.', target:120, type:'event_kills', reward:{currency:16} },
     ],
   },
 
