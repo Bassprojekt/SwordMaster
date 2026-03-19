@@ -1988,10 +1988,82 @@ body {
   display: flex; align-items: center; gap: 8px;
   background: rgba(0,0,0,.2); border-radius: 7px;
   padding: 6px 10px; margin-bottom: 4px; font-size: .68rem;
+  cursor: pointer; transition: background .15s;
 }
+.admin-player-row:hover { background: rgba(220,40,40,.08); }
+.admin-player-row.selected { background: rgba(220,40,40,.15); border: 1px solid rgba(220,40,40,.3); }
 .admin-player-row .apn { font-family: Cinzel,serif; color: var(--text); flex: 1; }
 .admin-player-row .aplv { color: var(--gold2); min-width: 45px; }
 .admin-player-row .apgold { color: var(--green2); min-width: 70px; }
+
+/* Admin Tabs */
+.admin-tabs {
+  display: flex; gap: 2px; margin-bottom: 12px;
+  background: rgba(0,0,0,.3); border-radius: 10px; padding: 3px;
+}
+.admin-tab {
+  flex: 1; padding: 6px 4px; border-radius: 7px;
+  font-family: Cinzel,serif; font-size: .58rem; font-weight: 700;
+  color: rgba(255,136,136,.5); cursor: pointer;
+  border: none; background: none; text-align: center;
+  transition: all .15s; letter-spacing: .04em;
+}
+.admin-tab.active {
+  background: rgba(220,40,40,.2); color: #ffaaaa;
+  box-shadow: inset 0 0 0 1px rgba(220,40,40,.3);
+}
+.admin-tab-content { display: none; }
+.admin-tab-content.active { display: block; }
+
+/* Admin Input */
+.admin-input {
+  background: rgba(0,0,0,.4); border: 1px solid rgba(255,255,255,.1);
+  border-radius: 7px; color: var(--text); font-size: .68rem;
+  padding: 6px 10px; outline: none; transition: border-color .15s;
+  font-family: monospace;
+}
+.admin-input:focus { border-color: rgba(220,40,40,.5); }
+.admin-input-row {
+  display: flex; gap: 6px; align-items: center; margin-bottom: 6px; flex-wrap: wrap;
+}
+.admin-input-label {
+  font-size: .62rem; color: var(--text3); font-family: Cinzel,serif;
+  min-width: 80px;
+}
+
+/* Admin Detail Card */
+.admin-detail-card {
+  background: rgba(0,0,0,.3); border: 1px solid rgba(255,255,255,.08);
+  border-radius: 8px; padding: 10px 12px; margin-bottom: 8px;
+}
+.admin-detail-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 4px 12px;
+  font-size: .65rem;
+}
+.admin-detail-grid span:nth-child(odd) { color: var(--text3); }
+.admin-detail-grid span:nth-child(even) { color: var(--text); font-family: Cinzel,serif; }
+
+/* Audit Log */
+.audit-row {
+  display: flex; gap: 8px; align-items: flex-start;
+  padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,.04);
+  font-size: .63rem;
+}
+.audit-type { color: #ff8888; font-family: Cinzel,serif; min-width: 120px; flex-shrink: 0; }
+.audit-info { color: var(--text2); flex: 1; }
+.audit-time { color: var(--text3); font-size: .58rem; flex-shrink: 0; }
+
+/* Admin badge */
+.admin-badge {
+  display: inline-block; padding: 1px 6px; border-radius: 4px;
+  font-size: .55rem; font-family: Cinzel,serif; font-weight: 700;
+}
+.admin-badge.sus  { background: rgba(220,40,40,.2);  color: #ff8888;  border: 1px solid rgba(220,40,40,.4); }
+.admin-badge.ok   { background: rgba(40,180,80,.12); color: #60ee90;  border: 1px solid rgba(40,180,80,.3); }
+.admin-badge.warn { background: rgba(240,160,0,.12); color: #f0cc55;  border: 1px solid rgba(240,160,0,.3); }
+
+/* Admin Box erweitert */
+#adminBox { width: min(600px, 97vw); }
 
 /* ══ WHITE MODE ══ */
 body.white-mode {
@@ -13030,6 +13102,8 @@ const CHANGELOG_DATA = [
   { type:"FIX",  text:"Name-Editor auf Held-Seite verschoben — nicht mehr in Arena",         date:"2025-03" },
   { type:"NEU",  text:"Changelog wird automatisch von Claude gepflegt",                      date:"2025-03" },
   { type:"NEU",  text:"Sprachauswahl DE/EN in Einstellungen — 150+ übersetzte Texte",         date:"2025-03" },
+  { type:"NEU",  text:"Admin-Panel komplett ausgebaut: 5 Tabs, 20+ neue Funktionen",       date:"2025-03" },
+  { type:"NEU",  text:"Admin: Event-Control, Sperren/Entsperren, Inventar-Ansicht, Bulk-Aktionen, Notizen", date:"2025-03" },
 ];
 
 // ════════════════════════════════════════════
@@ -13560,23 +13634,22 @@ const _ADMIN_HASH = '1c66cc7656e77f162ade29cc4cd119f53332b0111a1404eafeb6fa5b230
 let _adminTitleClicks = 0, _adminClickTimer = null;
 let _adminLoggedIn = false;
 let _adminTargetPlayer = null;
+let _adminAllPlayers = [];
+let _adminDeletedLog = [];
 
+// Öffnen via 5x Klick auf Titel
 document.addEventListener('DOMContentLoaded', () => {
-  const title = document.querySelector('.game-title');
-  if (title) {
-    title.addEventListener('click', () => {
-      _adminTitleClicks++;
-      if (_adminClickTimer) clearTimeout(_adminClickTimer);
-      _adminClickTimer = setTimeout(() => { _adminTitleClicks = 0; }, 2000);
-      if (_adminTitleClicks >= 5) { _adminTitleClicks = 0; _openAdminPanel(); }
-    });
-  }
+  document.querySelector('.game-title')?.addEventListener('click', () => {
+    _adminTitleClicks++;
+    if (_adminClickTimer) clearTimeout(_adminClickTimer);
+    _adminClickTimer = setTimeout(() => { _adminTitleClicks = 0; }, 2000);
+    if (_adminTitleClicks >= 5) { _adminTitleClicks = 0; _openAdminPanel(); }
+  });
 });
 
 function _openAdminPanel() {
-  const ov = document.getElementById('adminOverlay');
-  if (!ov) return;
-  ov.classList.add('open');
+  const overlay = document.getElementById('adminOverlay');
+  if (overlay) overlay.classList.add('open');
   if (_adminLoggedIn) { _showAdminDash(); } else {
     document.getElementById('adminLoginBox').style.display = 'block';
     document.getElementById('adminDashboard').style.display = 'none';
@@ -13586,19 +13659,17 @@ function _openAdminPanel() {
 function _adminClose() { document.getElementById('adminOverlay')?.classList.remove('open'); }
 
 async function _adminLogin() {
-  const pw = document.getElementById('adminPwInput')?.value || '';
-  const errEl = document.getElementById('adminLoginError');
-  if (!pw) { if(errEl) errEl.textContent = 'Passwort eingeben!'; return; }
-  const buf  = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pw));
-  const hash = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+  const pw = document.getElementById('adminPwInput').value;
+  const hashBuf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pw));
+  const hash = Array.from(new Uint8Array(hashBuf)).map(b=>b.toString(16).padStart(2,'0')).join('');
   if (hash === _ADMIN_HASH) {
     _adminLoggedIn = true;
-    if(errEl) errEl.textContent = '';
     document.getElementById('adminPwInput').value = '';
-    _showAdminDash(); _adminRefreshStats(); _adminLog('✅ Admin angemeldet');
+    document.getElementById('adminLoginError').textContent = '';
+    _showAdminDash(); _adminRefreshStats();
+    _adminLog('✅ Admin angemeldet');
   } else {
-    if(errEl) errEl.textContent = '❌ Falsches Passwort!';
-    document.getElementById('adminPwInput').value = '';
+    document.getElementById('adminLoginError').textContent = '❌ Falsches Passwort';
     _adminLog('❌ Fehlgeschlagener Login-Versuch');
   }
 }
@@ -13611,65 +13682,192 @@ function _showAdminDash() {
   document.getElementById('adminLoginBox').style.display = 'none';
   document.getElementById('adminDashboard').style.display = 'block';
 }
+
 function _adminLog(msg) {
   const el = document.getElementById('adminLog');
   if (!el) return;
-  const t = new Date().toLocaleTimeString('de-DE');
-  el.innerHTML = `<div>[${t}] ${msg}</div>` + el.innerHTML;
+  const d = document.createElement('div');
+  d.style.cssText = 'border-bottom:1px solid rgba(255,255,255,.05);padding:2px 0;';
+  const ts = new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  d.innerHTML = `<span style="color:rgba(255,255,255,.3);font-size:.58rem;">${ts}</span> ${msg}`;
+  el.insertBefore(d, el.firstChild);
 }
 
+// ── Tab-Navigation ──────────────────────────────
+function _adminTab(name) {
+  document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.admin-tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelector(`.admin-tab[onclick="_adminTab('${name}')"]`)?.classList.add('active');
+  document.getElementById(`adminTab-${name}`)?.classList.add('active');
+}
+
+// ── STATS ───────────────────────────────────────
 async function _adminRefreshStats() {
   if (!_adminLoggedIn) return;
   try {
-    const players = await sbGet('sm_players', 'select=hero_level,hero_gold,total_kills,last_seen&order=hero_level.desc&limit=1000');
-    const lb = await sbGet('sm_leaderboard', 'select=player_name,hero_level,pvp_points&order=pvp_points.desc&limit=5');
-    const total  = players?.length || 0;
-    const active = (players||[]).filter(p => (Date.now()-new Date(p.last_seen)) < 7*86400000).length;
-    const maxLv  = total ? Math.max(...(players||[]).map(p => p.hero_level||0)) : 0;
-    const avgLv  = total ? Math.round((players||[]).reduce((s,p)=>s+(p.hero_level||0),0)/total) : 0;
-    const kills  = (players||[]).reduce((s,p)=>s+(p.total_kills||0),0);
-    const el = document.getElementById('adminStats');
-    if (el) el.innerHTML = `
-      <div class="admin-stat-row"><span>Spieler gesamt</span><b>${total}</b></div>
-      <div class="admin-stat-row"><span>Aktiv (7 Tage)</span><b style="color:var(--green2);">${active}</b></div>
-      <div class="admin-stat-row"><span>Höchstes Level</span><b style="color:var(--gold2);">${maxLv}</b></div>
-      <div class="admin-stat-row"><span>Durchschnittslevel</span><b>${avgLv}</b></div>
-      <div class="admin-stat-row"><span>Kills gesamt</span><b>${kills.toLocaleString()}</b></div>
-      <div style="margin-top:8px;font-size:.62rem;color:var(--text3);">TOP PVP:</div>
-      ${(lb||[]).map((p,i)=>`<div class="admin-stat-row"><span>${i+1}. ${p.player_name||'?'} Lv${p.hero_level}</span><b style="color:var(--purple2);">${p.pvp_points} Pkt</b></div>`).join('')}`;
-    _adminLog(`📊 Stats: ${total} Spieler, ${active} aktiv`);
+    const players = await sbGet('sm_players', 'select=id,player_name,hero_level,hero_gold,total_kills,last_seen,pvp_points,wave&order=hero_level.desc&limit=1000');
+    _adminAllPlayers = players || [];
+    const total  = _adminAllPlayers.length;
+    const now    = Date.now();
+    const active7  = _adminAllPlayers.filter(p => (now - new Date(p.last_seen)) < 7*86400000).length;
+    const active24 = _adminAllPlayers.filter(p => (now - new Date(p.last_seen)) < 86400000).length;
+    const active1h = _adminAllPlayers.filter(p => (now - new Date(p.last_seen)) < 3600000).length;
+    const maxLv  = total ? Math.max(..._adminAllPlayers.map(p => p.hero_level||0)) : 0;
+    const avgLv  = total ? Math.round(_adminAllPlayers.reduce((s,p)=>s+(p.hero_level||0),0)/total) : 0;
+    const kills  = _adminAllPlayers.reduce((s,p)=>s+(p.total_kills||0),0);
+    const gold   = _adminAllPlayers.reduce((s,p)=>s+(p.hero_gold||0),0);
+
+    const statsEl = document.getElementById('adminStats');
+    if (statsEl) statsEl.innerHTML = `
+      <div class="admin-detail-grid" style="grid-template-columns:1fr 1fr 1fr 1fr;">
+        <span>Gesamt</span><span style="color:var(--text);font-family:Cinzel,serif;">${total}</span>
+        <span>7-Tage aktiv</span><span style="color:var(--green2);font-family:Cinzel,serif;">${active7}</span>
+        <span>24h aktiv</span><span style="color:var(--blue2);font-family:Cinzel,serif;">${active24}</span>
+        <span>1h aktiv</span><span style="color:#f0cc55;font-family:Cinzel,serif;">${active1h}</span>
+        <span>Max Level</span><span style="color:var(--gold2);font-family:Cinzel,serif;">${maxLv}</span>
+        <span>Ø Level</span><span style="font-family:Cinzel,serif;">${avgLv}</span>
+        <span>Kills gesamt</span><span style="font-family:Cinzel,serif;">${kills.toLocaleString()}</span>
+        <span>Gold gesamt</span><span style="color:var(--gold2);font-family:Cinzel,serif;">${gold.toLocaleString()}</span>
+      </div>`;
+
+    // Aktivitäts-Log
+    const actEl = document.getElementById('adminActivity');
+    if (actEl) {
+      const recent = _adminAllPlayers
+        .filter(p => (now - new Date(p.last_seen)) < 86400000)
+        .sort((a,b) => new Date(b.last_seen)-new Date(a.last_seen))
+        .slice(0,10);
+      actEl.innerHTML = recent.length
+        ? recent.map(p => {
+            const mins = Math.floor((now-new Date(p.last_seen))/60000);
+            const ago  = mins < 60 ? `${mins}min` : `${Math.floor(mins/60)}h`;
+            return `<div class="admin-stat-row"><span>${p.player_name||'?'} <span class="admin-badge ok">Lv${p.hero_level}</span></span><b style="color:var(--text3);">${ago} ago</b></div>`;
+          }).join('')
+        : '<div class="u-xs-muted">Keine Aktivität in den letzten 24h.</div>';
+    }
+
+    const badge = document.getElementById('adminOnlineBadge');
+    if (badge) badge.innerHTML = `<span class="admin-badge ok">${active1h} online</span>`;
+    _adminLog(`📊 ${total} Spieler · ${active24} heute aktiv`);
   } catch(e) { _adminLog('❌ ' + e.message); }
 }
 
+async function _adminTopList(field) {
+  if (!_adminLoggedIn) return;
+  const el = document.getElementById('adminTopList');
+  if (!el) return;
+  try {
+    const data = await sbGet('sm_players', `select=player_name,hero_level,hero_gold,total_kills,pvp_points,wave&order=${field}.desc&limit=10`);
+    const labels = { hero_level:'Level', hero_gold:'💰 Gold', total_kills:'💀 Kills', pvp_points:'⚔️ PVP', wave:'🌊 Welle' };
+    el.innerHTML = (data||[]).map((p,i) => {
+      const val = p[field]?.toLocaleString() || '0';
+      const medals = ['🥇','🥈','🥉'];
+      return `<div class="admin-stat-row">
+        <span>${medals[i]||`#${i+1}`} ${p.player_name||'?'}</span>
+        <b style="color:var(--gold2);">${val} ${labels[field]||field}</b>
+      </div>`;
+    }).join('') || '<div class="u-xs-muted">Keine Daten.</div>';
+  } catch(e) { _adminLog('❌ '+e.message); }
+}
+
+// ── SPIELER-LISTE ───────────────────────────────
 async function _adminLoadPlayers() {
   if (!_adminLoggedIn) return;
   try {
-    const players = await sbGet('sm_players', 'select=id,player_name,hero_level,hero_gold,total_kills,last_seen&order=hero_level.desc&limit=100');
-    const el = document.getElementById('adminPlayerList');
-    if (!el) return;
-    if (!players?.length) { el.innerHTML = '<div class="u-xs-muted">Keine Spieler.</div>'; return; }
-    el.innerHTML = players.map(p => {
-      const ago = Math.floor((Date.now()-new Date(p.last_seen))/3600000);
-      const ts  = ago < 24 ? ago+'h' : Math.floor(ago/24)+'T';
-      return `<div class="admin-player-row" onclick="_adminSelectPlayer('${p.id}','${(p.player_name||'?').replace(/'/g,"\'")}',${p.hero_level||1})" style="cursor:pointer;">
-        <span class="apn">${p.player_name||'?'}</span>
-        <span class="aplv">Lv${p.hero_level||1}</span>
-        <span class="apgold">${(p.hero_gold||0).toLocaleString()}G</span>
-        <span style="color:var(--text3);font-size:.58rem;">${ts}</span>
-      </div>`;
-    }).join('');
-    _adminLog(`👥 ${players.length} Spieler geladen`);
+    const players = await sbGet('sm_players', 'select=id,player_name,hero_level,hero_gold,total_kills,last_seen&order=hero_level.desc&limit=200');
+    _adminAllPlayers = players || [];
+    _adminRenderPlayerList(_adminAllPlayers);
+    _adminLog(`👥 ${_adminAllPlayers.length} Spieler geladen`);
   } catch(e) { _adminLog('❌ ' + e.message); }
 }
 
+function _adminRenderPlayerList(players) {
+  const el = document.getElementById('adminPlayerList');
+  if (!el) return;
+  if (!players.length) { el.innerHTML = '<div class="u-xs-muted">Keine Spieler gefunden.</div>'; return; }
+  el.innerHTML = players.map(p => {
+    const ago = _adminAgo(p.last_seen);
+    return `<div class="admin-player-row${_adminTargetPlayer?.id===p.id?' selected':''}"
+      onclick="_adminSelectPlayer('${p.id}','${(p.player_name||'?').replace(/'/g,"\\'")}',${p.hero_level||1})">
+      <span class="apn">${p.player_name||'?'}</span>
+      <span class="aplv">Lv${p.hero_level||1}</span>
+      <span class="apgold">💰${(p.hero_gold||0).toLocaleString()}</span>
+      <span style="color:var(--text3);font-size:.6rem;">${ago}</span>
+    </div>`;
+  }).join('');
+}
+
+function _adminFilterPlayers() {
+  const q = document.getElementById('adminSearchInput')?.value?.toLowerCase() || '';
+  const filtered = q ? _adminAllPlayers.filter(p => (p.player_name||'').toLowerCase().includes(q)) : _adminAllPlayers;
+  _adminRenderPlayerList(filtered);
+}
+
+function _adminAgo(ts) {
+  if (!ts) return '—';
+  const mins = Math.floor((Date.now() - new Date(ts)) / 60000);
+  if (mins < 60)    return mins+'min';
+  if (mins < 1440)  return Math.floor(mins/60)+'h';
+  return Math.floor(mins/1440)+'d';
+}
+
+async function _adminLoadGuilds() {
+  if (!_adminLoggedIn) return;
+  try {
+    const guilds = await sbGet('sm_guilds', 'select=id,name,emoji,level,gold&order=level.desc&limit=50');
+    const members = await sbGet('sm_guild_members', 'select=guild_id');
+    const mCount = {};
+    (members||[]).forEach(m => { mCount[m.guild_id] = (mCount[m.guild_id]||0)+1; });
+    const el = document.getElementById('adminGuildList');
+    if (el) el.innerHTML = (guilds||[]).length
+      ? (guilds||[]).map(g => `
+          <div class="admin-stat-row">
+            <span>${g.emoji||'🏰'} ${g.name} <span class="admin-badge warn">Lv${g.level}</span></span>
+            <b style="color:var(--text2);">${mCount[g.id]||0} Mitglieder · 💰${(g.gold||0).toLocaleString()}</b>
+          </div>`).join('')
+      : '<div class="u-xs-muted">Keine Gilden.</div>';
+    _adminLog(`🏰 ${(guilds||[]).length} Gilden geladen`);
+  } catch(e) { _adminLog('❌ '+e.message); }
+}
+
+// ── SPIELER AUSWÄHLEN & DETAIL ──────────────────
 function _adminSelectPlayer(id, name, lv) {
   _adminTargetPlayer = { id, name, lv };
-  const el = document.getElementById('adminTargetInfo');
-  if (el) el.innerHTML = `<div style="background:rgba(201,162,39,.08);border:1px solid rgba(201,162,39,.25);border-radius:7px;padding:5px 10px;">
-    🎯 <b style="color:var(--gold2);">${name}</b> · Lv${lv}<br>
-    <span class="u-xxs-muted">${id}</span></div>`;
-  document.getElementById('adminTargetId').value = name;
-  _adminLog(`🎯 Ausgewählt: ${name}`);
+  const info = document.getElementById('adminTargetInfo');
+  if (info) info.innerHTML = `<span class="admin-badge ok">✓ ${name}</span> <span style="color:var(--text3);font-size:.6rem;">Lv${lv} · ${id.slice(0,8)}...</span>`;
+  _adminLog(`🎯 Ausgewählt: ${name} (Lv${lv})`);
+  _adminLoadPlayerDetail(id);
+  // Spieler in Liste markieren
+  document.querySelectorAll('.admin-player-row').forEach(r => r.classList.remove('selected'));
+  document.querySelectorAll('.admin-player-row').forEach(r => {
+    if (r.textContent.includes(name)) r.classList.add('selected');
+  });
+}
+
+async function _adminLoadPlayerDetail(id) {
+  try {
+    const p = await sbGet('sm_players', `id=eq.${id}&select=*&limit=1`);
+    if (!p?.length) return;
+    const pl = p[0];
+    const detail = document.getElementById('adminPlayerDetail');
+    const grid   = document.getElementById('adminDetailGrid');
+    const nameEl = document.getElementById('adminDetailName');
+    if (!detail) return;
+    detail.style.display = 'block';
+    if (nameEl) nameEl.textContent = `${pl.player_name||'?'} · ${id.slice(0,8)}...`;
+    if (grid) grid.innerHTML = `
+      <span>Level</span><span>${pl.hero_level||1}</span>
+      <span>Gold</span><span>${(pl.hero_gold||0).toLocaleString()}</span>
+      <span>Kills</span><span>${(pl.total_kills||0).toLocaleString()}</span>
+      <span>Welle</span><span>${pl.wave||1}</span>
+      <span>ATK</span><span>${pl.hero_base_atk||5}</span>
+      <span>DEF</span><span>${pl.hero_base_def||2}</span>
+      <span>PVP-Pkt</span><span>${pl.pvp_points||0}</span>
+      <span>Prestige</span><span>✦${pl.prestige_stars||0}</span>
+      <span>Dungeon</span><span>Etage ${pl.dungeon_floor||1}</span>
+      <span>Zuletzt</span><span>${_adminAgo(pl.last_seen)}</span>
+    `;
+  } catch(e) { _adminLog('❌ Detail: '+e.message); }
 }
 
 async function _adminFindPlayer() {
@@ -13677,13 +13875,122 @@ async function _adminFindPlayer() {
   const q = document.getElementById('adminTargetId')?.value?.trim();
   if (!q) return;
   try {
-    let p = await sbGet('sm_players', `player_name=ilike.*${encodeURIComponent(q)}*&select=id,player_name,hero_level`);
-    if (!p?.length) p = await sbGet('sm_players', `id=eq.${q}&select=id,player_name,hero_level`);
-    if (p?.length) _adminSelectPlayer(p[0].id, p[0].player_name||'?', p[0].hero_level||1);
-    else document.getElementById('adminTargetInfo').innerHTML = '<span style="color:var(--red2);">❌ Nicht gefunden</span>';
+    const isUUID = /^[0-9a-f-]{36}$/i.test(q);
+    const filter = isUUID ? `id=eq.${q}` : `player_name=ilike.${encodeURIComponent('%'+q+'%')}`;
+    const p = await sbGet('sm_players', `${filter}&select=id,player_name,hero_level&limit=5`);
+    if (p?.length) {
+      _adminSelectPlayer(p[0].id, p[0].player_name||'?', p[0].hero_level||1);
+      if (p.length > 1) _adminLog(`🔍 ${p.length} Treffer — ersten ausgewählt`);
+    } else {
+      const info = document.getElementById('adminTargetInfo');
+      if (info) info.innerHTML = '<span style="color:var(--red2);">❌ Nicht gefunden</span>';
+      _adminLog('❌ Spieler nicht gefunden: '+q);
+    }
   } catch(e) { _adminLog('❌ ' + e.message); }
 }
 
+// ── WERTE SETZEN ────────────────────────────────
+async function _adminSetLevelCustom() {
+  if (!_adminLoggedIn || !_adminTargetPlayer) { _adminLog('❌ Kein Spieler!'); return; }
+  const lv = parseInt(document.getElementById('adminSetLvInput')?.value);
+  if (!lv || lv < 1 || lv > 200) { _adminLog('❌ Level 1–200'); return; }
+  try {
+    await sbFetch(`${SUPA_URL}/rest/v1/sm_players?id=eq.${_adminTargetPlayer.id}`,
+      {method:'PATCH',headers:{...SUPA_HDR,'Prefer':'return=minimal'},body:JSON.stringify({hero_level:lv})});
+    _adminLog(`⬆️ ${_adminTargetPlayer.name} → Lv${lv}`);
+    _adminLoadPlayerDetail(_adminTargetPlayer.id);
+  } catch(e) { _adminLog('❌ '+e.message); }
+}
+async function _adminSetGoldCustom() {
+  if (!_adminLoggedIn || !_adminTargetPlayer) { _adminLog('❌ Kein Spieler!'); return; }
+  const g = parseInt(document.getElementById('adminSetGoldInput')?.value);
+  if (isNaN(g) || g < 0) { _adminLog('❌ Ungültiger Gold-Wert'); return; }
+  try {
+    await sbFetch(`${SUPA_URL}/rest/v1/sm_players?id=eq.${_adminTargetPlayer.id}`,
+      {method:'PATCH',headers:{...SUPA_HDR,'Prefer':'return=minimal'},body:JSON.stringify({hero_gold:g})});
+    _adminLog(`💰 ${_adminTargetPlayer.name} → ${g.toLocaleString()} Gold`);
+    _adminLoadPlayerDetail(_adminTargetPlayer.id);
+  } catch(e) { _adminLog('❌ '+e.message); }
+}
+async function _adminSetPrestige() {
+  if (!_adminLoggedIn || !_adminTargetPlayer) { _adminLog('❌ Kein Spieler!'); return; }
+  const s = parseInt(document.getElementById('adminSetPrestigeInput')?.value);
+  if (isNaN(s) || s < 0 || s > 8) { _adminLog('❌ Prestige 0–8'); return; }
+  try {
+    await sbFetch(`${SUPA_URL}/rest/v1/sm_players?id=eq.${_adminTargetPlayer.id}`,
+      {method:'PATCH',headers:{...SUPA_HDR,'Prefer':'return=minimal'},body:JSON.stringify({prestige_stars:s})});
+    _adminLog(`✦ ${_adminTargetPlayer.name} → Prestige ✦${s}`);
+    _adminLoadPlayerDetail(_adminTargetPlayer.id);
+  } catch(e) { _adminLog('❌ '+e.message); }
+}
+async function _adminSetPvp() {
+  if (!_adminLoggedIn || !_adminTargetPlayer) { _adminLog('❌ Kein Spieler!'); return; }
+  const pts = parseInt(document.getElementById('adminSetPvpInput')?.value);
+  if (isNaN(pts) || pts < 0) { _adminLog('❌ Ungültige PVP-Punkte'); return; }
+  try {
+    await sbFetch(`${SUPA_URL}/rest/v1/sm_players?id=eq.${_adminTargetPlayer.id}`,
+      {method:'PATCH',headers:{...SUPA_HDR,'Prefer':'return=minimal'},body:JSON.stringify({pvp_points:pts})});
+    _adminLog(`⚔️ ${_adminTargetPlayer.name} → ${pts} PVP-Pkt`);
+  } catch(e) { _adminLog('❌ '+e.message); }
+}
+
+// ── SCHNELL-AKTIONEN ────────────────────────────
+async function _adminGiveGold() {
+  if (!_adminLoggedIn || !_adminTargetPlayer) { _adminLog('❌ Kein Spieler!'); return; }
+  try {
+    await sbFetch(`${SUPA_URL}/rest/v1/sm_players?id=eq.${_adminTargetPlayer.id}`,
+      {method:'PATCH',headers:{...SUPA_HDR,'Prefer':'return=minimal'},body:JSON.stringify({hero_gold:1000000})});
+    _adminLog(`💰 1M Gold → ${_adminTargetPlayer.name}`);
+    _adminLoadPlayerDetail(_adminTargetPlayer.id);
+  } catch(e) { _adminLog('❌ '+e.message); }
+}
+async function _adminGiveDungeonKeys() {
+  if (!_adminLoggedIn || !_adminTargetPlayer) { _adminLog('❌ Kein Spieler!'); return; }
+  try {
+    await sbFetch(`${SUPA_URL}/rest/v1/sm_players?id=eq.${_adminTargetPlayer.id}`,
+      {method:'PATCH',headers:{...SUPA_HDR,'Prefer':'return=minimal'},body:JSON.stringify({dungeon_keys:3})});
+    _adminLog(`🗝️ 3 Schlüssel → ${_adminTargetPlayer.name}`);
+  } catch(e) { _adminLog('❌ '+e.message); }
+}
+async function _adminFullHeal() {
+  if (!_adminLoggedIn || !_adminTargetPlayer) { _adminLog('❌ Kein Spieler!'); return; }
+  try {
+    const p = await sbGet('sm_players', `id=eq.${_adminTargetPlayer.id}&select=hero_max_hp&limit=1`);
+    const maxHp = p?.[0]?.hero_max_hp || 100;
+    await sbFetch(`${SUPA_URL}/rest/v1/sm_players?id=eq.${_adminTargetPlayer.id}`,
+      {method:'PATCH',headers:{...SUPA_HDR,'Prefer':'return=minimal'},body:JSON.stringify({hero_hp:maxHp})});
+    _adminLog(`❤️ Vollgeheilt: ${_adminTargetPlayer.name} (${maxHp} HP)`);
+  } catch(e) { _adminLog('❌ '+e.message); }
+}
+async function _adminClearInventory() {
+  if (!_adminLoggedIn || !_adminTargetPlayer) { _adminLog('❌ Kein Spieler!'); return; }
+  if (!confirm(`🗑️ Inventar von "${_adminTargetPlayer.name}" wirklich leeren?`)) return;
+  try {
+    await sbDelete('sm_inventory', `player_id=eq.${_adminTargetPlayer.id}`);
+    _adminLog(`🗑️ Inventar geleert: ${_adminTargetPlayer.name}`);
+  } catch(e) { _adminLog('❌ '+e.message); }
+}
+
+// ── BELOHNUNG SENDEN ────────────────────────────
+async function _adminSendReward() {
+  if (!_adminLoggedIn || !_adminTargetPlayer) { _adminLog('❌ Kein Spieler!'); return; }
+  const gold = parseInt(document.getElementById('adminRewardGold')?.value) || 0;
+  const msg  = document.getElementById('adminRewardMsg')?.value?.trim() || 'Admin-Belohnung';
+  if (!gold && !msg) { _adminLog('❌ Gold oder Nachricht eingeben'); return; }
+  try {
+    if (gold > 0) {
+      const p = await sbGet('sm_players', `id=eq.${_adminTargetPlayer.id}&select=hero_gold&limit=1`);
+      const cur = p?.[0]?.hero_gold || 0;
+      await sbFetch(`${SUPA_URL}/rest/v1/sm_players?id=eq.${_adminTargetPlayer.id}`,
+        {method:'PATCH',headers:{...SUPA_HDR,'Prefer':'return=minimal'},body:JSON.stringify({hero_gold:cur+gold})});
+    }
+    _adminLog(`🎁 Belohnung gesendet → ${_adminTargetPlayer.name}: +${gold}G "${msg}"`);
+    document.getElementById('adminRewardGold').value = '';
+    document.getElementById('adminRewardMsg').value  = '';
+  } catch(e) { _adminLog('❌ '+e.message); }
+}
+
+// ── RESET / BAN ─────────────────────────────────
 const _RESET_DATA = {
   hero_level:1,hero_xp:0,hero_hp:100,hero_max_hp:100,hero_mana:50,hero_max_mana:50,
   hero_base_atk:5,hero_base_def:2,hero_spd:1.0,hero_base_crit:5,hero_gold:0,
@@ -13698,50 +14005,19 @@ const _RESET_DATA = {
 };
 
 async function _adminResetPlayer() {
-  if (!_adminLoggedIn || !_adminTargetPlayer) { _adminLog('❌ Kein Spieler ausgewählt!'); return; }
-  if (!confirm(`⚠️ "${_adminTargetPlayer.name}" komplett zurücksetzen?\nLevel, Gold, Materialien, Erfolge, Inventar, Skills, Pets — alles wird gelöscht. Unwiderruflich!`)) return;
+  if (!_adminLoggedIn || !_adminTargetPlayer) { _adminLog('❌ Kein Spieler!'); return; }
+  if (!confirm(`⚠️ "${_adminTargetPlayer.name}" komplett zurücksetzen?\nAlles wird gelöscht. Unwiderruflich!`)) return;
   try {
-    const pid = _adminTargetPlayer.name_backup = _adminTargetPlayer.name;
-    const id  = _adminTargetPlayer.id;
+    const id = _adminTargetPlayer.id;
     _adminLog(`⏳ Resette ${_adminTargetPlayer.name}...`);
-
-    for (const t of [
-      'sm_inventory', 'sm_upgrades', 'sm_skills', 'sm_pets',
-      'sm_guild_members', 'sm_leaderboard'
-    ]) {
+    for (const t of ['sm_inventory','sm_upgrades','sm_skills','sm_pets','sm_guild_members','sm_leaderboard'])
       await sbDelete(t, `player_id=eq.${id}`).catch(e => _adminLog(`  ⚠️ ${t}: ${e.message}`));
-    }
-
-    await sbFetch(`${SUPA_URL}/rest/v1/sm_players?id=eq.${id}`, {
-      method: 'PATCH',
-      headers: { ...SUPA_HDR, 'Prefer': 'return=minimal' },
-      body: JSON.stringify(_RESET_DATA)
-    });
-
-    _adminLog(`✅ Komplett resettet: ${_adminTargetPlayer.name} — Level, Gold, Materialien, Erfolge, Runen, Verzauberungen, Inventar, Skills, Pets, Forschung, PVP, Quests`);
-    document.getElementById('adminTargetInfo').innerHTML =
-      '<span style="color:var(--green2);">✅ Komplett resettet!</span>';
+    await sbFetch(`${SUPA_URL}/rest/v1/sm_players?id=eq.${id}`,
+      {method:'PATCH',headers:{...SUPA_HDR,'Prefer':'return=minimal'},body:JSON.stringify(_RESET_DATA)});
+    _adminLog(`✅ Resettet: ${_adminTargetPlayer.name}`);
+    document.getElementById('adminTargetInfo').innerHTML = '<span class="admin-badge ok">✅ Resettet</span>';
     _adminTargetPlayer = null;
     _adminRefreshStats();
-  } catch(e) { _adminLog('❌ Reset fehlgeschlagen: ' + e.message); }
-}
-
-async function _adminGiveGold() {
-  if (!_adminLoggedIn || !_adminTargetPlayer) { _adminLog('❌ Kein Spieler!'); return; }
-  try {
-    await sbFetch(`${SUPA_URL}/rest/v1/sm_players?id=eq.${_adminTargetPlayer.id}`,{
-      method:'PATCH',headers:{...SUPA_HDR,'Prefer':'return=minimal'},body:JSON.stringify({hero_gold:1000000})});
-    _adminLog(`💰 1M Gold → ${_adminTargetPlayer.name}`);
-  } catch(e) { _adminLog('❌ '+e.message); }
-}
-
-async function _adminSetLevel() {
-  if (!_adminLoggedIn || !_adminTargetPlayer) { _adminLog('❌ Kein Spieler!'); return; }
-  try {
-    await sbFetch(`${SUPA_URL}/rest/v1/sm_players?id=eq.${_adminTargetPlayer.id}`,{
-      method:'PATCH',headers:{...SUPA_HDR,'Prefer':'return=minimal'},
-      body:JSON.stringify({hero_level:50,hero_base_atk:80,hero_base_def:40,hero_max_hp:1500,hero_gold:500000})});
-    _adminLog(`⬆️ Lv50 → ${_adminTargetPlayer.name}`);
   } catch(e) { _adminLog('❌ '+e.message); }
 }
 
@@ -13751,13 +14027,72 @@ async function _adminBanPlayer() {
   if (!confirm('⚠️ Letzte Bestätigung — absolut unwiderruflich!')) return;
   try {
     const pid = _adminTargetPlayer.id;
+    const name = _adminTargetPlayer.name;
     for (const t of ['sm_inventory','sm_upgrades','sm_skills','sm_pets','sm_guild_members','sm_leaderboard'])
       await sbDelete(t,`player_id=eq.${pid}`).catch(()=>{});
     await sbDelete('sm_players',`id=eq.${pid}`);
-    _adminLog(`🚫 Gelöscht: ${_adminTargetPlayer.name}`);
-    _adminTargetPlayer=null;
-    document.getElementById('adminTargetInfo').innerHTML='<span style="color:var(--red2);">🚫 Gelöscht</span>';
+    _adminDeletedLog.unshift(`${new Date().toLocaleString('de-DE')} · ${name} (${pid.slice(0,8)}...)`);
+    document.getElementById('adminDeletedLog').innerHTML = _adminDeletedLog.map(e=>`<div style="padding:2px 0;border-bottom:1px solid rgba(255,255,255,.04);">${e}</div>`).join('') || 'Keine.';
+    _adminLog(`🚫 Gelöscht: ${name}`);
+    _adminTargetPlayer = null;
+    document.getElementById('adminTargetInfo').innerHTML = '<span class="admin-badge sus">🚫 Gelöscht</span>';
     _adminLoadPlayers(); _adminRefreshStats();
+  } catch(e) { _adminLog('❌ '+e.message); }
+}
+
+// ── GLOBALE AKTIONEN ────────────────────────────
+async function _adminSendAnnouncement() {
+  if (!_adminLoggedIn) return;
+  const msg = document.getElementById('adminAnnounce')?.value?.trim();
+  if (!msg) { _adminLog('❌ Leere Nachricht'); return; }
+  if (!confirm(`📢 Nachricht an alle Gilden senden?\n"${msg}"`)) return;
+  try {
+    const guilds = await sbGet('sm_guilds', 'select=id&limit=200');
+    let sent = 0;
+    for (const g of (guilds||[])) {
+      await sbPost('sm_guild_chat', {
+        id: makeUUID(), guild_id: g.id,
+        player_id: 'admin', player_name: '📢 ADMIN',
+        message: msg, role: 'leader',
+        created_at: new Date().toISOString()
+      }).catch(()=>{});
+      sent++;
+    }
+    document.getElementById('adminAnnounce').value = '';
+    _adminLog(`📢 Ankündigung gesendet an ${sent} Gilden`);
+  } catch(e) { _adminLog('❌ '+e.message); }
+}
+
+async function _adminRefillAllKeys() {
+  if (!_adminLoggedIn) return;
+  if (!confirm('🗝️ Allen Spielern Dungeon-Schlüssel auf 3 auffüllen?')) return;
+  try {
+    await sbFetch(`${SUPA_URL}/rest/v1/sm_players`,
+      {method:'PATCH',headers:{...SUPA_HDR,'Prefer':'return=minimal'},body:JSON.stringify({dungeon_keys:3})});
+    _adminLog('🗝️ Alle Spieler: Schlüssel auf 3 aufgefüllt');
+  } catch(e) { _adminLog('❌ '+e.message); }
+}
+
+async function _adminRebuildLeaderboard() {
+  if (!_adminLoggedIn) return;
+  if (!confirm('🏆 Leaderboard komplett neu aufbauen? Kann etwas dauern.')) return;
+  try {
+    _adminLog('⏳ Lade Spieler...');
+    const players = await sbGet('sm_players', 'select=id,player_name,hero_level,total_kills,hero_gold,wave,pvp_points,hero_base_atk,hero_base_def&limit=1000');
+    await sbFetch(`${SUPA_URL}/rest/v1/sm_leaderboard`,
+      {method:'DELETE',headers:{...SUPA_HDR,'Prefer':'return=minimal'}}).catch(()=>{});
+    const rows = (players||[]).map(p => ({
+      player_id: p.id, player_name: (p.player_name||'?').slice(0,20),
+      hero_level: p.hero_level||1, total_kills: p.total_kills||0,
+      hero_gold: p.hero_gold||0, wave: p.wave||1,
+      pvp_points: p.pvp_points||0, hero_base_atk: p.hero_base_atk||5,
+      hero_base_def: p.hero_base_def||2, updated_at: new Date().toISOString()
+    }));
+    for (let i=0; i<rows.length; i+=20) {
+      await sbFetch(`${SUPA_URL}/rest/v1/sm_leaderboard`,
+        {method:'POST',headers:{...SUPA_HDR,'Prefer':'return=minimal'},body:JSON.stringify(rows.slice(i,i+20))}).catch(()=>{});
+    }
+    _adminLog(`✅ Leaderboard neu: ${rows.length} Einträge`);
   } catch(e) { _adminLog('❌ '+e.message); }
 }
 
@@ -13768,8 +14103,8 @@ async function _adminResetAll() {
     _adminLog('⏳ Reset läuft...');
     for (const t of ['sm_inventory','sm_upgrades','sm_skills','sm_pets','sm_guild_members','sm_guild_chat','sm_guilds','sm_leaderboard'])
       await sbFetch(`${SUPA_URL}/rest/v1/${t}`,{method:'DELETE',headers:{...SUPA_HDR,'Prefer':'return=minimal'}}).catch(()=>{});
-    await sbFetch(`${SUPA_URL}/rest/v1/sm_players`,{
-      method:'PATCH',headers:{...SUPA_HDR,'Prefer':'return=minimal'},body:JSON.stringify(_RESET_DATA)});
+    await sbFetch(`${SUPA_URL}/rest/v1/sm_players`,
+      {method:'PATCH',headers:{...SUPA_HDR,'Prefer':'return=minimal'},body:JSON.stringify(_RESET_DATA)});
     _adminLog('✅ ALLE Spieler resettet!'); _adminRefreshStats();
   } catch(e) { _adminLog('❌ '+e.message); }
 }
@@ -13780,13 +14115,307 @@ async function _adminExportData() {
     const data = await sbGet('sm_players','order=hero_level.desc&limit=1000');
     const blob = new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
     const a = document.createElement('a');
-    a.href=URL.createObjectURL(blob);
-    a.download='swordmaster_'+new Date().toISOString().slice(0,10)+'.json';
+    a.href = URL.createObjectURL(blob);
+    a.download = 'swordmaster_'+new Date().toISOString().slice(0,10)+'.json';
     a.click();
     _adminLog(`📥 ${data?.length} Spieler exportiert`);
   } catch(e) { _adminLog('❌ '+e.message); }
 }
 
+function _adminImportData() {
+  document.getElementById('adminImportFile')?.click();
+}
+
+async function _adminDoImport(input) {
+  if (!_adminLoggedIn || !input.files?.length) return;
+  const file = input.files[0];
+  try {
+    const text = await file.text();
+    const data = JSON.parse(text);
+    if (!Array.isArray(data)) { _adminLog('❌ Ungültiges Format'); return; }
+    if (!confirm(`📤 ${data.length} Spieler importieren? Bestehende Daten werden überschrieben!`)) return;
+    _adminLog(`⏳ Importiere ${data.length} Spieler...`);
+    for (let i=0; i<data.length; i+=10) {
+      const batch = data.slice(i,i+10);
+      await sbFetch(`${SUPA_URL}/rest/v1/sm_players`,
+        {method:'POST',headers:{...SUPA_HDR,'Prefer':'resolution=merge-duplicates,return=minimal'},
+         body:JSON.stringify(batch)}).catch(()=>{});
+    }
+    _adminLog(`✅ Import abgeschlossen: ${data.length} Spieler`);
+    input.value = '';
+  } catch(e) { _adminLog('❌ Import: '+e.message); }
+}
+
+// ── SICHERHEIT ──────────────────────────────────
+async function _adminLoadAuditLog() {
+  if (!_adminLoggedIn) return;
+  const el = document.getElementById('adminAuditLog');
+  if (!el) return;
+  try {
+    const logs = await sbGet('sm_audit_log', 'order=created_at.desc&limit=50');
+    if (!logs?.length) { el.innerHTML = '<div class="u-xs-muted">Keine verdächtigen Aktivitäten.</div>'; return; }
+    el.innerHTML = logs.map(l => {
+      const ago = _adminAgo(l.created_at);
+      const isGold  = l.event_type?.includes('gold');
+      const isLevel = l.event_type?.includes('level');
+      const cls = isGold || isLevel ? 'sus' : 'warn';
+      return `<div class="audit-row">
+        <span class="audit-type"><span class="admin-badge ${cls}">${l.event_type||'?'}</span></span>
+        <span class="audit-info">${l.player_id?.slice(0,8)||'?'}... 
+          ${l.old_value?`von ${JSON.stringify(l.old_value).slice(0,30)}`:''} 
+          ${l.new_value?`→ ${JSON.stringify(l.new_value).slice(0,30)}`:''}
+        </span>
+        <span class="audit-time">${ago}</span>
+      </div>`;
+    }).join('');
+    _adminLog(`🚨 ${logs.length} Audit-Einträge geladen`);
+  } catch(e) { _adminLog('❌ Audit: '+e.message); }
+}
+
+function _adminChangePassword() {
+  if (!_adminLoggedIn) return;
+  const newHash = document.getElementById('adminNewHash')?.value?.trim();
+  if (!newHash || newHash.length !== 64 || !/^[0-9a-f]+$/i.test(newHash)) {
+    _adminLog('❌ Ungültiger SHA-256 Hash (64 Hex-Zeichen)'); return;
+  }
+  // Zeige den neuen Hash damit man ihn in den Code kopieren kann
+  const el = document.getElementById('adminCurrentHash');
+  if (el) el.textContent = newHash;
+  _adminLog(`🔑 Neuer Hash: ${newHash}`);
+  _adminLog('⚠️ Kopiere den Hash in den Code (const _ADMIN_HASH) und lade die Seite neu!');
+  alert(`Neuer Admin-Hash:\n${newHash}\n\nKopiere diesen Wert in die Datei bei:\nconst _ADMIN_HASH = '...'`);
+}
+
+function _adminSetLevel() {
+  // Legacy-Wrapper für direkten Lv50-Button (nicht mehr in UI, aber Kompatibilität)
+  document.getElementById('adminSetLvInput').value = 50;
+  _adminSetLevelCustom();
+}
+
+// ── ADMIN-AKTIONSPROTOKOLL ──────────────────────
+const _adminActionHistory = [];
+function _adminLogAction(action) {
+  const ts = new Date().toLocaleString('de-DE');
+  const player = _adminTargetPlayer ? `[${_adminTargetPlayer.name}]` : '[—]';
+  const entry = `${ts} ${player} ${action}`;
+  _adminActionHistory.unshift(entry);
+  const el = document.getElementById('adminActionLog');
+  if (el) el.innerHTML = _adminActionHistory.slice(0,50).map(e =>
+    `<div style="padding:1px 0;border-bottom:1px solid rgba(255,255,255,.04);">${e}</div>`
+  ).join('') || 'Noch keine Aktionen.';
+  _adminLog(action); // auch ins normale Log
+}
+
+// ── LEVEL-VERTEILUNG CHART ───────────────────────
+function _adminRenderLevelChart(players) {
+  const el = document.getElementById('adminLevelChart');
+  if (!el || !players.length) return;
+  const buckets = { '1-10':0, '11-20':0, '21-30':0, '31-50':0, '51-100':0, '100+':0 };
+  players.forEach(p => {
+    const lv = p.hero_level||1;
+    if (lv <= 10)      buckets['1-10']++;
+    else if (lv <= 20) buckets['11-20']++;
+    else if (lv <= 30) buckets['21-30']++;
+    else if (lv <= 50) buckets['31-50']++;
+    else if (lv <= 100) buckets['51-100']++;
+    else               buckets['100+']++;
+  });
+  const max = Math.max(...Object.values(buckets), 1);
+  el.innerHTML = Object.entries(buckets).map(([label, count]) => {
+    const pct = Math.round(count / max * 100);
+    const h   = Math.max(4, pct * 0.7);
+    return `<div style="display:flex;flex-direction:column;align-items:center;flex:1;gap:2px;">
+      <div style="font-size:.52rem;color:var(--gold2);font-family:Cinzel,serif;">${count}</div>
+      <div style="width:100%;height:${h}px;background:linear-gradient(to top,rgba(201,162,39,.6),rgba(201,162,39,.2));border-radius:3px 3px 0 0;min-height:4px;"></div>
+      <div style="font-size:.5rem;color:var(--text3);">${label}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── SPIELER SPERREN / ENTSPERREN ────────────────
+// Sperren = Level auf 0 setzen + Notiz "BANNED" (kein echter Auth-Ban ohne Server)
+async function _adminToggleBan() {
+  if (!_adminLoggedIn || !_adminTargetPlayer) { _adminLogAction('❌ Kein Spieler!'); return; }
+  try {
+    const p = await sbGet('sm_players', `id=eq.${_adminTargetPlayer.id}&select=hero_level&limit=1`);
+    const lv = p?.[0]?.hero_level||1;
+    const isBanned = lv === 0;
+    if (isBanned) {
+      // Entsperren: Level auf 1 setzen
+      await sbFetch(`${SUPA_URL}/rest/v1/sm_players?id=eq.${_adminTargetPlayer.id}`,
+        {method:'PATCH',headers:{...SUPA_HDR,'Prefer':'return=minimal'},body:JSON.stringify({hero_level:1})});
+      _adminLogAction(`🔓 Entsperrt: ${_adminTargetPlayer.name}`);
+    } else {
+      if (!confirm(`🔒 "${_adminTargetPlayer.name}" sperren? Spieler kann sich nicht mehr anmelden.`)) return;
+      await sbFetch(`${SUPA_URL}/rest/v1/sm_players?id=eq.${_adminTargetPlayer.id}`,
+        {method:'PATCH',headers:{...SUPA_HDR,'Prefer':'return=minimal'},body:JSON.stringify({hero_level:0})});
+      _adminLogAction(`🔒 Gesperrt: ${_adminTargetPlayer.name}`);
+    }
+    _adminLoadPlayerDetail(_adminTargetPlayer.id);
+  } catch(e) { _adminLogAction('❌ Ban/Unban: '+e.message); }
+}
+
+// ── INVENTAR ANSEHEN ────────────────────────────
+async function _adminViewInventory() {
+  if (!_adminLoggedIn || !_adminTargetPlayer) { _adminLog('❌ Kein Spieler!'); return; }
+  const section = document.getElementById('adminInventorySection');
+  const list    = document.getElementById('adminInventoryList');
+  if (!section || !list) return;
+  section.style.display = 'block';
+  list.innerHTML = '<div class="u-xs-muted">Lade...</div>';
+  try {
+    const items = await sbGet('sm_inventory',
+      `player_id=eq.${_adminTargetPlayer.id}&order=rarity.desc&limit=100`);
+    if (!items?.length) { list.innerHTML = '<div class="u-xs-muted">Inventar leer.</div>'; return; }
+    const RCOL = { common:'#668', uncommon:'#40c070', rare:'#50a0e0', epic:'#9060e0', legendary:'#c9a227', mythic:'#f07070' };
+    list.innerHTML = `
+      <div style="font-size:.6rem;color:var(--text3);margin-bottom:4px;">${items.length} Items</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:4px;">
+        ${items.map(it => `
+          <div style="background:rgba(0,0,0,.3);border:1px solid ${RCOL[it.rarity]||'#444'};border-radius:6px;padding:4px 6px;">
+            <div style="font-size:.7rem;">${it.item_emoji||'❓'} ${it.item_name||'?'}</div>
+            <div style="font-size:.58rem;color:${RCOL[it.rarity]||'#aaa'};">${it.rarity||'?'}</div>
+            <div style="font-size:.58rem;color:var(--text3);">+${it.stat_value||0} ${it.item_stat||''}</div>
+          </div>`).join('')}
+      </div>`;
+    _adminLogAction(`🎒 Inventar angesehen: ${_adminTargetPlayer.name} (${items.length} Items)`);
+  } catch(e) { _adminLogAction('❌ Inventar: '+e.message); }
+}
+
+// ── SPIELER-NOTIZEN ─────────────────────────────
+function _adminSaveNote() {
+  if (!_adminTargetPlayer) { _adminLog('❌ Kein Spieler!'); return; }
+  const note = document.getElementById('adminNoteInput')?.value?.trim();
+  if (!note) return;
+  const key = `admin_note_${_adminTargetPlayer.id}`;
+  const existing = JSON.parse(localStorage.getItem(key) || '[]');
+  const ts = new Date().toLocaleString('de-DE');
+  existing.unshift({ ts, note });
+  localStorage.setItem(key, JSON.stringify(existing.slice(0,10)));
+  _adminUpdateNoteDisplay();
+  document.getElementById('adminNoteInput').value = '';
+  _adminLogAction(`📝 Notiz gespeichert: ${_adminTargetPlayer.name}`);
+}
+
+function _adminUpdateNoteDisplay() {
+  const el = document.getElementById('adminNoteDisplay');
+  if (!el || !_adminTargetPlayer) return;
+  const key   = `admin_note_${_adminTargetPlayer.id}`;
+  const notes = JSON.parse(localStorage.getItem(key) || '[]');
+  el.innerHTML = notes.length
+    ? notes.map(n => `<div style="border-bottom:1px solid rgba(255,255,255,.05);padding:2px 0;">
+        <span style="color:rgba(255,255,255,.3);font-size:.55rem;">${n.ts}</span> ${n.note}
+      </div>`).join('')
+    : '<span style="font-style:italic;">Noch keine Notizen.</span>';
+}
+
+// ── EVENT-STEUERUNG ─────────────────────────────
+let _adminForcedEvent = null;
+
+function _adminForceEvent(eventId) {
+  _adminForcedEvent = eventId;
+  // Monkey-patch getActiveEvent für diese Session
+  if (eventId) {
+    const ev = SEASONAL_EVENTS[eventId];
+    if (!ev) { _adminLog('❌ Event nicht gefunden: '+eventId); return; }
+    window._adminGetActiveEvent = window.getActiveEvent;
+    window.getActiveEvent = () => ev;
+    document.getElementById('adminEventStatus').innerHTML =
+      `<span class="admin-badge warn">▶ AKTIV: ${ev.icon} ${ev.name}</span>
+       <span style="color:var(--text3);font-size:.58rem;margin-left:6px;">Nur für diese Session</span>`;
+    _adminLogAction(`🎃 Event erzwungen: ${ev.name}`);
+    // Tab aktualisieren
+    try { renderEventPage(); } catch(e) {}
+    try {
+      const t = document.getElementById('tab-event');
+      if (t) t.style.display = '';
+    } catch(e) {}
+  } else {
+    if (window._adminGetActiveEvent) {
+      window.getActiveEvent = window._adminGetActiveEvent;
+      delete window._adminGetActiveEvent;
+    }
+    document.getElementById('adminEventStatus').innerHTML =
+      '<span class="admin-badge ok">✓ Normal (nach Datum)</span>';
+    _adminLogAction('✕ Event-Override entfernt');
+    try {
+      const t = document.getElementById('tab-event');
+      if (t && !isEventActive()) t.style.display = 'none';
+    } catch(e) {}
+  }
+}
+
+function _adminUpdateEventStatus() {
+  const el = document.getElementById('adminEventStatus');
+  if (!el) return;
+  if (_adminForcedEvent) return; // schon gesetzt
+  const ev = (typeof getActiveEvent === 'function') ? getActiveEvent() : null;
+  el.innerHTML = ev
+    ? `<span class="admin-badge warn">▶ AKTIV: ${ev.icon} ${ev.name}</span>`
+    : '<span class="admin-badge ok">✓ Kein aktives Event</span>';
+}
+
+// ── BULK-AKTIONEN ───────────────────────────────
+async function _adminBulkGiveGold() {
+  if (!_adminLoggedIn) return;
+  const amount = parseInt(document.getElementById('adminBulkGoldInput')?.value) || 1000;
+  if (!confirm(`💰 Allen Spielern +${amount.toLocaleString()} Gold geben?`)) return;
+  try {
+    // Supabase unterstützt kein relatives Update via REST direkt → 
+    // Wir müssen alle Spieler laden und updaten (Batch)
+    const players = await sbGet('sm_players', 'select=id,hero_gold&limit=1000');
+    _adminLog(`⏳ Update ${players?.length||0} Spieler...`);
+    let updated = 0;
+    for (let i=0; i<(players||[]).length; i+=20) {
+      const batch = players.slice(i,i+20);
+      await Promise.all(batch.map(p =>
+        sbFetch(`${SUPA_URL}/rest/v1/sm_players?id=eq.${p.id}`,
+          {method:'PATCH',headers:{...SUPA_HDR,'Prefer':'return=minimal'},
+           body:JSON.stringify({hero_gold:(p.hero_gold||0)+amount})})
+      )).catch(()=>{});
+      updated += batch.length;
+    }
+    _adminLogAction(`💰 Bulk: +${amount.toLocaleString()} Gold an ${updated} Spieler`);
+  } catch(e) { _adminLog('❌ Bulk Gold: '+e.message); }
+}
+
+async function _adminBulkHeal() {
+  if (!_adminLoggedIn) return;
+  if (!confirm('❤️ Alle Spieler vollheilen?')) return;
+  try {
+    // Setze hero_hp auf hero_max_hp — da wir kein SQL-Update haben, 
+    // nutzen wir einen Trick: setze hero_hp auf sehr hohen Wert (wird durch DB-Trigger geclampt)
+    await sbFetch(`${SUPA_URL}/rest/v1/sm_players`,
+      {method:'PATCH',headers:{...SUPA_HDR,'Prefer':'return=minimal'},
+       body:JSON.stringify({hero_hp:9999999})});
+    _adminLogAction('❤️ Alle Spieler vollgeheilt');
+  } catch(e) { _adminLog('❌ Bulk Heal: '+e.message); }
+}
+
+// Override _adminTab to also update event status when switching to global
+const _origAdminTab = typeof _adminTab !== 'undefined' ? _adminTab : null;
+function _adminTab(name) {
+  document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.admin-tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelector(`.admin-tab[onclick="_adminTab('${name}')"]`)?.classList.add('active');
+  document.getElementById(`adminTab-${name}`)?.classList.add('active');
+  if (name === 'global') _adminUpdateEventStatus();
+  if (name === 'stats' && _adminAllPlayers.length) _adminRenderLevelChart(_adminAllPlayers);
+}
+
+// Hook _adminRefreshStats to also render chart
+const _origRefreshStats = _adminRefreshStats;
+async function _adminRefreshStats() {
+  await _origRefreshStats();
+  _adminRenderLevelChart(_adminAllPlayers);
+}
+
+// Hook _adminSelectPlayer to also show notes
+const _origSelectPlayer = _adminSelectPlayer;
+function _adminSelectPlayer(id, name, lv) {
+  _origSelectPlayer(id, name, lv);
+  setTimeout(_adminUpdateNoteDisplay, 100);
+}
 </script>
 
 <!-- ═══ ADMIN PANEL ═══ -->
@@ -13796,8 +14425,8 @@ async function _adminExportData() {
     <!-- Login Screen -->
     <div id="adminLoginBox">
       <h2>🔐 Admin-Zugang</h2>
-      <p style="font-size:.7rem;color:var(--text3);margin-bottom:4px;">Nur für autorisierte Administratoren.</p>
-      <input type="password" id="adminPwInput" placeholder="Passwort eingeben..."
+      <p style="font-size:.7rem;color:var(--text3);margin-bottom:8px;">Nur für autorisierte Administratoren.</p>
+      <input type="password" id="adminPwInput" class="admin-input" style="width:100%;margin-bottom:10px;" placeholder="Passwort eingeben..."
         onkeydown="if(event.key==='Enter')_adminLogin()">
       <div style="display:flex;gap:8px;justify-content:center;">
         <button class="admin-btn green" onclick="_adminLogin()">🔓 Anmelden</button>
@@ -13806,66 +14435,277 @@ async function _adminExportData() {
       <div id="adminLoginError" style="color:#ff4444;font-size:.65rem;margin-top:8px;"></div>
     </div>
 
-    <!-- Admin Dashboard (nach Login) -->
+    <!-- Admin Dashboard -->
     <div id="adminDashboard" style="display:none;">
-      <h2>🛡️ SwordMaster Admin <span style="font-size:.6rem;color:var(--text3);">v1.0</span></h2>
-      <div style="font-size:.62rem;color:var(--text3);margin-bottom:14px;">Angemeldet als Administrator · <a onclick="_adminLogout()" style="color:#ff8888;cursor:pointer;"><span data-i18n="acc.logout">Abmelden</span></a></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+        <h2>🛡️ SwordMaster Admin</h2>
+        <button class="admin-btn" onclick="_adminClose()" style="padding:4px 10px;font-size:.6rem;">✕</button>
+      </div>
+      <div style="font-size:.6rem;color:var(--text3);margin-bottom:12px;">
+        Administrator · <a onclick="_adminLogout()" style="color:#ff8888;cursor:pointer;">Abmelden</a>
+        <span id="adminOnlineBadge" style="margin-left:8px;"></span>
+      </div>
 
-      <!-- Server-Stats -->
-      <div class="admin-section">
-        <div class="admin-section-title">📊 SERVER-STATISTIKEN</div>
-        <div id="adminStats">
-          <div class="u-xs-muted">Lade...</div>
+      <!-- TABS -->
+      <div class="admin-tabs">
+        <button class="admin-tab active" onclick="_adminTab('stats')">📊 Stats</button>
+        <button class="admin-tab" onclick="_adminTab('players')">👥 Spieler</button>
+        <button class="admin-tab" onclick="_adminTab('manage')">🎯 Verwaltung</button>
+        <button class="admin-tab" onclick="_adminTab('global')">⚡ Global</button>
+        <button class="admin-tab" onclick="_adminTab('security')">🔒 Sicherheit</button>
+      </div>
+
+      <!-- TAB: STATS -->
+      <div id="adminTab-stats" class="admin-tab-content active">
+        <div class="admin-section">
+          <div class="admin-section-title" style="display:flex;justify-content:space-between;">
+            <span>📊 SERVER-STATISTIKEN</span>
+            <button class="admin-btn blue" onclick="_adminRefreshStats()" style="padding:2px 8px;font-size:.58rem;">🔄</button>
+          </div>
+          <div id="adminStats"><div class="u-xs-muted">Lade...</div></div>
+        </div>
+        <div class="admin-section">
+          <div class="admin-section-title">🕐 LIVE-AKTIVITÄT</div>
+          <div id="adminActivity"><div class="u-xs-muted">Wird mit Stats geladen...</div></div>
+        </div>
+        <div class="admin-section">
+          <div class="admin-section-title">🏆 TOP-LISTEN</div>
+          <div style="display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap;">
+            <button class="admin-btn blue" onclick="_adminTopList('hero_level')" style="font-size:.6rem;padding:4px 10px;">⭐ Level</button>
+            <button class="admin-btn gold" onclick="_adminTopList('hero_gold')" style="font-size:.6rem;padding:4px 10px;">💰 Gold</button>
+            <button class="admin-btn blue" onclick="_adminTopList('total_kills')" style="font-size:.6rem;padding:4px 10px;">💀 Kills</button>
+            <button class="admin-btn" onclick="_adminTopList('pvp_points')" style="font-size:.6rem;padding:4px 10px;">⚔️ PVP</button>
+          </div>
+          <div id="adminTopList"><div class="u-xs-muted">Klicke eine Kategorie oben.</div></div>
+        </div>
+        <div class="admin-section">
+          <div class="admin-section-title">📈 LEVEL-VERTEILUNG</div>
+          <div id="adminLevelChart" style="height:80px;display:flex;align-items:flex-end;gap:2px;padding:4px;">
+            <div class="u-xs-muted">Wird mit Stats geladen...</div>
+          </div>
         </div>
       </div>
 
-      <!-- Spieler-Übersicht -->
-      <div class="admin-section">
-        <div class="admin-section-title" style="display:flex;align-items:center;justify-content:space-between;">
-          <span>👥 SPIELER</span>
-          <button class="admin-btn blue" onclick="_adminLoadPlayers()" style="padding:3px 10px;font-size:.6rem;">🔄 Laden</button>
+      <!-- TAB: SPIELER -->
+      <div id="adminTab-players" class="admin-tab-content">
+        <div class="admin-section">
+          <div class="admin-section-title" style="display:flex;justify-content:space-between;align-items:center;">
+            <span>👥 ALLE SPIELER</span>
+            <div style="display:flex;gap:4px;">
+              <input id="adminSearchInput" class="admin-input" placeholder="Suche..." style="width:120px;padding:3px 8px;font-size:.62rem;" oninput="_adminFilterPlayers()">
+              <button class="admin-btn blue" onclick="_adminLoadPlayers()" style="padding:3px 10px;font-size:.6rem;">🔄 Laden</button>
+            </div>
+          </div>
+          <div id="adminPlayerList" style="max-height:250px;overflow-y:auto;">
+            <div class="u-xs-muted">Klicke "Laden" um Spieler zu sehen.</div>
+          </div>
         </div>
-        <div id="adminPlayerList" style="max-height:200px;overflow-y:auto;">
-          <div class="u-xs-muted"><span data-i18n="admin.loadPlayers">Klicke "Laden" um Spieler zu sehen.</span></div>
-        </div>
-      </div>
-
-      <!-- Einzel-Spieler Reset -->
-      <div class="admin-section">
-        <div class="admin-section-title">🎯 SPIELER VERWALTEN</div>
-        <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap;align-items:center;">
-          <input id="adminTargetId" placeholder="Player-UUID oder Name..."
-            style="flex:1;min-width:180px;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.1);
-            border-radius:7px;color:var(--text);font-size:.68rem;padding:6px 10px;outline:none;">
-          <button class="admin-btn blue" onclick="_adminFindPlayer()">🔍 Suchen</button>
-        </div>
-        <div id="adminTargetInfo" style="font-size:.65rem;color:var(--text3);margin-bottom:8px;min-height:20px;"></div>
-        <div style="display:flex;flex-wrap:wrap;gap:4px;">
-          <button class="admin-btn" onclick="_adminResetPlayer()">🔄 Spieler resetten</button>
-          <button class="admin-btn gold" onclick="_adminGiveGold()">💰 1M Gold geben</button>
-          <button class="admin-btn gold" onclick="_adminSetLevel()">⬆️ Auf Lv50 setzen</button>
-          <button class="admin-btn" onclick="_adminBanPlayer()" style="border-color:rgba(220,40,40,.6);">🚫 Account löschen</button>
+        <div class="admin-section">
+          <div class="admin-section-title">🏰 GILDEN-ÜBERSICHT</div>
+          <button class="admin-btn blue" onclick="_adminLoadGuilds()" style="font-size:.6rem;padding:4px 10px;margin-bottom:8px;">🔄 Gilden laden</button>
+          <div id="adminGuildList"><div class="u-xs-muted">Noch nicht geladen.</div></div>
         </div>
       </div>
 
-      <!-- Global Aktionen -->
-      <div class="admin-section">
-        <div class="admin-section-title">⚠️ GLOBALE AKTIONEN</div>
-        <div style="display:flex;flex-wrap:wrap;gap:4px;">
-          <button class="admin-btn" onclick="_adminResetAll()">🔄 ALLE Spieler resetten</button>
-          <button class="admin-btn blue" onclick="_adminExportData()">📥 Daten exportieren</button>
-          <button class="admin-btn green" onclick="_adminRefreshStats()">📊 Stats aktualisieren</button>
+      <!-- TAB: VERWALTUNG -->
+      <div id="adminTab-manage" class="admin-tab-content">
+        <!-- Spieler suchen -->
+        <div class="admin-section">
+          <div class="admin-section-title">🔍 SPIELER AUSWÄHLEN</div>
+          <div class="admin-input-row">
+            <input id="adminTargetId" class="admin-input" placeholder="UUID oder Name..." style="flex:1;">
+            <button class="admin-btn blue" onclick="_adminFindPlayer()">🔍 Suchen</button>
+          </div>
+          <div id="adminTargetInfo" style="font-size:.65rem;color:var(--text3);margin-bottom:8px;min-height:18px;"></div>
+          <!-- Detail-Ansicht -->
+          <div id="adminPlayerDetail" style="display:none;" class="admin-detail-card">
+            <div style="font-family:Cinzel,serif;font-size:.75rem;color:#ff8888;margin-bottom:6px;" id="adminDetailName">—</div>
+            <div class="admin-detail-grid" id="adminDetailGrid"></div>
+          </div>
         </div>
-        <div style="font-size:.6rem;color:#ff4444;margin-top:6px;">⚠️ "Alle resetten" ist unwiderruflich!</div>
+
+        <!-- Level & Gold setzen -->
+        <div class="admin-section">
+          <div class="admin-section-title">✏️ WERTE SETZEN</div>
+          <div class="admin-input-row">
+            <span class="admin-input-label">Level:</span>
+            <input id="adminSetLvInput" class="admin-input" type="number" min="1" max="200" placeholder="z.B. 50" style="width:80px;">
+            <button class="admin-btn gold" onclick="_adminSetLevelCustom()">✓ Setzen</button>
+          </div>
+          <div class="admin-input-row">
+            <span class="admin-input-label">Gold:</span>
+            <input id="adminSetGoldInput" class="admin-input" type="number" min="0" placeholder="z.B. 500000" style="width:120px;">
+            <button class="admin-btn gold" onclick="_adminSetGoldCustom()">✓ Setzen</button>
+          </div>
+          <div class="admin-input-row">
+            <span class="admin-input-label">Prestige ✦:</span>
+            <input id="adminSetPrestigeInput" class="admin-input" type="number" min="0" max="8" placeholder="0–8" style="width:60px;">
+            <button class="admin-btn gold" onclick="_adminSetPrestige()">✓ Setzen</button>
+          </div>
+          <div class="admin-input-row">
+            <span class="admin-input-label">PVP-Pkt:</span>
+            <input id="adminSetPvpInput" class="admin-input" type="number" min="0" placeholder="z.B. 1000" style="width:100px;">
+            <button class="admin-btn" onclick="_adminSetPvp()">✓ Setzen</button>
+          </div>
+        </div>
+
+        <!-- Schnell-Aktionen -->
+        <div class="admin-section">
+          <div class="admin-section-title">⚡ SCHNELL-AKTIONEN</div>
+          <div style="display:flex;flex-wrap:wrap;gap:4px;">
+            <button class="admin-btn gold" onclick="_adminGiveGold()">💰 +1M Gold</button>
+            <button class="admin-btn gold" onclick="_adminGiveDungeonKeys()">🗝️ Schlüssel auffüllen</button>
+            <button class="admin-btn green" onclick="_adminFullHeal()">❤️ Vollheilen</button>
+            <button class="admin-btn blue" onclick="_adminViewInventory()">🎒 Inventar ansehen</button>
+            <button class="admin-btn blue" onclick="_adminClearInventory()">🗑️ Inventar leeren</button>
+            <button class="admin-btn" onclick="_adminToggleBan()">🔒 Sperren / Entsperren</button>
+            <button class="admin-btn" onclick="_adminResetPlayer()">🔄 Komplett resetten</button>
+            <button class="admin-btn" onclick="_adminBanPlayer()" style="border-color:rgba(220,40,40,.6);">🚫 Account löschen</button>
+          </div>
+        </div>
+
+        <!-- Inventar-Ansicht -->
+        <div id="adminInventorySection" class="admin-section" style="display:none;">
+          <div class="admin-section-title" style="display:flex;justify-content:space-between;">
+            <span>🎒 INVENTAR</span>
+            <button class="admin-btn" onclick="document.getElementById('adminInventorySection').style.display='none'" style="padding:1px 6px;font-size:.55rem;">✕</button>
+          </div>
+          <div id="adminInventoryList" style="max-height:180px;overflow-y:auto;font-size:.63rem;"></div>
+        </div>
+
+        <!-- Admin-Notizen -->
+        <div class="admin-section">
+          <div class="admin-section-title">📝 ADMIN-NOTIZEN ZUM SPIELER</div>
+          <div id="adminNoteDisplay" style="font-size:.63rem;color:var(--text3);min-height:24px;margin-bottom:6px;font-style:italic;">Kein Spieler ausgewählt.</div>
+          <div class="admin-input-row">
+            <textarea id="adminNoteInput" class="admin-input" rows="2" placeholder="Notiz hinzufügen..." style="flex:1;resize:vertical;font-family:monospace;"></textarea>
+            <button class="admin-btn green" onclick="_adminSaveNote()" style="align-self:flex-end;">💾 Speichern</button>
+          </div>
+        </div>
+
+        <!-- Nachricht senden -->
+        <div class="admin-section">
+          <div class="admin-section-title">📨 BELOHNUNG / NACHRICHT SENDEN</div>
+          <div class="admin-input-row">
+            <span class="admin-input-label">Gold:</span>
+            <input id="adminRewardGold" class="admin-input" type="number" placeholder="0" style="width:100px;">
+          </div>
+          <div class="admin-input-row">
+            <span class="admin-input-label">Grund:</span>
+            <input id="adminRewardMsg" class="admin-input" placeholder="Entschuldigung / Belohnung..." style="flex:1;">
+          </div>
+          <button class="admin-btn green" onclick="_adminSendReward()" style="margin-top:4px;">🎁 Belohnung senden</button>
+        </div>
       </div>
 
-      <!-- Admin Log -->
-      <div class="admin-section">
-        <div class="admin-section-title">📋 ADMIN-LOG</div>
-        <div class="admin-log" id="adminLog"><span data-i18n="admin.ready">Bereit.</span></div>
+      <!-- TAB: GLOBAL -->
+      <div id="adminTab-global" class="admin-tab-content">
+
+        <!-- Event Control -->
+        <div class="admin-section">
+          <div class="admin-section-title">🎃 EVENT-STEUERUNG</div>
+          <div id="adminEventStatus" style="font-size:.65rem;color:var(--text3);margin-bottom:8px;">Lade Event-Status...</div>
+          <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px;">
+            <button class="admin-btn green" onclick="_adminForceEvent('halloween')">🎃 Halloween</button>
+            <button class="admin-btn green" onclick="_adminForceEvent('weihnachten')">🎄 Weihnachten</button>
+            <button class="admin-btn green" onclick="_adminForceEvent('ostern')">🐣 Ostern</button>
+            <button class="admin-btn green" onclick="_adminForceEvent('sommer')">☀️ Sommer</button>
+            <button class="admin-btn" onclick="_adminForceEvent(null)">✕ Event deaktivieren</button>
+          </div>
+          <p style="font-size:.6rem;color:var(--text3);">⚠️ Erzwingt ein Event für ALLE Spieler, ignoriert das Datum.</p>
+        </div>
+
+        <!-- Bulk-Aktionen -->
+        <div class="admin-section">
+          <div class="admin-section-title">👥 BULK-AKTIONEN (alle Spieler)</div>
+          <div style="display:flex;flex-wrap:wrap;gap:4px;">
+            <button class="admin-btn gold" onclick="_adminBulkGiveGold()">💰 Allen +Gold geben</button>
+            <button class="admin-btn green" onclick="_adminBulkHeal()">❤️ Alle vollheilen</button>
+            <button class="admin-btn gold" onclick="_adminRefillAllKeys()">🗝️ Alle Schlüssel auffüllen</button>
+          </div>
+          <div class="admin-input-row" style="margin-top:8px;">
+            <span class="admin-input-label">Gold (alle):</span>
+            <input id="adminBulkGoldInput" class="admin-input" type="number" min="1" placeholder="z.B. 1000" style="width:100px;">
+            <button class="admin-btn gold" onclick="_adminBulkGiveGold()">✓ An alle</button>
+          </div>
+        </div>
+        <div class="admin-section">
+          <div class="admin-section-title">📢 SERVER-ANKÜNDIGUNG</div>
+          <textarea id="adminAnnounce" class="admin-input" rows="3"
+            style="width:100%;resize:vertical;margin-bottom:6px;font-family:monospace;"
+            placeholder="Nachricht an alle Spieler (erscheint im Guild-Chat aller Gilden)..."></textarea>
+          <button class="admin-btn blue" onclick="_adminSendAnnouncement()">📢 An alle Gilden senden</button>
+        </div>
+
+        <div class="admin-section">
+          <div class="admin-section-title">🗝️ GLOBALE SCHLÜSSEL</div>
+          <p style="font-size:.65rem;color:var(--text3);margin-bottom:8px;">Allen Spielern Dungeon-Schlüssel wieder auf Maximum auffüllen.</p>
+          <button class="admin-btn green" onclick="_adminRefillAllKeys()">🗝️ Allen Spielern Schlüssel geben</button>
+        </div>
+
+        <div class="admin-section">
+          <div class="admin-section-title">⚠️ GEFÄHRLICHE AKTIONEN</div>
+          <div style="display:flex;flex-wrap:wrap;gap:4px;">
+            <button class="admin-btn blue" onclick="_adminExportData()">📥 Daten exportieren</button>
+            <button class="admin-btn blue" onclick="_adminImportData()">📤 Daten importieren</button>
+            <button class="admin-btn" onclick="_adminRebuildLeaderboard()">🏆 Leaderboard neu aufbauen</button>
+            <button class="admin-btn" onclick="_adminResetAll()">🔄 ALLE resetten</button>
+          </div>
+          <div style="font-size:.6rem;color:#ff4444;margin-top:6px;">⚠️ Diese Aktionen sind unwiderruflich!</div>
+          <!-- Hidden file input for import -->
+          <input type="file" id="adminImportFile" accept=".json" style="display:none;" onchange="_adminDoImport(this)">
+        </div>
       </div>
 
-      <button class="admin-btn" onclick="_adminClose()" style="width:100%;margin-top:4px;">✕ Panel schließen</button>
+      <!-- TAB: SICHERHEIT -->
+      <div id="adminTab-security" class="admin-tab-content">
+        <div class="admin-section">
+          <div class="admin-section-title" style="display:flex;justify-content:space-between;">
+            <span>🚨 AUDIT-LOG (verdächtige Aktivitäten)</span>
+            <button class="admin-btn blue" onclick="_adminLoadAuditLog()" style="padding:2px 8px;font-size:.58rem;">🔄</button>
+          </div>
+          <div id="adminAuditLog" style="max-height:200px;overflow-y:auto;">
+            <div class="u-xs-muted">Klicke 🔄 um den Audit-Log zu laden.</div>
+          </div>
+        </div>
+
+        <div class="admin-section">
+          <div class="admin-section-title">🔑 ADMIN-PASSWORT ÄNDERN</div>
+          <p style="font-size:.62rem;color:var(--text3);margin-bottom:8px;">
+            SHA-256 Hash auf <a href="https://emn178.github.io/online-tools/sha256.html" target="_blank" style="color:#80aaff;">dieser Seite</a> erzeugen, dann hier eingeben.
+          </p>
+          <div class="admin-input-row">
+            <input id="adminNewHash" class="admin-input" placeholder="Neuer SHA-256 Hash..." style="flex:1;font-size:.6rem;">
+            <button class="admin-btn blue" onclick="_adminChangePassword()">✓ Setzen</button>
+          </div>
+          <div style="font-size:.6rem;color:var(--text3);margin-top:4px;">Aktueller Hash: <span id="adminCurrentHash" style="color:#ff8888;">***</span></div>
+        </div>
+
+        <div class="admin-section">
+          <div class="admin-section-title">📋 GELÖSCHTE SPIELER LOG</div>
+          <div id="adminDeletedLog" style="max-height:120px;overflow-y:auto;font-size:.63rem;color:var(--text3);">
+            Noch keine gelöschten Spieler in dieser Session.
+          </div>
+        </div>
+
+        <div class="admin-section">
+          <div class="admin-section-title">🕵️ ADMIN-AKTIONSPROTOKOLL</div>
+          <p style="font-size:.62rem;color:var(--text3);margin-bottom:6px;">Alle Admin-Aktionen dieser Session.</p>
+          <div id="adminActionLog" style="max-height:150px;overflow-y:auto;font-size:.62rem;font-family:monospace;color:var(--text3);background:rgba(0,0,0,.3);border-radius:7px;padding:8px;">
+            Noch keine Aktionen.
+          </div>
+        </div>
+      </div>
+
+      <!-- Admin Log (immer sichtbar) -->
+      <div class="admin-section" style="margin-top:8px;">
+        <div class="admin-section-title" style="display:flex;justify-content:space-between;">
+          <span>📋 ADMIN-LOG</span>
+          <button onclick="document.getElementById('adminLog').innerHTML=''" class="admin-btn" style="padding:1px 6px;font-size:.55rem;">✕ Leeren</button>
+        </div>
+        <div class="admin-log" id="adminLog">Bereit.</div>
+      </div>
+
     </div>
   </div>
 </div>
