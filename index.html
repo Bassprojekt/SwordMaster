@@ -4842,13 +4842,13 @@ const ITEM_DEFS = [
   { name:'Vampirklinge',     emoji:'🩸', slot:'weapon', sk:'atk', sv:18, eff:'lifesteal',        desc:'Saugt Lebenskraft.' },
   { name:'Kettenbrecher',    emoji:'⛓️', slot:'weapon', sk:'atk', sv:20, eff:null,               desc:'Bricht jede Verteidigung.' },
   { name:'Schattenmesser',   emoji:'🌑', slot:'weapon', sk:'atk', sv:22, eff:null,               desc:'Schlägt aus dem Schatten.' },
-  { name:'Kriegshammer',     emoji:'🔱', slot:'weapon', sk:'atk', sv:28, eff:'stun_on_hit',      desc:'Betäubt bei schwerem Treffer.' },
+  { name:'Kriegshammer',     emoji:'🔱', slot:'weapon', sk:'atk', sv:28, eff:'crit_dmg',      desc:'Betäubt bei schwerem Treffer.' },
   { name:'Drachentöter',     emoji:'🐉', slot:'weapon', sk:'atk', sv:32, eff:null,               desc:'Legendär unter Drachenjägern.' },
-  { name:'Berserkerklinge',  emoji:'😤', slot:'weapon', sk:'atk', sv:35, eff:'berserk',          desc:'Stärker bei niedrigem Leben.' },
+  { name:'Berserkerklinge',  emoji:'😤', slot:'weapon', sk:'atk', sv:35, eff:'berserker',          desc:'Stärker bei niedrigem Leben.' },
   { name:'Seelenzerstörer',  emoji:'💀', slot:'weapon', sk:'atk', sv:45, eff:null,               desc:'Zerstört Seele und Körper.' },
   { name:'Sternensense',     emoji:'⭐', slot:'weapon', sk:'atk', sv:50, eff:null,               desc:'Geformt aus gefallenen Sternen.' },
   { name:'Götterschwerter',  emoji:'⚡', slot:'weapon', sk:'atk', sv:55, eff:null,               desc:'Die Klinge der Götter.' },
-  { name:'Weltvernichter',   emoji:'🌍', slot:'weapon', sk:'atk', sv:70, eff:'chain_lightning',  desc:'Blitz springt auf Nachbarziele.' },
+  { name:'Weltvernichter',   emoji:'🌍', slot:'weapon', sk:'atk', sv:70, eff:'chain',  desc:'Blitz springt auf Nachbarziele.' },
   { name:'Ursprungsklinge',  emoji:'🌟', slot:'weapon', sk:'atk', sv:80, eff:null,               desc:'Die erste aller Klingen.' },
   { name:'Schöpfungsaxt',    emoji:'🌈', slot:'weapon', sk:'atk', sv:95, eff:null,               desc:'Erschuf Welten. Zerstört sie jetzt.' },
 
@@ -4884,7 +4884,7 @@ const ITEM_DEFS = [
   { name:'Feuerhandschuh',   emoji:'🔥', slot:'gloves', sk:'atk', sv:7,  eff:null,               desc:'Heiße Fäuste.' },
   { name:'Knochengreifer',   emoji:'💀', slot:'gloves', sk:'atk', sv:10, eff:null,               desc:'Aus Knochen der Gefallenen.' },
   { name:'Titanfaust',       emoji:'🤛', slot:'gloves', sk:'atk', sv:14, eff:null,               desc:'Zerschlägt Fels wie Papier.' },
-  { name:'Blitzhandschuh',   emoji:'⚡', slot:'gloves', sk:'atk', sv:18, eff:'chain_lightning',  desc:'Blitz springt auf Nachbarziele.' },
+  { name:'Blitzhandschuh',   emoji:'⚡', slot:'gloves', sk:'atk', sv:18, eff:'chain',  desc:'Blitz springt auf Nachbarziele.' },
   { name:'Schattenklaue',    emoji:'🌑', slot:'gloves', sk:'atk', sv:24, eff:null,               desc:'Greift aus dem Nichts an.' },
   { name:'Sternenfaust',     emoji:'⭐', slot:'gloves', sk:'atk', sv:32, eff:null,               desc:'Trifft mit der Kraft der Sterne.' },
   { name:'Sternengreifer',   emoji:'🌟', slot:'gloves', sk:'atk', sv:40, eff:null,               desc:'Greift Feinde wo immer sie sind.' },
@@ -4906,14 +4906,14 @@ const ITEM_DEFS = [
   { name:'Kupferring',       emoji:'🟤', slot:'ring',   sk:'crit', sv:4,  eff:null,              desc:'Glänzender Kupferring.' },
   { name:'Runenring',        emoji:'🔮', slot:'ring',   sk:'crit', sv:7,  eff:null,              desc:'Mit alten Runen graviert.' },
   { name:'Blutring',         emoji:'🩸', slot:'ring',   sk:'crit', sv:9,  eff:'lifesteal',       desc:'Stiehlt Leben bei Kritischen.' },
-  { name:'Giftring',         emoji:'☠️', slot:'ring',   sk:'crit', sv:10, eff:'poison',          desc:'Vergiftet den Feind langsam.' },
+  { name:'Giftring',         emoji:'☠️', slot:'ring',   sk:'crit', sv:10, eff:'poison_on_hit',          desc:'Vergiftet den Feind langsam.' },
   { name:'Arkaner Ring',     emoji:'✨', slot:'ring',   sk:'crit', sv:13, eff:null,              desc:'Pulsiert mit arkaner Energie.' },
   { name:'Seelenstein',      emoji:'💠', slot:'ring',   sk:'crit', sv:15, eff:null,              desc:'Enthält eine eingefangene Seele.' },
-  { name:'Plündererring',    emoji:'💰', slot:'ring',   sk:'crit', sv:16, eff:'gold_bonus',      desc:'Mehr Gold bei Kritischen Treffern.' },
+  { name:'Plündererring',    emoji:'💰', slot:'ring',   sk:'crit', sv:16, eff:'gold_find',      desc:'Mehr Gold bei Kritischen Treffern.' },
   { name:'Ewigkeitsring',    emoji:'♾️', slot:'ring',   sk:'crit', sv:20, eff:null,              desc:'Existiert seit Anbeginn der Zeit.' },
   { name:'Drachenring',      emoji:'🐉', slot:'ring',   sk:'crit', sv:24, eff:null,              desc:'Aus Drachenblut geschmiedet.' },
   { name:'Schicksalsring',   emoji:'🌟', slot:'ring',   sk:'crit', sv:30, eff:null,              desc:'Verbindet sich mit dem Schicksal.' },
-  { name:'Götterring',       emoji:'👑', slot:'ring',   sk:'crit', sv:40, eff:'gold_bonus',      desc:'Träger wurde zum Gott ernannt.' }
+  { name:'Götterring',       emoji:'👑', slot:'ring',   sk:'crit', sv:40, eff:'gold_find',      desc:'Träger wurde zum Gott ernannt.' }
 ];
 
 const UPGRADES = [
@@ -7263,6 +7263,19 @@ function tick() {
       if (fxNow.poison_on_hit && !target._poisonItem) {
         target._poisonItem = { dmg: Math.max(1, Math.floor(ds.atk * 0.04)), turns: 5 };
       }
+      // ── Chain (Kettenangriff): Schaden springt auf Nachbar-Monster ──
+      if (fxNow.chain && G.monsters.length > 1 && Math.random() < 0.4) {
+        const chainDmg = Math.floor(dmg * 0.5);
+        const others = G.monsters.filter(m2 => m2.id !== target.id);
+        const chainTarget = others[Math.floor(Math.random() * others.length)];
+        if (chainTarget && chainDmg > 0) {
+          chainTarget.hp -= chainDmg;
+          floatDmgEl('mon_' + chainTarget.id, chainDmg, '#aaeeff');
+          if (chainTarget.hp <= 0) { try { monsterKilled(chainTarget); } catch(e) {} }
+        }
+      }
+      // ── gold_find: Bonus-Gold bei diesem Kill tracken ──
+      if (fxNow.gold_find > 0) target._goldBonus = (target._goldBonus || 0) + fxNow.gold_find;
       // ── Rune-Effekte ─────────────────────────
       try {
         const em = getEnchantMods();
@@ -7442,7 +7455,8 @@ function monsterKilled(m) {
   // log2(hits+1): 1 Hit→×1.0, 3 Hits→×1.6, 6 Hits→×2.0, 15 Hits→×2.5, 30 Hits→×3.0
   const hardnessMult = Math.min(3.0, 1.0 + Math.log2(hits + 1) * 0.5);
   const waveGoldBonus = (G.research && G.research.has('dung3') && G.wave >= 100) ? 1.2 : 1.0;
-  const gold  = Math.round(m.gold * gm * lk * hardnessMult * waveGoldBonus);
+  const goldFindMult = 1 + (m._goldBonus || 0);
+  const gold  = Math.round(m.gold * gm * lk * hardnessMult * waveGoldBonus * goldFindMult);
   let pickpocketBonus = 0;
   if (G.skills.has('pickpocket') && Math.random() < 0.05) { pickpocketBonus = Math.floor(gold * 0.5 + rng(5,20)); }
   G.hero.xp += xp; G.hero.gold += gold + pickpocketBonus; G.kills++;
@@ -10886,8 +10900,14 @@ async function init() {
 }
 
 async function continueInit() {
-  // Feature-Locks im Hintergrund laden
+  // Wartung + Feature-Locks im Hintergrund laden
   try { await checkFeatureLocks(); } catch(e) {}
+  try {
+    const inMaintenance = await checkMaintenance();
+    if (inMaintenance) return; // Wartungsscreen blockiert — nicht weiterladen
+  } catch(e) {}
+  // Polling starten: alle 60s Wartungsstatus prüfen
+  try { startMaintenancePolling(); } catch(e) {}
 
   document.body.insertAdjacentHTML('beforeend', `
     <div id="loadingScreen" style="position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;">
@@ -15329,76 +15349,142 @@ function renderWorldBossPanel() {
 }
 
 // ════════════════════════════════════════════
-// ── WARTUNGSMODUS SYSTEM
+// ── WARTUNGSMODUS SYSTEM (v2)
 // ════════════════════════════════════════════
 
-// Maintenance-Config wird in Supabase sm_guild_chat mit player_id='__maintenance__' gespeichert
-// Einfache Lösung ohne extra Tabelle
-
-const MAINTENANCE_KEY = '__maintenance__';
+const MAINTENANCE_KEY  = '__maintenance__';
 const FEATURE_LOCK_KEY = '__feature_locks__';
+let _maintenancePollTimer = null;
+let _maintenanceActive    = false;
 
-// Maintenance beim Start prüfen
+// ── Haupt-Prüffunktion (läuft auch im laufenden Spiel) ─────────
 async function checkMaintenance() {
-  // Admin darf immer spielen
-  if (_adminLoggedIn) return false;
+  if (_adminLoggedIn) return false; // Admin immer frei
 
   try {
     const data = await sbGet('sm_guild_chat',
       `player_id=eq.${MAINTENANCE_KEY}&guild_id=eq.00000000-0000-0000-0000-000000000000&order=created_at.desc&limit=1`);
-    if (!data?.length) return false;
 
-    const maint = JSON.parse(data[0].message);
-    if (!maint.active) return false;
+    if (!data?.length) {
+      _hideMaintenance();
+      return false;
+    }
 
-    // Zeitstempel prüfen — abgelaufen?
+    let maint;
+    try { maint = JSON.parse(data[0].message); } catch(e) { _hideMaintenance(); return false; }
+
+    if (!maint.active) { _hideMaintenance(); return false; }
+
+    // Zeitstempel abgelaufen?
     if (maint.until && maint.until > 0 && Date.now() > maint.until) {
-      return false; // Wartung abgelaufen
+      _hideMaintenance();
+      return false;
     }
 
-    // Wartungsscreen zeigen
-    const screen = document.getElementById('maintenanceScreen');
-    if (screen) {
-      screen.style.display = 'flex';
-      document.getElementById('maintenanceMsg').textContent = maint.msg || 'Wartungsarbeiten laufen.';
-      _updateMaintenanceTimer(maint.until);
-    }
+    // Wartung aktiv → Screen anzeigen + Spiel stoppen
+    _showMaintenance(maint);
     return true;
-  } catch(e) { return false; }
+
+  } catch(e) {
+    // Netzwerkfehler → Wartung nicht erzwingen
+    return false;
+  }
 }
 
-function _updateMaintenanceTimer(until) {
-  const el = document.getElementById('maintenanceTimer');
-  if (!el) return;
-  if (!until || until === 0) { el.textContent = 'Dauer: Unbegrenzt'; return; }
-  const update = () => {
+function _showMaintenance(maint) {
+  _maintenanceActive = true;
+
+  // Kampf stoppen
+  try { if (typeof stopCombat === 'function') stopCombat(); } catch(e) {}
+  try { if (typeof _combatRunning !== 'undefined') _combatRunning = false; } catch(e) {}
+
+  const screen = document.getElementById('maintenanceScreen');
+  if (!screen) return;
+
+  // Inhalt setzen
+  const msgEl   = document.getElementById('maintenanceMsg');
+  const timerEl = document.getElementById('maintenanceTimer');
+  if (msgEl)   msgEl.textContent = maint.msg || 'Wartungsarbeiten laufen.';
+
+  // Timer sofort starten
+  if (timerEl) _startMaintenanceCountdown(timerEl, maint.until);
+
+  // Screen über alles
+  screen.style.display = 'flex';
+
+  // Alle anderen Overlays verstecken
+  document.querySelectorAll('.page, .overlay, #adminDashboard').forEach(el => {
+    if (el.id !== 'maintenanceScreen') el.style.pointerEvents = 'none';
+  });
+}
+
+function _hideMaintenance() {
+  if (!_maintenanceActive) return;
+  _maintenanceActive = false;
+
+  const screen = document.getElementById('maintenanceScreen');
+  if (screen) screen.style.display = 'none';
+
+  // Pointer-Events wieder freigeben
+  document.querySelectorAll('.page, .overlay, #adminDashboard').forEach(el => {
+    el.style.pointerEvents = '';
+  });
+}
+
+function _startMaintenanceCountdown(el, until) {
+  // Alten Timer löschen
+  if (el._countdownTimer) clearInterval(el._countdownTimer);
+
+  const tick = () => {
+    if (!_maintenanceActive) { clearInterval(el._countdownTimer); return; }
+    if (!until || until === 0) {
+      el.textContent = '⏳ Dauer: Unbegrenzt';
+      return;
+    }
     const remaining = until - Date.now();
-    if (remaining <= 0) { el.textContent = 'Wartung endet bald...'; return; }
+    if (remaining <= 0) {
+      el.textContent = '✅ Wartung endet gleich...';
+      clearInterval(el._countdownTimer);
+      // Automatisch prüfen ob Wartung beendet
+      setTimeout(() => checkMaintenance(), 3000);
+      return;
+    }
     const h = Math.floor(remaining / 3600000);
     const m = Math.floor((remaining % 3600000) / 60000);
     const s = Math.floor((remaining % 60000) / 1000);
-    el.textContent = `Endet in: ${h > 0 ? h + 'h ' : ''}${m}min ${s}s`;
-    setTimeout(update, 1000);
+    const parts = [];
+    if (h > 0) parts.push(h + 'h');
+    parts.push(m + 'min');
+    parts.push(s + 's');
+    el.textContent = '⏳ Endet in: ' + parts.join(' ');
   };
-  update();
+
+  tick(); // sofort anzeigen
+  el._countdownTimer = setInterval(tick, 1000);
+}
+
+// ── Polling: alle 60s prüfen (auch im laufenden Spiel) ─────────
+function startMaintenancePolling() {
+  if (_maintenancePollTimer) clearInterval(_maintenancePollTimer);
+  _maintenancePollTimer = setInterval(async () => {
+    try { await checkMaintenance(); } catch(e) {}
+  }, 60 * 1000);
 }
 
 async function _checkMaintenanceBypass() {
   const input = document.getElementById('maintenanceBypass');
   const pw = input?.value?.trim();
   if (!pw) return;
-  // SHA-256 Hash prüfen
   const encoder = new TextEncoder();
-  const data = encoder.encode(pw);
-  const hashBuf = await crypto.subtle.digest('SHA-256', data);
+  const hashBuf = await crypto.subtle.digest('SHA-256', encoder.encode(pw));
   const hashHex = Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2,'0')).join('');
   if (hashHex === _ADMIN_HASH) {
-    document.getElementById('maintenanceScreen').style.display = 'none';
     _adminLoggedIn = true;
+    _hideMaintenance();
+    if (input) input.value = '';
     log('🔧 Admin-Bypass: Wartungsmodus übersprungen', 'n');
   } else {
-    input.style.borderColor = 'var(--red2)';
-    setTimeout(() => { if(input) input.style.borderColor = ''; }, 1000);
+    if (input) { input.style.borderColor = 'var(--red2)'; setTimeout(() => { input.style.borderColor = ''; }, 1200); }
   }
 }
 
@@ -15481,6 +15567,7 @@ async function _adminDisableMaintenance() {
   try {
     await sbDelete('sm_guild_chat',
       `player_id=eq.${MAINTENANCE_KEY}&guild_id=eq.00000000-0000-0000-0000-000000000000`);
+    _hideMaintenance(); // Screen sofort ausblenden
     _adminLogAction('✅ Wartungsmodus BEENDET');
     _adminLoadMaintenanceStatus();
   } catch(e) { _adminLog('❌ ' + e.message); }
@@ -15504,17 +15591,23 @@ async function _adminLoadMaintenanceStatus() {
       return;
     }
 
-    const startTime  = new Date(maint.startedAt).toLocaleString('de-DE');
-    const untilTime  = maint.until > 0 ? new Date(maint.until).toLocaleString('de-DE') : 'Unbegrenzt';
-    const remaining  = maint.until > 0 ? Math.max(0, Math.ceil((maint.until - Date.now()) / 60000)) : '∞';
+    const startTime = new Date(maint.startedAt).toLocaleString('de-DE');
+    const untilTime = maint.until > 0 ? new Date(maint.until).toLocaleString('de-DE') : 'Unbegrenzt';
+    const remaining = maint.until > 0 ? Math.max(0, Math.ceil((maint.until - Date.now()) / 60000)) : '∞';
 
     el.innerHTML = `
       <div style="color:var(--orange2);font-family:'Cinzel',serif;font-size:.7rem;margin-bottom:4px;">⚠️ WARTUNGSMODUS AKTIV</div>
       <div style="font-size:.62rem;color:var(--text2);">📢 "${maint.msg}"</div>
       <div style="font-size:.6rem;color:var(--text3);margin-top:4px;">
         Gestartet: ${startTime} · Von: ${maint.startedBy || 'Admin'}<br>
-        Endet: ${untilTime} · Noch: ${remaining} Min
+        Endet: ${untilTime} · Noch ca. <b id="adminMaintRemaining" style="color:var(--orange2);">${remaining} Min</b>
       </div>`;
+
+    // Live-Countdown im Admin-Status
+    if (maint.until > 0) {
+      const remEl = document.getElementById('adminMaintRemaining');
+      if (remEl) _startMaintenanceCountdown(remEl, maint.until);
+    }
   } catch(e) {
     el.innerHTML = '<span style="color:var(--red2);">❌ Status nicht ladbar</span>';
   }
