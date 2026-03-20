@@ -9739,7 +9739,8 @@ function renderGuild(){
 async function loadPublicGuilds(){
   const list=document.getElementById('publicGuildsList');if(!list)return;
   list.innerHTML='<div style="font-family:\'Cinzel\',serif;font-size:.75rem;color:var(--text2);margin-bottom:6px;">Öffentliche Gilden:</div>';
-  const guilds=await sbGet('sm_guilds','order=level.desc&limit=10');
+  // id=neq. schließt die globale Chat-Gilde (00000000-...) aus
+  const guilds=await sbGet('sm_guilds','id=neq.00000000-0000-0000-0000-000000000000&order=level.desc&limit=10');
   if(!guilds||!guilds.length){list.innerHTML+='<div style="color:var(--text2);font-size:.73rem;font-style:italic;padding:6px;">Noch keine Gilden. Sei der Erste!</div>';return;}
   guilds.forEach(g=>{
     const d=document.createElement('div');
