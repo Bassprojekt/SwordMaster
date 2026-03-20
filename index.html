@@ -4796,13 +4796,14 @@ const MONSTERS = [
 ];
 
 const RARITIES = [
-  // Gewichte: Legendary ~0.06% base (ab Lv60), Mythic ~0.002% base (ab Lv100)
-  { id:'common',    label:'Gewöhnlich',   col:'#888',   weight:1800 },
-  { id:'uncommon',  label:'Ungewöhnlich', col:'#40c070',weight:600  },
-  { id:'rare',      label:'Selten',       col:'#50a0e0',weight:120  },
-  { id:'epic',      label:'Episch',       col:'#9060e0',weight:18   },
-  { id:'legendary', label:'Legendär',     col:'#c9a227',weight:1.5  },
-  { id:'mythic',    label:'Mystisch',     col:'#f07070',weight:0.3  },
+  // Gewichte kalibriert: Legendary ~0.18% base ab Lv60, Mythic ~0.012% base ab Lv100
+  // Bei Auto-Schmied 1.2s: erste Legendary ~60min nach Lv60, Mythic ~280min nach Lv100
+  { id:'common',    label:'Gewöhnlich',   col:'#888',   weight:1500 },
+  { id:'uncommon',  label:'Ungewöhnlich', col:'#40c070',weight:500  },
+  { id:'rare',      label:'Selten',       col:'#50a0e0',weight:150  },
+  { id:'epic',      label:'Episch',       col:'#9060e0',weight:30   },
+  { id:'legendary', label:'Legendär',     col:'#c9a227',weight:3    },
+  { id:'mythic',    label:'Mystisch',     col:'#f07070',weight:0.2  },
 ];
 // Seltener = profitiert mehr vom Bonus (statt flaches +b*0.3 für alle)
 const RAR_TIER_FACTORS = [0, 0.15, 0.3, 0.5, 0.8, 1.2];
@@ -5497,7 +5498,7 @@ function pickRarity() {
     // Harte Level-Sperren — Seltenheit erst spät verfügbar
     if (i === 5 && lv < 100) return 0;  // Mythic:    ab Lv100
     if (i === 4 && lv < 60)  return 0;  // Legendary: ab Lv60
-    if (i === 3 && lv < 25)  return 0;  // Epic:      ab Lv25
+    if (i === 3 && lv < 20)  return 0;  // Epic:      ab Lv20
     if (i === 2 && lv < 10)  return 0;  // Rare:      ab Lv10
     if (i === 0) return Math.max(80, r.weight * Math.max(0.1, 1 - b * 0.5));
     return r.weight * (1 + b * RAR_TIER_FACTORS[i]);
@@ -6599,11 +6600,13 @@ function forgeWithFurnace() {
     }
     // Mythic-Meisterwerk: NUR ab Lv100, NUR wenn bereits Legendary gewürfelt
     // Kein Bypass des Gewichtssystems — nur ein Upgrade von Legendary → Mythic
-    const mythChance = (lv >= 100 && rar.id === 'legendary')
-      ? 0.05 + (G.furnaceLevel - 1) * 0.01 + (G.research && G.research.has('forge3') ? 0.03 : 0)
+    // mythChance: winziger Zusatz-Trigger — nur ab Lv100
+    // 0.1% base = 1 in 1000 Schmiedungen (~20 Min) als Extra-Chance
+    const mythChance = (lv >= 100)
+      ? 0.001 + (G.furnaceLevel - 1) * 0.0002 + (G.research && G.research.has('forge3') ? 0.0005 : 0)
       : 0;
-    if (Math.random() < mythChance) {
-      rar = RARITIES[5]; // Mythic
+    if (mythChance > 0 && Math.random() < mythChance) {
+      rar = RARITIES[5]; // Mythic — seltener Bonus-Trigger
       setTimeout(() => {
         const btn = document.getElementById('forgeBtn');
         if (btn) { btn.classList.add('masterwork-flash'); setTimeout(() => btn.classList.remove('masterwork-flash'), 900); }
@@ -6672,7 +6675,7 @@ function pickRarityWithFurnace() {
   const w = RARITIES.map((r, i) => {
     if (i === 5 && lv < 100) return 0;  // Mythic:    ab Lv100
     if (i === 4 && lv < 60)  return 0;  // Legendary: ab Lv60
-    if (i === 3 && lv < 25)  return 0;  // Epic:      ab Lv25
+    if (i === 3 && lv < 20)  return 0;  // Epic:      ab Lv20
     if (i === 2 && lv < 10)  return 0;  // Rare:      ab Lv10
     if (i === 0) return Math.max(80, r.weight * Math.max(0.1, 1 - b * 0.5));
     return r.weight * (1 + b * RAR_TIER_FACTORS[i]);
