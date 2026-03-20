@@ -16840,6 +16840,162 @@ async function _adminResetAchievements() {
   } catch(e) { _adminLog('❌ '+e.message); }
 }
 
+// ── NEUE EVENT-FUNKTIONEN ─────────────────────────────────────
+
+async function _adminResetEventBoss() {
+  if (!_adminLoggedIn || !_adminTargetPlayer) { _adminLog('❌ Kein Spieler!'); return; }
+  try {
+    await sbFetch(`${SUPA_URL}/rest/v1/sm_players?id=eq.${_adminTargetPlayer.id}`,
+      {method:'PATCH',headers:{...SUPA_HDR,'Prefer':'return=minimal'},
+       body:JSON.stringify({event_boss:'{}'})});
+    _adminLogAction(`💀 Event-Boss-Fortschritt reset: ${_adminTargetPlayer.name}`);
+  } catch(e) { _adminLog('❌ '+e.message); }
+}
+
+async function _adminBulkResetEvents() {
+  if (!_adminLoggedIn) return;
+  if (!confirm('🔄 Event-Fortschritt ALLER Spieler zurücksetzen?')) return;
+  try {
+    await sbFetch(`${SUPA_URL}/rest/v1/sm_players`,
+      {method:'PATCH',headers:{...SUPA_HDR,'Prefer':'return=minimal'},
+       body:JSON.stringify({event_progress:'{}', event_claimed:'[]', event_purchased:'[]', event_boss:'{}'})});
+    _adminLogAction('🔄 Event-Fortschritt aller Spieler zurückgesetzt');
+  } catch(e) { _adminLog('❌ '+e.message); }
+}
+
+async function _adminBulkGiveEventCurrency() {
+  if (!_adminLoggedIn) return;
+  const amt = parseInt(document.getElementById('adminBulkEventAmt')?.value) || 100;
+  if (!confirm(`💎 Allen Spielern ${amt} Event-Währung geben?`)) return;
+  try {
+    // Aktuelle Event-Währung aller Spieler laden und erhöhen
+    const players = await sbGet('sm_players', 'select=id,event_currency&limit=1000');
+    if (!players?.length) { _adminLog('❌ Keine Spieler gefunden'); return; }
+    const ev = typeof getActiveEvent === 'function' ? getActiveEvent() : null;
+    const key = ev?.currency?.id || 'gold_coin';
+    let updated = 0;
+    for (const p of players) {
+      try {
+        const cur = JSON.parse(p.event_currency || '{}');
+        cur[key] = (cur[key] || 0) + amt;
+        await sbFetch(`${SUPA_URL}/rest/v1/sm_players?id=eq.${p.id}`,
+          {method:'PATCH',headers:{...SUPA_HDR,'Prefer':'return=minimal'},
+           body:JSON.stringify({event_currency:JSON.stringify(cur)})});
+        updated++;
+      } catch(e) {}
+    }
+    _adminLogAction(`💎 +${amt} Event-Währung (${key}) an ${updated} Spieler`);
+  } catch(e) { _adminLog('❌ '+e.message); }
+}
+
+async function _adminResetWorldBosses() {
+  if (!_adminLoggedIn || !_adminTargetPlayer) { _adminLog('❌ Kein Spieler!'); return; }
+  if (!confirm(`⚠️ Weltbosse von "${_adminTargetPlayer.name}" zurücksetzen? Alle Bosse werden wieder verfügbar.`)) return;
+  // Weltbosse werden im localStorage gespeichert — wir schicken dem Spieler einen Reset via Supabase-Note
+  _adminLog('ℹ️ Weltbosse werden lokal gespeichert. Spieler muss Cache leeren oder Admin kann über Konsole helfen.');
+  _adminLogAction(`⚠️ Weltboss-Reset angefragt für: ${_adminTargetPlayer.name} (manuell nötig)`);
+}
+
+async function _adminUnlockNextWorldBoss() {
+  if (!_adminLoggedIn || !_adminTargetPlayer) { _adminLog('❌ Kein Spieler!'); return; }
+  _adminLog('ℹ️ Weltbosse werden lokal gespeichert. Spieler kann über den Browser-Cache direkt angepasst werden.');
+  _adminLogAction(`⚡ Weltboss-Unlock angefragt für: ${_adminTargetPlayer.name}`);
+}
+
+// ── NEUE ACHIEVEMENT-FUNKTIONEN ───────────────────────────────
+
+async function _adminSetAchPoints() {
+  if (!_adminLoggedIn || !_adminTargetPlayer) { _adminLog('❌ Kein Spieler!'); return; }
+  const pts = parseInt(document.getElementById('adminAchPtsInput')?.value);
+  if (isNaN(pts) || pts < 0) { _adminLog('❌ Gültige Punktzahl eingeben'); return; }
+  try {
+    await sbFetch(`${SUPA_URL}/rest/v1/sm_players?id=eq.${_adminTargetPlayer.id}`,
+      {method:'PATCH',headers:{...SUPA_HDR,'Prefer':'return=minimal'},
+       body:JSON.stringify({ach_points: pts})});
+    _adminLogAction(`⭐ Achievement-Punkte gesetzt: ${pts} → ${_adminTargetPlayer.name}`);
+    _adminLoadPlayerDetail(_adminTargetPlayer.id);
+  } catch(e) { _adminLog('❌ '+e.message); }
+}
+
+async function _adminAddAchPoints() {
+  if (!_adminLoggedIn || !_adminTargetPlayer) { _adminLog('❌ Kein Spieler!'); return; }
+  const bonus = parseInt(document.getElementById('adminAchPtsBonus')?.value);
+  if (isNaN(bonus) || bonus <= 0) { _adminLog('❌ Gültige Punktzahl eingeben'); return; }
+  try {
+    const p = await sbGet('sm_players', `id=eq.${_adminTargetPlayer.id}&select=ach_points&limit=1`);
+    const current = p?.[0]?.ach_points || 0;
+    const newPts  = current + bonus;
+    await sbFetch(`${SUPA_URL}/rest/v1/sm_players?id=eq.${_adminTargetPlayer.id}`,
+      {method:'PATCH',headers:{...SUPA_HDR,'Prefer':'return=minimal'},
+       body:JSON.stringify({ach_points: newPts})});
+    _adminLogAction(`⭐ +${bonus} Achievement-Punkte → ${_adminTargetPlayer.name} (jetzt: ${newPts})`);
+    _adminLoadPlayerDetail(_adminTargetPlayer.id);
+  } catch(e) { _adminLog('❌ '+e.message); }
+}
+
+async function _adminResetAchShop() {
+  if (!_adminLoggedIn || !_adminTargetPlayer) { _adminLog('❌ Kein Spieler!'); return; }
+  if (!confirm(`🛒 Achievement-Shop-Käufe von "${_adminTargetPlayer.name}" zurücksetzen?`)) return;
+  _adminLog('ℹ️ Shop-Käufe werden lokal gespeichert (sm3_extra). Spieler muss Cache leeren oder Browser-Storage zurücksetzen.');
+  _adminLogAction(`🛒 Ach-Shop-Reset angefragt: ${_adminTargetPlayer.name}`);
+}
+
+async function _adminShowPlayerAchs() {
+  if (!_adminLoggedIn || !_adminTargetPlayer) { _adminLog('❌ Kein Spieler auswählen!'); return; }
+  const el = document.getElementById('adminPlayerAchList');
+  if (!el) return;
+  el.innerHTML = '<div class="u-xs-muted">Lade...</div>';
+  try {
+    const p = await sbGet('sm_players', `id=eq.${_adminTargetPlayer.id}&select=ach_unlocked,ach_points&limit=1`);
+    const unlocked = JSON.parse(p?.[0]?.ach_unlocked || '[]');
+    const pts      = p?.[0]?.ach_points || 0;
+    if (!unlocked.length) { el.innerHTML = '<div class="u-xs-muted">Keine Achievements freigeschaltet.</div>'; return; }
+    el.innerHTML = `<div style="font-size:.62rem;color:var(--gold2);margin-bottom:6px;">⭐ ${pts} Punkte · ${unlocked.length} freigeschaltet</div>` +
+      unlocked.map(id => {
+        const ach = typeof ACHIEVEMENTS !== 'undefined' ? ACHIEVEMENTS.find(a => a.id === id) : null;
+        return `<div style="display:flex;align-items:center;gap:6px;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:.63rem;">
+          <span>${ach ? ach.icon : '🏅'}</span>
+          <span style="flex:1;color:var(--text);">${ach ? ach.name : id}</span>
+          <button onclick="_adminRevokeSpecific('${id}')" style="background:rgba(220,40,40,.12);border:1px solid rgba(220,40,40,.3);border-radius:4px;color:#ff8888;font-size:.55rem;padding:1px 5px;cursor:pointer;">✕</button>
+        </div>`;
+      }).join('');
+  } catch(e) { _adminLog('❌ '+e.message); }
+}
+
+async function _adminRevokeSpecific(achId) {
+  if (!_adminLoggedIn || !_adminTargetPlayer) return;
+  try {
+    const p = await sbGet('sm_players', `id=eq.${_adminTargetPlayer.id}&select=ach_unlocked&limit=1`);
+    const unlocked = JSON.parse(p?.[0]?.ach_unlocked || '[]');
+    const newList  = unlocked.filter(x => x !== achId);
+    await sbFetch(`${SUPA_URL}/rest/v1/sm_players?id=eq.${_adminTargetPlayer.id}`,
+      {method:'PATCH',headers:{...SUPA_HDR,'Prefer':'return=minimal'},
+       body:JSON.stringify({ach_unlocked:JSON.stringify(newList)})});
+    _adminLogAction(`🗑️ Achievement entfernt: "${achId}" von ${_adminTargetPlayer.name}`);
+    _adminShowPlayerAchs(); // Liste aktualisieren
+  } catch(e) { _adminLog('❌ '+e.message); }
+}
+
+async function _adminBulkGiveAchPoints() {
+  if (!_adminLoggedIn) return;
+  const pts = parseInt(document.getElementById('adminBulkAchPts')?.value) || 50;
+  if (!confirm(`⭐ Allen Spielern ${pts} Achievement-Punkte geben?`)) return;
+  try {
+    const players = await sbGet('sm_players', 'select=id,ach_points&limit=1000');
+    if (!players?.length) { _adminLog('❌ Keine Spieler'); return; }
+    let updated = 0;
+    for (const p of players) {
+      try {
+        await sbFetch(`${SUPA_URL}/rest/v1/sm_players?id=eq.${p.id}`,
+          {method:'PATCH',headers:{...SUPA_HDR,'Prefer':'return=minimal'},
+           body:JSON.stringify({ach_points:(p.ach_points||0)+pts})});
+        updated++;
+      } catch(e) {}
+    }
+    _adminLogAction(`⭐ +${pts} Achievement-Punkte an ${updated} Spieler`);
+  } catch(e) { _adminLog('❌ '+e.message); }
+}
+
 async function _adminLoadAchStats() {
   if (!_adminLoggedIn) return;
   const el = document.getElementById('adminAchStats');
@@ -17322,16 +17478,42 @@ async function _adminBulkHeal() {
           <button class="admin-btn blue" onclick="_adminLoadEventStats()" style="font-size:.6rem;padding:4px 10px;margin-bottom:8px;">🔄 Statistiken laden</button>
           <div id="adminEventStats"><div class="u-xs-muted">Noch nicht geladen.</div></div>
         </div>
+
+        <!-- Einzelspieler Event-Verwaltung -->
         <div class="admin-section">
-          <div class="admin-section-title">🏪 EVENT-VERWALTUNG (ausgewählter Spieler)</div>
-          <p style="font-size:.62rem;color:var(--text3);margin-bottom:6px;">Spieler muss im Tab "Verwaltung" ausgewählt sein.</p>
+          <div class="admin-section-title">👤 EVENT — AUSGEWÄHLTER SPIELER</div>
+          <p style="font-size:.62rem;color:var(--text3);margin-bottom:8px;">Spieler muss im Tab "Verwaltung" ausgewählt sein.</p>
           <div style="display:flex;gap:4px;flex-wrap:wrap;">
             <button class="admin-btn blue" onclick="_adminResetEventProgress()">🔄 Event-Fortschritt reset</button>
             <button class="admin-btn gold" onclick="_adminGiveEventCurrency()">💎 Event-Währung geben</button>
+            <button class="admin-btn blue" onclick="_adminResetEventBoss()">💀 Boss-Fortschritt reset</button>
+          </div>
+          <div class="admin-input-row" style="margin-top:6px;">
+            <span class="admin-input-label">Währung:</span>
+            <input id="adminEventCurrencyAmt" class="admin-input" type="number" min="1" value="50" style="width:80px;">
+          </div>
+        </div>
+
+        <!-- Bulk Event-Aktionen -->
+        <div class="admin-section">
+          <div class="admin-section-title">👥 EVENT — ALLE SPIELER</div>
+          <div style="display:flex;gap:4px;flex-wrap:wrap;">
+            <button class="admin-btn blue" onclick="_adminBulkResetEvents()">🔄 Event-Fortschritt alle reset</button>
+            <button class="admin-btn gold" onclick="_adminBulkGiveEventCurrency()">💎 Event-Währung an alle</button>
           </div>
           <div class="admin-input-row" style="margin-top:6px;">
             <span class="admin-input-label">Menge:</span>
-            <input id="adminEventCurrencyAmt" class="admin-input" type="number" min="1" value="50" style="width:80px;">
+            <input id="adminBulkEventAmt" class="admin-input" type="number" min="1" value="100" style="width:80px;">
+          </div>
+        </div>
+
+        <!-- Weltbosse -->
+        <div class="admin-section">
+          <div class="admin-section-title">⚠️ WELTBOSSE — AUSGEWÄHLTER SPIELER</div>
+          <p style="font-size:.62rem;color:var(--text3);margin-bottom:8px;">Spieler muss im Tab "Verwaltung" ausgewählt sein.</p>
+          <div style="display:flex;gap:4px;flex-wrap:wrap;">
+            <button class="admin-btn blue" onclick="_adminResetWorldBosses()">🔄 Weltbosse reset (alle wieder verfügbar)</button>
+            <button class="admin-btn gold" onclick="_adminUnlockNextWorldBoss()">⚡ Nächsten Weltboss freischalten</button>
           </div>
         </div>
       </div>
@@ -17345,6 +17527,8 @@ async function _adminBulkHeal() {
           </div>
           <div id="adminAchStats"><div class="u-xs-muted">Klicke 🔄 zum Laden.</div></div>
         </div>
+
+        <!-- Achievement vergeben -->
         <div class="admin-section">
           <div class="admin-section-title">🏅 ACHIEVEMENT VERGEBEN</div>
           <p style="font-size:.62rem;color:var(--text3);margin-bottom:8px;">Spieler muss im Tab "Verwaltung" ausgewählt sein.</p>
@@ -17363,6 +17547,8 @@ async function _adminBulkHeal() {
           <div id="adminAchPreview" style="font-size:.63rem;color:var(--gold2);margin:6px 0;min-height:18px;"></div>
           <button class="admin-btn gold" onclick="_adminGrantAchievement()">🏅 Achievement vergeben</button>
         </div>
+
+        <!-- Achievement entfernen -->
         <div class="admin-section">
           <div class="admin-section-title">🗑️ ACHIEVEMENT ENTFERNEN</div>
           <div class="admin-input-row">
@@ -17370,10 +17556,54 @@ async function _adminBulkHeal() {
             <button class="admin-btn" onclick="_adminRevokeAchievement()">✕ Entfernen</button>
           </div>
         </div>
+
+        <!-- Punkte setzen -->
         <div class="admin-section">
-          <div class="admin-section-title">🔄 BULK ACHIEVEMENT RESET</div>
-          <p style="font-size:.62rem;color:var(--text3);margin-bottom:6px;">Setzt alle Achievements eines Spielers zurück.</p>
-          <button class="admin-btn" onclick="_adminResetAchievements()">🔄 Alle Achievements reset</button>
+          <div class="admin-section-title">⭐ ACHIEVEMENT-PUNKTE SETZEN</div>
+          <p style="font-size:.62rem;color:var(--text3);margin-bottom:6px;">Spieler muss im Tab "Verwaltung" ausgewählt sein.</p>
+          <div class="admin-input-row">
+            <span class="admin-input-label">Punkte:</span>
+            <input id="adminAchPtsInput" class="admin-input" type="number" min="0" placeholder="z.B. 500" style="width:100px;">
+            <button class="admin-btn gold" onclick="_adminSetAchPoints()">✓ Setzen</button>
+          </div>
+          <div class="admin-input-row" style="margin-top:4px;">
+            <span class="admin-input-label">Bonus:</span>
+            <input id="adminAchPtsBonus" class="admin-input" type="number" min="0" placeholder="z.B. 100" style="width:100px;">
+            <button class="admin-btn green" onclick="_adminAddAchPoints()">+ Hinzufügen</button>
+          </div>
+        </div>
+
+        <!-- Achievement-Shop reset -->
+        <div class="admin-section">
+          <div class="admin-section-title">🛒 ACHIEVEMENT-SHOP RESET</div>
+          <p style="font-size:.62rem;color:var(--text3);margin-bottom:6px;">Spieler kann alle Shop-Items erneut kaufen.</p>
+          <div style="display:flex;gap:4px;flex-wrap:wrap;">
+            <button class="admin-btn blue" onclick="_adminResetAchShop()">🔄 Shop-Käufe reset</button>
+            <button class="admin-btn blue" onclick="_adminResetAchievements()">🔄 Alle Achievements reset</button>
+          </div>
+        </div>
+
+        <!-- Alle Achievements anzeigen (aktueller Spieler) -->
+        <div class="admin-section">
+          <div class="admin-section-title" style="display:flex;justify-content:space-between;">
+            <span>📋 FREIGESCHALTETE ACHIEVEMENTS</span>
+            <button class="admin-btn blue" onclick="_adminShowPlayerAchs()" style="padding:2px 8px;font-size:.58rem;">🔄</button>
+          </div>
+          <div id="adminPlayerAchList" style="max-height:180px;overflow-y:auto;">
+            <div class="u-xs-muted">Spieler auswählen → 🔄 klicken</div>
+          </div>
+        </div>
+
+        <!-- Bulk Achievement-Aktionen -->
+        <div class="admin-section">
+          <div class="admin-section-title">👥 BULK — ALLE SPIELER</div>
+          <div style="display:flex;gap:4px;flex-wrap:wrap;">
+            <button class="admin-btn gold" onclick="_adminBulkGiveAchPoints()">⭐ Punkte an alle geben</button>
+          </div>
+          <div class="admin-input-row" style="margin-top:6px;">
+            <span class="admin-input-label">Punkte:</span>
+            <input id="adminBulkAchPts" class="admin-input" type="number" min="1" value="50" style="width:80px;">
+          </div>
         </div>
       </div>
 
