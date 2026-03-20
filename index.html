@@ -3895,18 +3895,91 @@ button, .nav-tab, .ctrl-btn, .upg-card, .skill-card,
 </div>
 
 <!-- ═══ WARTUNGSMODUS SCREEN ═══ -->
-<div id="maintenanceScreen" style="display:none;position:fixed;inset:0;z-index:99999;background:linear-gradient(160deg,#0a0812,#05030d);align-items:center;justify-content:center;flex-direction:column;gap:20px;">
-  <div style="text-align:center;padding:30px 24px;max-width:420px;">
-    <div style="font-size:3rem;margin-bottom:12px;">🔧</div>
-    <div style="font-family:'Cinzel',serif;font-size:1.4rem;color:var(--gold2);margin-bottom:8px;">Wartungsarbeiten</div>
-    <div style="font-size:.78rem;color:var(--text2);margin-bottom:20px;line-height:1.6;" id="maintenanceMsg">Das Spiel wird gerade gewartet.</div>
-    <div id="maintenanceTimer" style="font-family:'Cinzel',serif;font-size:1.1rem;color:var(--orange2);margin-bottom:16px;"></div>
-    <div style="font-size:.65rem;color:var(--text3);font-style:italic;">Bitte später wieder vorbeischauen.</div>
-    <!-- Admin kann trotzdem spielen — versteckter Bypass -->
-    <div style="margin-top:24px;">
-      <input id="maintenanceBypass" type="password" placeholder="Admin-Passwort..." 
-        style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:var(--text2);font-size:.7rem;padding:7px 12px;outline:none;text-align:center;width:180px;"
-        onkeydown="if(event.key==='Enter')_checkMaintenanceBypass()">
+<div id="maintenanceScreen" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(4,2,10,0.96);align-items:center;justify-content:center;flex-direction:column;gap:0;overflow:hidden;">
+
+  <!-- Diagonaler Hintergrund-Text (Wasserzeichen-Stil) -->
+  <div id="maintenanceBgText" style="
+    position:absolute;inset:0;
+    display:flex;align-items:center;justify-content:center;
+    pointer-events:none;overflow:hidden;
+    ">
+    <div style="
+      font-family:'Cinzel',serif;
+      font-size:clamp(60px,12vw,130px);
+      font-weight:900;
+      color:rgba(255,100,0,0.07);
+      white-space:nowrap;
+      letter-spacing:0.15em;
+      transform:rotate(-25deg) translateY(-10%);
+      text-transform:uppercase;
+      line-height:1.1;
+      user-select:none;
+      " id="maintenanceBgLabel">WARTUNG</div>
+  </div>
+
+  <!-- Haupt-Inhalt -->
+  <div style="
+    position:relative;z-index:2;
+    text-align:center;
+    padding:40px 32px;
+    max-width:460px;
+    width:90%;
+    background:rgba(10,6,20,0.85);
+    border:1px solid rgba(255,100,0,0.25);
+    border-radius:20px;
+    backdrop-filter:blur(8px);
+    box-shadow:0 0 60px rgba(255,80,0,0.15), inset 0 0 40px rgba(0,0,0,0.4);
+    ">
+
+    <!-- Icon + Titel -->
+    <div style="font-size:3rem;margin-bottom:14px;filter:drop-shadow(0 0 20px rgba(255,120,0,0.6));">🔧</div>
+    <div style="font-family:'Cinzel',serif;font-size:1.5rem;font-weight:900;color:#ff8040;margin-bottom:6px;letter-spacing:.08em;">
+      WARTUNGSARBEITEN
+    </div>
+    <div style="width:60px;height:2px;background:linear-gradient(to right,transparent,rgba(255,120,0,0.6),transparent);margin:0 auto 16px;"></div>
+
+    <!-- Nachricht -->
+    <div id="maintenanceMsg" style="
+      font-size:.82rem;color:rgba(255,255,255,.75);
+      line-height:1.7;margin-bottom:20px;
+      padding:12px 16px;
+      background:rgba(255,255,255,.04);
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,.06);
+      ">Das Spiel wird gerade gewartet.</div>
+
+    <!-- Timer -->
+    <div id="maintenanceTimer" style="
+      font-family:'Cinzel',serif;
+      font-size:1rem;
+      color:#ff9050;
+      margin-bottom:6px;
+      font-weight:700;
+      letter-spacing:.04em;
+      "></div>
+
+    <div style="font-size:.62rem;color:rgba(255,255,255,.3);margin-bottom:24px;font-style:italic;">
+      Bitte hab etwas Geduld — wir sind gleich wieder da!
+    </div>
+
+    <!-- Admin Bypass -->
+    <div style="border-top:1px solid rgba(255,255,255,.06);padding-top:16px;">
+      <input id="maintenanceBypass" type="password" placeholder="Admin-Zugang..."
+        style="
+          background:rgba(255,255,255,.05);
+          border:1px solid rgba(255,255,255,.1);
+          border-radius:8px;
+          color:rgba(255,255,255,.6);
+          font-size:.7rem;
+          padding:8px 14px;
+          outline:none;
+          text-align:center;
+          width:180px;
+          transition:border-color .2s;
+          "
+        onkeydown="if(event.key==='Enter')_checkMaintenanceBypass()"
+        onfocus="this.style.borderColor='rgba(255,120,0,.4)'"
+        onblur="this.style.borderColor='rgba(255,255,255,.1)'">
     </div>
   </div>
 </div>
@@ -14710,7 +14783,7 @@ async function loadGlobalChat() {
 
   try {
     const msgs = await sbGet('sm_guild_chat',
-      `guild_id=eq.00000000-0000-0000-0000-000000000000&order=created_at.desc&limit=60`);
+      `guild_id=eq.00000000-0000-0000-0000-000000000000&player_id=neq.${MAINTENANCE_KEY}&player_id=neq.${FEATURE_LOCK_KEY}&order=created_at.desc&limit=60`);
 
     if (msgs === null) {
       // sbGet gab null zurück → Verbindungsfehler oder RLS
@@ -15404,7 +15477,15 @@ function _showMaintenance(maint) {
   // Inhalt setzen
   const msgEl   = document.getElementById('maintenanceMsg');
   const timerEl = document.getElementById('maintenanceTimer');
+  const bgLabel = document.getElementById('maintenanceBgLabel');
+
   if (msgEl)   msgEl.textContent = maint.msg || 'Wartungsarbeiten laufen.';
+
+  // Diagonaler Hintergrund-Text: "WARTUNG · Von: AdminName"
+  if (bgLabel) {
+    const byText = maint.startedBy ? maint.startedBy.toUpperCase() : 'ADMIN';
+    bgLabel.textContent = 'WARTUNG · ' + byText;
+  }
 
   // Timer sofort starten
   if (timerEl) _startMaintenanceCountdown(timerEl, maint.until);
