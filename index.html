@@ -2421,6 +2421,40 @@ input[type=range].vol-slider::-webkit-slider-thumb:hover { transform:scale(1.2);
 }
 .lang-divider { width: 1px; height: 28px; background: var(--border); flex-shrink: 0; }
 
+/* ══ SUPPORT SYSTEM ══ */
+.support-tab {
+  flex: 1; padding: 7px 10px; border-radius: 7px;
+  font-family: 'Cinzel', serif; font-size: .65rem; font-weight: 700;
+  color: var(--text3); cursor: pointer; border: 1px solid var(--border);
+  background: rgba(0,0,0,.2); transition: all .15s;
+}
+.support-tab.active {
+  background: rgba(201,162,39,.12); border-color: var(--gold);
+  color: var(--gold2);
+}
+.support-ticket-row {
+  background: rgba(0,0,0,.25); border: 1px solid var(--border);
+  border-radius: 9px; padding: 10px 12px; margin-bottom: 6px;
+  font-size: .68rem;
+}
+.support-ticket-row .st-subject {
+  font-family: 'Cinzel', serif; color: var(--text); margin-bottom: 4px;
+}
+.support-ticket-row .st-meta { color: var(--text3); font-size: .6rem; margin-bottom: 6px; }
+.support-ticket-row .st-reply {
+  background: rgba(40,180,80,.08); border: 1px solid rgba(40,180,80,.25);
+  border-radius: 6px; padding: 6px 9px; color: var(--text2);
+  margin-top: 6px; font-size: .65rem;
+}
+.st-status {
+  display: inline-block; padding: 1px 7px; border-radius: 5px;
+  font-size: .58rem; font-family: 'Cinzel', serif; font-weight: 700;
+}
+.st-status.open        { background:rgba(240,160,0,.15); color:#f0cc55; border:1px solid rgba(240,160,0,.3); }
+.st-status.in_progress { background:rgba(60,120,220,.15); color:#80aaff; border:1px solid rgba(60,120,220,.3); }
+.st-status.resolved    { background:rgba(40,180,80,.12); color:var(--green2); border:1px solid rgba(40,180,80,.3); }
+.st-status.closed      { background:rgba(255,255,255,.06); color:var(--text3); border:1px solid var(--border); }
+
 /* ══ UTILITY CLASSES ══ */
 .u-xs-pad       { font-size:.62rem; padding:3px 8px; }
 .u-xs-pad2      { font-size:.65rem; padding:4px 10px; }
@@ -2737,6 +2771,7 @@ button, .nav-tab, .ctrl-btn, .upg-card, .skill-card,
       <div class="prestige-badge" id="prestigeBadge" onclick="openPrestige()" style="display:none;" title="Prestige — klicken für Details">⚡ <b id="hPrestige">✦0</b></div>
       <div class="hstat" id="saveStatus" style="color:var(--text2);font-size:0.65rem;">💾 —</div>
       <div id="guildHeaderBadge" onclick="switchTab('gilde')" title="Gilden-Boni aktiv">🏰 <span id="guildHeaderBadgeTxt">Lv1</span></div>
+      <button onclick="openSupport()" title="Support" style="background:rgba(0,0,0,0.4);border:1px solid var(--border);border-radius:6px;padding:3px 9px;cursor:pointer;color:var(--text2);font-size:1rem;transition:all .2s;display:flex;align-items:center;position:relative;">🎫<span id="supportBadge" style="display:none;position:absolute;top:-3px;right:-3px;width:8px;height:8px;background:var(--green2);border-radius:50%;"></span></button>
       <button onclick="openGlobalChat()" title="Globaler Chat" style="background:rgba(0,0,0,0.4);border:1px solid var(--border);border-radius:6px;padding:3px 9px;cursor:pointer;color:var(--text2);font-size:1rem;transition:all .2s;display:flex;align-items:center;position:relative;">🌍<span id="globalChatBadge" style="display:none;position:absolute;top:-3px;right:-3px;width:8px;height:8px;background:var(--red2);border-radius:50%;"></span></button>
       <button id="settingsGearBtn" onclick="openSettings()" title="Einstellungen" style="background:rgba(0,0,0,0.4);border:1px solid var(--border);border-radius:6px;padding:3px 9px;cursor:pointer;color:var(--text2);font-size:1rem;transition:all .2s;display:flex;align-items:center;">⚙️</button>
     </div>
@@ -3710,6 +3745,64 @@ button, .nav-tab, .ctrl-btn, .upg-card, .skill-card,
       <span style="font-size:.57rem;color:var(--text3);">Enter = Senden · öffentlich für alle Spieler</span>
       <span style="font-size:.57rem;color:var(--text3);"><span id="gchatCharCount">120</span> Zeichen übrig</span>
     </div>
+  </div>
+</div>
+
+<!-- ═══ SUPPORT TICKETS ═══ -->
+<div id="supportOverlay" style="display:none;position:fixed;inset:0;z-index:10200;background:rgba(0,0,0,.85);align-items:center;justify-content:center;">
+  <div style="background:var(--panel);border:1.5px solid var(--border2);border-radius:16px;padding:20px;width:min(480px,95vw);max-height:92vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,.9);" onclick="event.stopPropagation()">
+
+    <!-- Header -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+      <span style="font-family:'Cinzel',serif;font-size:.95rem;color:var(--gold2);">🎫 Support</span>
+      <button onclick="closeSupport()" style="background:none;border:none;color:var(--text3);font-size:1.2rem;cursor:pointer;padding:4px;">✕</button>
+    </div>
+
+    <!-- Tabs -->
+    <div style="display:flex;gap:4px;margin-bottom:14px;">
+      <button class="support-tab active" onclick="_supportTab('new')" id="stab-new">✉️ Neu</button>
+      <button class="support-tab" onclick="_supportTab('list')" id="stab-list">📋 Meine Tickets</button>
+    </div>
+
+    <!-- Tab: Neues Ticket -->
+    <div id="supportTabNew">
+      <div style="font-size:.68rem;color:var(--text3);margin-bottom:12px;">Beschreibe dein Problem — wir melden uns so schnell wie möglich.</div>
+
+      <div style="margin-bottom:10px;">
+        <label style="font-size:.65rem;color:var(--text3);font-family:'Cinzel',serif;display:block;margin-bottom:4px;">KATEGORIE</label>
+        <select id="supportCategory" style="width:100%;background:rgba(0,0,0,.4);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-size:.72rem;padding:8px 10px;outline:none;">
+          <option value="general">💬 Allgemeine Frage</option>
+          <option value="bug">🐛 Bug / Fehler</option>
+          <option value="account">👤 Account-Problem</option>
+          <option value="cheating">🚫 Cheater melden</option>
+          <option value="feedback">💡 Feedback / Vorschlag</option>
+        </select>
+      </div>
+
+      <div style="margin-bottom:10px;">
+        <label style="font-size:.65rem;color:var(--text3);font-family:'Cinzel',serif;display:block;margin-bottom:4px;">BETREFF</label>
+        <input id="supportSubject" type="text" maxlength="80" placeholder="Kurze Beschreibung..."
+          style="width:100%;background:rgba(0,0,0,.4);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-size:.72rem;padding:8px 10px;outline:none;box-sizing:border-box;">
+      </div>
+
+      <div style="margin-bottom:14px;">
+        <label style="font-size:.65rem;color:var(--text3);font-family:'Cinzel',serif;display:block;margin-bottom:4px;">NACHRICHT</label>
+        <textarea id="supportMessage" rows="5" maxlength="1000" placeholder="Beschreibe dein Anliegen so genau wie möglich..."
+          style="width:100%;background:rgba(0,0,0,.4);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-size:.72rem;padding:8px 10px;outline:none;resize:vertical;font-family:inherit;box-sizing:border-box;"></textarea>
+      </div>
+
+      <button onclick="_supportSubmit()" style="width:100%;background:linear-gradient(135deg,rgba(201,162,39,.2),rgba(201,162,39,.1));border:1.5px solid var(--gold);border-radius:10px;color:var(--gold2);font-family:'Cinzel',serif;font-size:.82rem;font-weight:700;padding:11px;cursor:pointer;">
+        🎫 Ticket einreichen
+      </button>
+      <div id="supportSubmitStatus" style="font-size:.65rem;text-align:center;margin-top:8px;min-height:16px;"></div>
+    </div>
+
+    <!-- Tab: Meine Tickets -->
+    <div id="supportTabList" style="display:none;">
+      <button onclick="_supportLoadTickets()" style="background:rgba(60,120,220,.12);border:1px solid rgba(60,120,220,.35);border-radius:7px;color:#80aaff;font-size:.65rem;font-family:'Cinzel',serif;padding:5px 12px;cursor:pointer;margin-bottom:10px;">🔄 Aktualisieren</button>
+      <div id="supportTicketList"><div style="color:var(--text3);font-size:.68rem;font-style:italic;">Laden...</div></div>
+    </div>
+
   </div>
 </div>
 
@@ -14498,7 +14591,221 @@ if (!document.getElementById('lvlUpStyle')) {
 // ── SERVICE WORKER (PWA Offline-Cache)
 // ════════════════════════════════════════════
 
-// ── OFFLINE-DETECTION ────────────────────────────────────
+// ════════════════════════════════════════════
+// ── SUPPORT-TICKET SYSTEM
+// ════════════════════════════════════════════
+
+function openSupport() {
+  const overlay = document.getElementById('supportOverlay');
+  if (!overlay) return;
+  overlay.style.display = 'flex';
+  if (!overlay._initialized) {
+    overlay._initialized = true;
+    overlay.addEventListener('click', e => { if (e.target === overlay) closeSupport(); });
+  }
+  _supportTab('new');
+}
+
+function closeSupport() {
+  const overlay = document.getElementById('supportOverlay');
+  if (overlay) overlay.style.display = 'none';
+}
+
+function _supportTab(name) {
+  document.querySelectorAll('.support-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('stab-' + name)?.classList.add('active');
+  document.getElementById('supportTabNew').style.display  = name === 'new'  ? 'block' : 'none';
+  document.getElementById('supportTabList').style.display = name === 'list' ? 'block' : 'none';
+  if (name === 'list') _supportLoadTickets();
+}
+
+async function _supportSubmit() {
+  const pid      = getPlayerId();
+  const pname    = getPlayerName() || 'Spieler';
+  const cat      = document.getElementById('supportCategory')?.value || 'general';
+  const subject  = document.getElementById('supportSubject')?.value?.trim();
+  const message  = document.getElementById('supportMessage')?.value?.trim();
+  const statusEl = document.getElementById('supportSubmitStatus');
+
+  if (!pid) {
+    if (statusEl) statusEl.innerHTML = '<span style="color:var(--red2);">🔒 Bitte zuerst einloggen.</span>';
+    return;
+  }
+  if (!subject) {
+    if (statusEl) statusEl.innerHTML = '<span style="color:var(--red2);">❌ Bitte einen Betreff eingeben.</span>';
+    return;
+  }
+  if (!message || message.length < 10) {
+    if (statusEl) statusEl.innerHTML = '<span style="color:var(--red2);">❌ Nachricht zu kurz (min. 10 Zeichen).</span>';
+    return;
+  }
+
+  if (statusEl) statusEl.innerHTML = '<span style="color:var(--text3);">Sende...</span>';
+
+  try {
+    const ok = await sbPost('sm_support_tickets', {
+      id: makeUUID(),
+      player_id:   pid,
+      player_name: pname,
+      subject:     subject.slice(0, 80),
+      message:     message.slice(0, 1000),
+      category:    cat,
+      status:      'open',
+      priority:    'normal',
+      created_at:  new Date().toISOString(),
+      updated_at:  new Date().toISOString()
+    });
+
+    if (ok) {
+      if (statusEl) statusEl.innerHTML = '<span style="color:var(--green2);">✅ Ticket eingereicht! Wir melden uns bald.</span>';
+      document.getElementById('supportSubject').value  = '';
+      document.getElementById('supportMessage').value  = '';
+      // Badge für Admin
+      try { checkAchievements(); } catch(e) {}
+    } else {
+      if (statusEl) statusEl.innerHTML = '<span style="color:var(--red2);">❌ Senden fehlgeschlagen. Versuche es erneut.</span>';
+    }
+  } catch(e) {
+    if (statusEl) statusEl.innerHTML = `<span style="color:var(--red2);">❌ Fehler: ${e.message}</span>`;
+  }
+}
+
+async function _supportLoadTickets() {
+  const pid = getPlayerId();
+  const el  = document.getElementById('supportTicketList');
+  if (!el) return;
+
+  if (!pid) {
+    el.innerHTML = '<div style="color:var(--text3);font-size:.68rem;">🔒 Bitte einloggen um Tickets zu sehen.</div>';
+    return;
+  }
+
+  el.innerHTML = '<div style="color:var(--text3);font-size:.68rem;">Lade...</div>';
+
+  try {
+    const tickets = await sbGet('sm_support_tickets',
+      `player_id=eq.${pid}&order=created_at.desc&limit=20`);
+
+    if (!tickets?.length) {
+      el.innerHTML = '<div style="color:var(--text3);font-size:.68rem;font-style:italic;">Noch keine Tickets erstellt.</div>';
+      return;
+    }
+
+    const STATUS_LABELS = {
+      open:        'Offen',
+      in_progress: 'In Bearbeitung',
+      resolved:    'Gelöst',
+      closed:      'Geschlossen'
+    };
+    const CAT_ICONS = { bug:'🐛', account:'👤', cheating:'🚫', general:'💬', feedback:'💡' };
+
+    el.innerHTML = tickets.map(t => {
+      const ts = new Date(t.created_at).toLocaleDateString('de-DE', {day:'2-digit',month:'2-digit',year:'numeric'});
+      const hasReply = t.admin_reply && t.admin_reply.trim();
+      return `<div class="support-ticket-row">
+        <div class="st-subject">${CAT_ICONS[t.category]||'💬'} ${t.subject}</div>
+        <div class="st-meta">${ts} · <span class="st-status ${t.status}">${STATUS_LABELS[t.status]||t.status}</span></div>
+        <div style="font-size:.65rem;color:var(--text2);">${t.message.slice(0,80)}${t.message.length>80?'…':''}</div>
+        ${hasReply ? `<div class="st-reply"><b style="color:var(--green2);">⚔️ Admin-Antwort:</b><br>${t.admin_reply}</div>` : ''}
+      </div>`;
+    }).join('');
+  } catch(e) {
+    el.innerHTML = `<div style="color:var(--red2);font-size:.68rem;">❌ ${e.message}</div>`;
+  }
+}
+
+// ── SUPPORT TICKETS (Admin) ──────────────────────────────────
+let _adminTicketFilter = 'open';
+let _adminSelectedTicket = null;
+
+async function _adminLoadTickets() {
+  if (!_adminLoggedIn) return;
+  const el = document.getElementById('adminTicketList');
+  if (!el) return;
+  el.innerHTML = '<div class="u-xs-muted">Lade...</div>';
+  try {
+    const filter = _adminTicketFilter === 'all'
+      ? 'order=created_at.desc&limit=50'
+      : `status=eq.${_adminTicketFilter}&order=created_at.desc&limit=50`;
+    const tickets = await sbGet('sm_support_tickets', filter);
+    if (!tickets?.length) {
+      el.innerHTML = '<div class="u-xs-muted">Keine Tickets.</div>';
+      return;
+    }
+    const CAT_ICONS = { bug:'🐛', account:'👤', cheating:'🚫', general:'💬', feedback:'💡' };
+    const STATUS_LABELS = { open:'Offen', in_progress:'In Bearb.', resolved:'Gelöst', closed:'Geschlossen' };
+    el.innerHTML = tickets.map(t => {
+      const ts = new Date(t.created_at).toLocaleDateString('de-DE');
+      const hasReply = !!t.admin_reply;
+      return `<div class="admin-player-row" style="flex-direction:column;align-items:flex-start;cursor:pointer;"
+        onclick="_adminOpenTicket('${t.id}')">
+        <div style="display:flex;width:100%;align-items:center;gap:6px;">
+          <span style="font-size:.7rem;">${CAT_ICONS[t.category]||'💬'}</span>
+          <span style="font-family:Cinzel,serif;font-size:.68rem;flex:1;color:var(--text);">${t.subject}</span>
+          <span class="st-status ${t.status}" style="font-size:.55rem;">${STATUS_LABELS[t.status]||t.status}</span>
+          ${hasReply ? '<span style="color:var(--green2);font-size:.6rem;">✓</span>' : '<span style="color:var(--orange2);font-size:.6rem;">!</span>'}
+        </div>
+        <div style="font-size:.6rem;color:var(--text3);margin-top:2px;">${t.player_name} · ${ts}</div>
+      </div>`;
+    }).join('');
+    _adminLog(`🎫 ${tickets.length} Tickets geladen`);
+  } catch(e) { _adminLog('❌ Tickets: '+e.message); }
+}
+
+function _adminFilterTickets(filter) {
+  _adminTicketFilter = filter;
+  _adminLoadTickets();
+}
+
+async function _adminOpenTicket(ticketId) {
+  if (!_adminLoggedIn) return;
+  try {
+    const tickets = await sbGet('sm_support_tickets', `id=eq.${ticketId}&limit=1`);
+    const t = tickets?.[0];
+    if (!t) return;
+    _adminSelectedTicket = t;
+    const section = document.getElementById('adminTicketReplySection');
+    const detail  = document.getElementById('adminTicketDetail');
+    const statusSel = document.getElementById('adminTicketStatus');
+    if (section) section.style.display = 'block';
+    if (detail) detail.innerHTML = `
+      <b style="color:var(--gold2);">${t.subject}</b><br>
+      <span style="color:var(--text3);">${t.player_name} · ${new Date(t.created_at).toLocaleString('de-DE')}</span><br><br>
+      ${t.message}
+      ${t.admin_reply ? `<hr style="border-color:rgba(255,255,255,.1);margin:8px 0;"><b style="color:var(--green2);">Letzte Antwort:</b> ${t.admin_reply}` : ''}`;
+    if (statusSel) statusSel.value = t.status === 'open' ? 'in_progress' : t.status;
+    document.getElementById('adminTicketReply').value = '';
+    section.scrollIntoView({ behavior: 'smooth' });
+  } catch(e) { _adminLog('❌ '+e.message); }
+}
+
+async function _adminReplyTicket() {
+  if (!_adminLoggedIn || !_adminSelectedTicket) { _adminLog('❌ Kein Ticket ausgewählt'); return; }
+  const reply  = document.getElementById('adminTicketReply')?.value?.trim();
+  const status = document.getElementById('adminTicketStatus')?.value || 'in_progress';
+  if (!reply) { _adminLog('❌ Antwort eingeben'); return; }
+  try {
+    // Admin nutzt Service Role Key → direkte PATCH ohne RLS-Einschränkung
+    await sbFetch(`${SUPA_URL}/rest/v1/sm_support_tickets?id=eq.${_adminSelectedTicket.id}`, {
+      method: 'PATCH',
+      headers: { ...SUPA_HDR, 'Prefer': 'return=minimal' },
+      body: JSON.stringify({
+        admin_reply: reply,
+        admin_name:  getPlayerName() || 'Admin',
+        status,
+        replied_at:  new Date().toISOString(),
+        updated_at:  new Date().toISOString()
+      })
+    });
+    _adminLogAction(`✉️ Ticket beantwortet: "${_adminSelectedTicket.subject}" → Status: ${status}`);
+    document.getElementById('adminTicketReplySection').style.display = 'none';
+    _adminLoadTickets();
+    // Support-Badge beim Spieler anzeigen
+  } catch(e) { _adminLog('❌ Antwort: '+e.message); }
+}
+
+// _adminTab erweitern für Support-Tab
+
 // Service Worker als Blob-URL ist browser-seitig blockiert (Security-Policy).
 // Stattdessen: navigator.onLine für saubere Offline/Online-Erkennung.
 window.addEventListener('online',  () => {
@@ -14785,7 +15092,7 @@ ACHIEVEMENTS.push(
 // Global-Chat Achievement wird direkt in sendGlobalChat() getrackt (kein Override)
 
 
-const _ADMIN_HASH = '1c66cc7656e77f162ade29cc4cd119f53332b0111a1404eafeb6fa5b230ad5ab';
+const _ADMIN_HASH = 'e154e0c6770e2f893a6f3c7a2078a2c6841d2c5704265432b08d4ee3c2914460';
 
 let _adminTitleClicks = 0, _adminClickTimer = null;
 let _adminLoggedIn = false;
@@ -14859,6 +15166,7 @@ function _adminTab(name) {
   if (name === 'stats' && _adminAllPlayers.length) try { _adminRenderLevelChart(_adminAllPlayers); } catch(e) {}
   if (name === 'events') { try { _adminUpdateEventStatus(); _adminBuildEventCalendar(); } catch(e) {} }
   if (name === 'achievements') { try { _adminInitAchSelects(); } catch(e) {} }
+  if (name === 'support') { try { _adminLoadTickets(); } catch(e) {} }
 }
 
 // ── STATS ───────────────────────────────────────
@@ -15940,6 +16248,7 @@ async function _adminBulkHeal() {
         <button class="admin-tab" onclick="_adminTab('achievements')">🏅 Erfolge</button>
         <button class="admin-tab" onclick="_adminTab('global')">⚡ Global</button>
         <button class="admin-tab" onclick="_adminTab('security')">🔒 Sicherheit</button>
+        <button class="admin-tab" onclick="_adminTab('support')">🎫 Support</button>
       </div>
 
       <!-- TAB: STATS -->
@@ -16249,6 +16558,44 @@ async function _adminBulkHeal() {
           </div>
         </div>
       </div>
+      <!-- TAB: SUPPORT -->
+      <div id="adminTab-support" class="admin-tab-content">
+        <div class="admin-section">
+          <div class="admin-section-title" style="display:flex;justify-content:space-between;">
+            <span>🎫 OFFENE TICKETS</span>
+            <button class="admin-btn blue" onclick="_adminLoadTickets()" style="padding:2px 8px;font-size:.58rem;">🔄</button>
+          </div>
+          <div style="display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap;">
+            <button class="admin-btn" onclick="_adminFilterTickets('open')" style="font-size:.6rem;padding:3px 9px;">Offen</button>
+            <button class="admin-btn blue" onclick="_adminFilterTickets('in_progress')" style="font-size:.6rem;padding:3px 9px;">In Bearb.</button>
+            <button class="admin-btn green" onclick="_adminFilterTickets('resolved')" style="font-size:.6rem;padding:3px 9px;">Gelöst</button>
+            <button class="admin-btn" onclick="_adminFilterTickets('all')" style="font-size:.6rem;padding:3px 9px;">Alle</button>
+          </div>
+          <div id="adminTicketList" style="max-height:280px;overflow-y:auto;">
+            <div class="u-xs-muted">Klicke 🔄 um Tickets zu laden.</div>
+          </div>
+        </div>
+        <div class="admin-section" id="adminTicketReplySection" style="display:none;">
+          <div class="admin-section-title">✉️ TICKET BEANTWORTEN</div>
+          <div id="adminTicketDetail" style="font-size:.65rem;color:var(--text2);margin-bottom:8px;background:rgba(0,0,0,.2);border-radius:7px;padding:8px;"></div>
+          <div class="admin-input-row">
+            <span class="admin-input-label">Status:</span>
+            <select id="adminTicketStatus" class="admin-input" style="flex:1;">
+              <option value="in_progress">In Bearbeitung</option>
+              <option value="resolved">Gelöst</option>
+              <option value="closed">Geschlossen</option>
+            </select>
+          </div>
+          <div style="margin:6px 0;">
+            <textarea id="adminTicketReply" class="admin-input" rows="3" placeholder="Antwort an den Spieler..." style="width:100%;resize:vertical;font-family:monospace;"></textarea>
+          </div>
+          <div style="display:flex;gap:4px;">
+            <button class="admin-btn green" onclick="_adminReplyTicket()">✉️ Antworten & Status setzen</button>
+            <button class="admin-btn" onclick="document.getElementById('adminTicketReplySection').style.display='none'" style="padding:4px 10px;">✕</button>
+          </div>
+        </div>
+      </div>
+
       <!-- Admin Log (immer sichtbar) -->
       <div class="admin-section" style="margin-top:8px;">
         <div class="admin-section-title" style="display:flex;justify-content:space-between;">
