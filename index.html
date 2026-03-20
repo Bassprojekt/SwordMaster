@@ -6602,6 +6602,7 @@ function forgeWithFurnace() {
     // Kein Bypass des Gewichtssystems — nur ein Upgrade von Legendary → Mythic
     // mythChance: winziger Zusatz-Trigger — nur ab Lv100
     // 0.1% base = 1 in 1000 Schmiedungen (~20 Min) als Extra-Chance
+    const lv = G.hero ? G.hero.level : 1;
     const mythChance = (lv >= 100)
       ? 0.001 + (G.furnaceLevel - 1) * 0.0002 + (G.research && G.research.has('forge3') ? 0.0005 : 0)
       : 0;
