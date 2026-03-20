@@ -14172,18 +14172,13 @@ function openGlobalChat() {
   if (!overlay._initialized) {
     overlay._initialized = true;
 
-    // Klick auf Hintergrund schließt
     overlay.addEventListener('click', e => {
       if (e.target === overlay) closeGlobalChat();
     });
 
-    // Schließen-Button
     document.getElementById('gchatCloseBtn')?.addEventListener('click', closeGlobalChat);
-
-    // Senden-Button
     document.getElementById('gchatSendBtn')?.addEventListener('click', sendGlobalChat);
 
-    // Enter-Taste
     const input = document.getElementById('globalChatInput');
     if (input) {
       input.addEventListener('keydown', e => {
@@ -14196,16 +14191,32 @@ function openGlobalChat() {
     }
   }
 
+  // Input-Status: gesperrt wenn nicht eingeloggt
+  const pid = getPlayerId();
+  const input = document.getElementById('globalChatInput');
+  const sendBtn = document.getElementById('gchatSendBtn');
+  if (input) {
+    if (!pid) {
+      input.disabled = true;
+      input.placeholder = '🔒 Einloggen um zu chatten';
+      input.style.opacity = '0.5';
+      if (sendBtn) sendBtn.disabled = true;
+    } else {
+      input.disabled = false;
+      input.placeholder = 'Nachricht eingeben...';
+      input.style.opacity = '1';
+      if (sendBtn) sendBtn.disabled = false;
+    }
+  }
+
   loadGlobalChat();
   clearInterval(_globalChatInterval);
   _globalChatInterval = setInterval(loadGlobalChat, 8000);
 
-  // Badge weg
   const badge = document.getElementById('globalChatBadge');
   if (badge) badge.style.display = 'none';
 
-  // Input fokussieren
-  setTimeout(() => document.getElementById('globalChatInput')?.focus(), 100);
+  if (pid) setTimeout(() => document.getElementById('globalChatInput')?.focus(), 100);
 }
 
 function closeGlobalChat() {
@@ -14216,42 +14227,56 @@ function closeGlobalChat() {
 }
 
 async function loadGlobalChat() {
+  const el = document.getElementById('globalChatLog');
+  if (!el) return;
+
+  // Eingeloggt?
+  const pid = getPlayerId();
+
   try {
     const msgs = await sbGet('sm_guild_chat',
       `guild_id=eq.00000000-0000-0000-0000-000000000000&order=created_at.desc&limit=60`);
-    const el = document.getElementById('globalChatLog');
-    if (!el) return;
-    if (!msgs?.length) {
-      el.innerHTML = '<div class="gchat-system">Noch keine Nachrichten — schreib die erste! 👋</div>';
+
+    if (msgs === null) {
+      // sbGet gab null zurück → Verbindungsfehler oder RLS
+      el.innerHTML = '<div class="gchat-system" style="color:var(--red2);">⚠️ Chat nicht verfügbar — Verbindung prüfen</div>';
       return;
     }
+
+    if (!msgs.length) {
+      el.innerHTML = '<div class="gchat-system">Noch keine Nachrichten — schreib die erste! 👋</div>';
+      // Zeige Login-Hinweis wenn nicht eingeloggt
+      if (!pid) {
+        el.innerHTML += '<div class="gchat-system" style="color:var(--orange2);">🔒 Melde dich an um zu schreiben</div>';
+      }
+      return;
+    }
+
     const isAtBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 60;
-    const myId = getPlayerId();
+    const myId = pid;
 
     el.innerHTML = [...msgs].reverse().map(m => {
       const ts   = new Date(m.created_at).toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'});
       const isMe = m.player_id === myId;
       const isAdmin   = m.role === 'admin';
       const isSupport = m.role === 'support';
-      const isSystem  = m.player_id === 'system';
+      const isSystem  = m.player_id === 'system' || m.player_id === 'admin';
 
-      // System-Nachrichten (Ankündigungen)
-      if (isSystem || m.player_id === 'admin') {
+      if (isSystem) {
         return `<div class="gchat-system">📢 ${m.message.replace(/[<>]/g,'')}</div>`;
       }
 
-      // Name + Badge
       let nameBadge = '';
-      let nameCls   = isMe ? '' : (isAdmin ? ' admin' : '');
       if (isAdmin)   nameBadge = `<span class="gchat-admin-badge">⚔️ ADMIN</span>`;
       if (isSupport) nameBadge = `<span class="gchat-admin-badge" style="background:rgba(60,120,220,.18);border-color:rgba(60,120,220,.45);color:#80aaff;">🛡️ SUPPORT</span>`;
 
-      const msgCls = isMe ? 'gchat-msg mine' : 'gchat-msg';
+      const msgCls  = isMe ? 'gchat-msg mine' : 'gchat-msg';
       const textCls = isAdmin ? 'gchat-text admin' : 'gchat-text';
+      const nameCls = 'gchat-name' + (isAdmin ? ' admin' : '');
 
       return `<div class="${msgCls}">
-        <div style="display:flex;flex-direction:column;align-items:${isMe?'flex-end':'flex-start'};flex-shrink:0;gap:2px;">
-          <span class="gchat-name${nameCls}">${(m.player_name||'?').replace(/[<>]/g,'')}${nameBadge}</span>
+        <div style="display:flex;flex-direction:column;align-items:${isMe?'flex-end':'flex-start'};flex-shrink:0;gap:2px;max-width:90px;">
+          <span class="${nameCls}" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:90px;">${(m.player_name||'?').replace(/[<>]/g,'')}${nameBadge}</span>
           <span class="gchat-time">${ts}</span>
         </div>
         <span class="${textCls}">${m.message.replace(/[<>]/g,'')}</span>
@@ -14261,15 +14286,17 @@ async function loadGlobalChat() {
     if (isAtBottom) el.scrollTop = el.scrollHeight;
     _globalChatLastTs = msgs[0]?.created_at;
 
-    // Online-Indikator
-    const recentCount = msgs.filter(m =>
-      Date.now() - new Date(m.created_at) < 300000 && // 5 Minuten
-      m.player_id !== 'system'
-    ).length;
+    // Online-Indikator: Spieler die in letzten 10min geschrieben haben
+    const recentPlayers = new Set(
+      msgs.filter(m => Date.now() - new Date(m.created_at) < 600000 && m.player_id !== 'system')
+          .map(m => m.player_id)
+    );
     const onlineEl = document.getElementById('gchatOnlineIndicator');
-    if (onlineEl) onlineEl.textContent = recentCount > 0 ? `${recentCount} aktiv` : '';
+    if (onlineEl) onlineEl.textContent = recentPlayers.size > 0 ? `${recentPlayers.size} aktiv` : '';
 
-  } catch(e) { /* offline ok */ }
+  } catch(e) {
+    el.innerHTML = `<div class="gchat-system" style="color:var(--red2);">⚠️ Fehler: ${e.message}</div>`;
+  }
 }
 
 let _lastGlobalChatSent = 0;
@@ -14277,6 +14304,14 @@ async function sendGlobalChat() {
   const input = document.getElementById('globalChatInput');
   const msg   = input?.value?.trim();
   if (!msg) return;
+
+  // Spieler muss eingeloggt sein (player_id darf nicht null sein)
+  const pid = getPlayerId();
+  if (!pid) {
+    showErrToast('Bitte zuerst einloggen um zu chatten', '🔒');
+    return;
+  }
+
   if (Date.now() - _lastGlobalChatSent < 3000) {
     showErrToast('Bitte 3 Sekunden warten', '⏳'); return;
   }
@@ -14284,33 +14319,37 @@ async function sendGlobalChat() {
 
   // Admin-Rolle automatisch setzen wenn Admin eingeloggt
   const role = (typeof _adminLoggedIn !== 'undefined' && _adminLoggedIn) ? 'admin' : 'member';
-  // Spielername für Admin: zeige ⚔️ vor dem Namen
-  const name = role === 'admin'
-    ? getPlayerName()   // Badge wird im loadGlobalChat per role gesetzt
-    : getPlayerName();
+  const name = getPlayerName() || 'Held';
 
   try {
-    await sbPost('sm_guild_chat', {
+    const ok = await sbPost('sm_guild_chat', {
       id: makeUUID(),
       guild_id: '00000000-0000-0000-0000-000000000000',
-      player_id: getPlayerId(),
+      player_id: pid,
       player_name: name,
       message: msg.slice(0, 120),
       role,
       created_at: new Date().toISOString()
     });
+    if (!ok) {
+      showErrToast('Nachricht konnte nicht gesendet werden', '❌');
+      return;
+    }
     if (input) {
       input.value = '';
-      document.getElementById('gchatCharCount').textContent = '120';
+      const counter = document.getElementById('gchatCharCount');
+      if (counter) counter.textContent = '120';
     }
-    loadGlobalChat();
+    await loadGlobalChat();
     // Achievement tracken
     try {
       if (!G.achProgress) G.achProgress = {};
       G.achProgress.global_chat = (G.achProgress.global_chat || 0) + 1;
       checkAchievements();
     } catch(e) {}
-  } catch(e) { showErrToast('Senden fehlgeschlagen', '❌'); }
+  } catch(e) {
+    showErrToast('Senden fehlgeschlagen: ' + e.message, '❌');
+  }
 }
 
 // Polling im Hintergrund — Badge anzeigen wenn neue Nachricht
@@ -14746,7 +14785,7 @@ ACHIEVEMENTS.push(
 // Global-Chat Achievement wird direkt in sendGlobalChat() getrackt (kein Override)
 
 
-const _ADMIN_HASH = 'e154e0c6770e2f893a6f3c7a2078a2c6841d2c5704265432b08d4ee3c2914460';
+const _ADMIN_HASH = '1c66cc7656e77f162ade29cc4cd119f53332b0111a1404eafeb6fa5b230ad5ab';
 
 let _adminTitleClicks = 0, _adminClickTimer = null;
 let _adminLoggedIn = false;
