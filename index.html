@@ -5765,6 +5765,7 @@ function renderEquipSlots() {
       const statLabel = item.sk === 'spd'
         ? '-' + item.sv + 's'
         : '+' + item.sv + ' ' + item.sk.toUpperCase();
+      const slotNames = { weapon:'Waffe', helmet:'Helm', chest:'Rüstung', gloves:'Handsch.', boots:'Stiefel', ring:'Ring' };
       const slotLabel = slotNames[slot] || slot;
       div.innerHTML = `
         ${enchRune ? `<div class="es-enchant">${enchRune.emoji}</div>` : ''}
