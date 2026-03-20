@@ -5290,13 +5290,20 @@ function log(msg,cls='') {
 }
 
 function floatDmg(el,dmg,col='#e05050') {
-  const r=el.getBoundingClientRect();
-  const f=document.createElement('div');
-  f.className='dmg-float'; f.textContent='-'+dmg; f.style.color=col;
-  f.style.left=(r.left+r.width/2-12)+'px';
-  f.style.top=(r.top+window.scrollY-8)+'px';
+  // Nur anzeigen wenn Arena-Tab aktiv und Element tatsächlich sichtbar
+  const arenaPage = document.getElementById('page-arena');
+  if (!arenaPage || !arenaPage.classList.contains('active')) return;
+  const r = el.getBoundingClientRect();
+  // getBoundingClientRect() gibt 0,0 zurück wenn Element nicht sichtbar
+  if (r.width === 0 && r.height === 0) return;
+  const f = document.createElement('div');
+  f.className = 'dmg-float';
+  f.textContent = '-' + dmg;
+  f.style.color = col;
+  f.style.left = (r.left + r.width / 2 - 12) + 'px';
+  f.style.top  = (r.top + window.scrollY - 8) + 'px';
   document.body.appendChild(f);
-  setTimeout(()=>f.remove(),1000);
+  setTimeout(() => f.remove(), 1000);
 }
 
 // ════════════════════════════════════════════
@@ -8478,6 +8485,8 @@ function updateArenaPanel() {
 function switchTab(name) {
   _clearDomCache(); // DOM-Cache invalidieren bei Tab-Wechsel
   if (typeof _tabRendered !== 'undefined') _tabRendered.add(name);
+  // Alle schwebenden Schadens-Zahlen sofort entfernen beim Tab-Wechsel
+  document.querySelectorAll('.dmg-float').forEach(el => el.remove());
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
   document.getElementById('page-'+name)?.classList.add('active');
@@ -13435,6 +13444,7 @@ const CHANGELOG_DATA = [
   { type:"NEU",  text:"30 neue Achievements in 4 neuen Kategorien: Gilde, Event, Verzauberung, Prestige", date:"2025-03" },
   { type:"FIX",  text:"Level-Up Sound: playSfxSafe() stellt sicher dass AudioContext entsperrt ist",    date:"2025-03" },
   { type:"PERF", text:"Memory-Leak-Fix: Event-Delegation auf Inventar/Equip-Containern",                date:"2025-03" },
+  { type:"NEU",  text:"Admin: 2 neue Tabs (Events, Achievements) + 19 neue Funktionen",             date:"2025-03" },
 ];
 
 // ════════════════════════════════════════════
@@ -14702,6 +14712,8 @@ function _adminTab(name) {
   document.getElementById(`adminTab-${name}`)?.classList.add('active');
   if (name === 'global') try { _adminUpdateEventStatus(); } catch(e) {}
   if (name === 'stats' && _adminAllPlayers.length) try { _adminRenderLevelChart(_adminAllPlayers); } catch(e) {}
+  if (name === 'events') { try { _adminUpdateEventStatus(); _adminBuildEventCalendar(); } catch(e) {} }
+  if (name === 'achievements') { try { _adminInitAchSelects(); } catch(e) {} }
 }
 
 // ── STATS ───────────────────────────────────────
@@ -15193,10 +15205,318 @@ function _adminChangePassword() {
 }
 
 function _adminSetLevel() {
-  // Legacy-Wrapper für direkten Lv50-Button (nicht mehr in UI, aber Kompatibilität)
   document.getElementById('adminSetLvInput').value = 50;
   _adminSetLevelCustom();
 }
+
+// ── DUNGEON FLOOR SETZEN ────────────────────────
+async function _adminSetDungeonFloor() {
+  if (!_adminLoggedIn || !_adminTargetPlayer) { _adminLog('❌ Kein Spieler!'); return; }
+  const floor = parseInt(document.getElementById('adminSetDungInput')?.value);
+  if (!floor || floor < 1 || floor > 100) { _adminLog('❌ Etage 1–100'); return; }
+  try {
+    await sbFetch(`${SUPA_URL}/rest/v1/sm_players?id=eq.${_adminTargetPlayer.id}`,
+      {method:'PATCH',headers:{...SUPA_HDR,'Prefer':'return=minimal'},
+       body:JSON.stringify({dungeon_floor:floor, dungeon_best_floor:floor})});
+    _adminLogAction(`🏚️ Dungeon-Etage ${floor} → ${_adminTargetPlayer.name}`);
+    _adminLoadPlayerDetail(_adminTargetPlayer.id);
+  } catch(e) { _adminLog('❌ '+e.message); }
+}
+
+// ── RESET-FUNKTIONEN FÜR SPIELER ────────────────
+async function _adminResetDailyLogin() {
+  if (!_adminLoggedIn || !_adminTargetPlayer) { _adminLog('❌ Kein Spieler!'); return; }
+  try {
+    await sbFetch(`${SUPA_URL}/rest/v1/sm_players?id=eq.${_adminTargetPlayer.id}`,
+      {method:'PATCH',headers:{...SUPA_HDR,'Prefer':'return=minimal'},
+       body:JSON.stringify({daily_claimed:'{}'})});
+    _adminLogAction(`📅 Login-Streak reset: ${_adminTargetPlayer.name}`);
+  } catch(e) { _adminLog('❌ '+e.message); }
+}
+
+async function _adminResetQuests() {
+  if (!_adminLoggedIn || !_adminTargetPlayer) { _adminLog('❌ Kein Spieler!'); return; }
+  if (!confirm(`📜 Alle Quests von "${_adminTargetPlayer.name}" zurücksetzen?`)) return;
+  try {
+    await sbFetch(`${SUPA_URL}/rest/v1/sm_players?id=eq.${_adminTargetPlayer.id}`,
+      {method:'PATCH',headers:{...SUPA_HDR,'Prefer':'return=minimal'},
+       body:JSON.stringify({quest_progress:'{}', quest_claimed:'[]'})});
+    _adminLogAction(`📜 Quests reset: ${_adminTargetPlayer.name}`);
+  } catch(e) { _adminLog('❌ '+e.message); }
+}
+
+async function _adminResetResearch() {
+  if (!_adminLoggedIn || !_adminTargetPlayer) { _adminLog('❌ Kein Spieler!'); return; }
+  if (!confirm(`🔬 Gesamte Forschung von "${_adminTargetPlayer.name}" zurücksetzen?`)) return;
+  try {
+    await sbFetch(`${SUPA_URL}/rest/v1/sm_players?id=eq.${_adminTargetPlayer.id}`,
+      {method:'PATCH',headers:{...SUPA_HDR,'Prefer':'return=minimal'},
+       body:JSON.stringify({research_done:'[]', research_active:null, research_end:0})});
+    _adminLogAction(`🔬 Forschung reset: ${_adminTargetPlayer.name}`);
+  } catch(e) { _adminLog('❌ '+e.message); }
+}
+
+// ── GLOBALER CHAT MODERATION ─────────────────────
+async function _adminLoadGlobalChat() {
+  if (!_adminLoggedIn) return;
+  const el = document.getElementById('adminChatLog');
+  if (!el) return;
+  el.innerHTML = '<div class="u-xs-muted">Lade...</div>';
+  try {
+    const msgs = await sbGet('sm_guild_chat',
+      `guild_id=eq.00000000-0000-0000-0000-000000000000&order=created_at.desc&limit=50`);
+    if (!msgs?.length) { el.innerHTML = '<div class="u-xs-muted">Keine Nachrichten.</div>'; return; }
+    el.innerHTML = msgs.map(m => {
+      const ts = new Date(m.created_at).toLocaleString('de-DE',{hour:'2-digit',minute:'2-digit',day:'2-digit',month:'2-digit'});
+      return `<div style="display:flex;gap:6px;align-items:flex-start;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:.65rem;">
+        <span style="color:var(--gold2);font-family:Cinzel,serif;min-width:70px;flex-shrink:0;">${(m.player_name||'?').slice(0,12)}</span>
+        <span style="color:var(--text2);flex:1;">${m.message.replace(/[<>]/g,'')}</span>
+        <span style="color:var(--text3);font-size:.58rem;flex-shrink:0;">${ts}</span>
+        <button onclick="_adminDeleteChatMsg('${m.id}')" style="background:rgba(220,40,40,.15);border:1px solid rgba(220,40,40,.3);border-radius:4px;color:#ff8888;cursor:pointer;padding:1px 5px;font-size:.58rem;flex-shrink:0;">✕</button>
+      </div>`;
+    }).join('');
+    _adminLog(`💬 ${msgs.length} Chat-Nachrichten geladen`);
+  } catch(e) { _adminLog('❌ Chat: '+e.message); }
+}
+
+async function _adminDeleteChatMsg(msgId) {
+  if (!_adminLoggedIn || !msgId) return;
+  try {
+    await sbDelete('sm_guild_chat', `id=eq.${msgId}`);
+    _adminLogAction(`🗑️ Chat-Nachricht gelöscht: ${msgId.slice(0,8)}...`);
+    _adminLoadGlobalChat();
+  } catch(e) { _adminLog('❌ '+e.message); }
+}
+
+// ── EVENT-VERWALTUNG ─────────────────────────────
+function _adminBuildEventCalendar() {
+  const el = document.getElementById('adminEventCalendar');
+  if (!el || typeof SEASONAL_EVENTS === 'undefined') return;
+  const months = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+  const now = new Date();
+  const curMonth = now.getMonth();
+  const curDay   = now.getDate();
+
+  const rows = Object.values(SEASONAL_EVENTS).map(ev => {
+    const active = ev.month === curMonth && curDay >= ev.startDay && curDay <= ev.endDay;
+    const forced = window._adminForcedEvent === ev.id;
+    return `<div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:.65rem;">
+      <span style="font-size:1rem;width:24px;text-align:center;">${ev.icon||'🎮'}</span>
+      <span style="flex:1;font-family:Cinzel,serif;color:${active?'var(--gold2)':'var(--text2)'};">${ev.name}</span>
+      <span style="color:var(--text3);font-size:.58rem;min-width:60px;">${months[ev.month]} ${ev.startDay}–${ev.endDay}</span>
+      <span class="admin-badge ${active?'ok':forced?'warn':'sus'}" style="min-width:52px;text-align:center;">${forced?'FORCED':active?'AKTIV':'inaktiv'}</span>
+      <button onclick="_adminForceEvent('${ev.id}')" class="admin-btn green" style="padding:1px 6px;font-size:.55rem;">▶</button>
+    </div>`;
+  }).join('');
+  el.innerHTML = rows || '<div class="u-xs-muted">Keine Events definiert.</div>';
+}
+
+async function _adminLoadEventStats() {
+  if (!_adminLoggedIn) return;
+  const el = document.getElementById('adminEventStats');
+  if (!el) return;
+  el.innerHTML = '<div class="u-xs-muted">Lade...</div>';
+  try {
+    // Zähle wie viele Spieler event_progress gesetzt haben
+    const players = await sbGet('sm_players', 'select=event_progress,event_claimed&limit=1000');
+    const active = (players||[]).filter(p => {
+      try { const ep = JSON.parse(p.event_progress||'{}'); return Object.keys(ep).length > 0; } catch(e){ return false; }
+    }).length;
+    const claimed = (players||[]).filter(p => {
+      try { const ec = JSON.parse(p.event_claimed||'[]'); return ec.length > 0; } catch(e){ return false; }
+    }).length;
+    el.innerHTML = `
+      <div class="admin-stat-row"><span>Spieler mit Event-Fortschritt</span><b style="color:var(--green2);">${active}</b></div>
+      <div class="admin-stat-row"><span>Spieler mit geclaimten Quests</span><b style="color:var(--gold2);">${claimed}</b></div>
+      <div class="admin-stat-row"><span>Aktuelles Event</span><b>${(typeof getActiveEvent==='function'&&getActiveEvent()) ? getActiveEvent().name : '—'}</b></div>`;
+    _adminLog(`📊 Event-Stats: ${active} aktive Teilnehmer`);
+  } catch(e) { _adminLog('❌ Event-Stats: '+e.message); }
+}
+
+async function _adminResetEventProgress() {
+  if (!_adminLoggedIn || !_adminTargetPlayer) { _adminLog('❌ Kein Spieler!'); return; }
+  if (!confirm(`🔄 Event-Fortschritt von "${_adminTargetPlayer.name}" zurücksetzen?`)) return;
+  try {
+    await sbFetch(`${SUPA_URL}/rest/v1/sm_players?id=eq.${_adminTargetPlayer.id}`,
+      {method:'PATCH',headers:{...SUPA_HDR,'Prefer':'return=minimal'},
+       body:JSON.stringify({event_progress:'{}', event_claimed:'[]', event_currency:'{}', event_purchased:'[]'})});
+    _adminLogAction(`🎃 Event-Fortschritt reset: ${_adminTargetPlayer.name}`);
+  } catch(e) { _adminLog('❌ '+e.message); }
+}
+
+async function _adminGiveEventCurrency() {
+  if (!_adminLoggedIn || !_adminTargetPlayer) { _adminLog('❌ Kein Spieler!'); return; }
+  const amt = parseInt(document.getElementById('adminEventCurrencyAmt')?.value) || 50;
+  try {
+    const p = await sbGet('sm_players', `id=eq.${_adminTargetPlayer.id}&select=event_currency&limit=1`);
+    const cur = JSON.parse(p?.[0]?.event_currency || '{}');
+    // Gib für alle aktiven Event-Währungen
+    const ev = typeof getActiveEvent === 'function' ? getActiveEvent() : null;
+    const key = ev?.currency?.id || 'gold_coin';
+    cur[key] = (cur[key]||0) + amt;
+    await sbFetch(`${SUPA_URL}/rest/v1/sm_players?id=eq.${_adminTargetPlayer.id}`,
+      {method:'PATCH',headers:{...SUPA_HDR,'Prefer':'return=minimal'},
+       body:JSON.stringify({event_currency:JSON.stringify(cur)})});
+    _adminLogAction(`💎 +${amt} Event-Währung (${key}) → ${_adminTargetPlayer.name}`);
+  } catch(e) { _adminLog('❌ '+e.message); }
+}
+
+// ── ACHIEVEMENT-VERWALTUNG ────────────────────────
+function _adminInitAchSelects() {
+  const catSel = document.getElementById('adminAchCatSelect');
+  if (!catSel || catSel.options.length > 1) return;
+  if (typeof ACHIEVEMENTS === 'undefined') return;
+  const cats = [...new Set(ACHIEVEMENTS.map(a => a.cat))].sort();
+  cats.forEach(cat => {
+    const opt = document.createElement('option');
+    opt.value = cat; opt.textContent = cat;
+    catSel.appendChild(opt);
+  });
+}
+
+function _adminUpdateAchSelect() {
+  const cat = document.getElementById('adminAchCatSelect')?.value;
+  const sel = document.getElementById('adminAchSelect');
+  if (!sel || typeof ACHIEVEMENTS === 'undefined') return;
+  sel.innerHTML = '<option value="">— Wählen —</option>';
+  const filtered = cat ? ACHIEVEMENTS.filter(a => a.cat === cat) : ACHIEVEMENTS;
+  filtered.forEach(a => {
+    const opt = document.createElement('option');
+    opt.value = a.id;
+    opt.textContent = `${a.icon} ${a.name} (${a.tier})`;
+    sel.appendChild(opt);
+  });
+  document.getElementById('adminAchPreview').textContent = '';
+}
+
+function _adminPreviewAch() {
+  const id = document.getElementById('adminAchSelect')?.value;
+  const el = document.getElementById('adminAchPreview');
+  if (!el || !id || typeof ACHIEVEMENTS === 'undefined') return;
+  const a = ACHIEVEMENTS.find(x => x.id === id);
+  if (!a) { el.textContent = ''; return; }
+  el.innerHTML = `${a.icon} <b>${a.name}</b> · ${a.desc} · Belohnung: +${a.reward?.gold?.toLocaleString()||0}G`;
+}
+
+async function _adminGrantAchievement() {
+  if (!_adminLoggedIn || !_adminTargetPlayer) { _adminLog('❌ Kein Spieler ausgewählt!'); return; }
+  const id = document.getElementById('adminAchSelect')?.value;
+  if (!id) { _adminLog('❌ Achievement auswählen!'); return; }
+  if (typeof ACHIEVEMENTS === 'undefined') return;
+  const ach = ACHIEVEMENTS.find(a => a.id === id);
+  if (!ach) { _adminLog('❌ Achievement nicht gefunden'); return; }
+  try {
+    const p = await sbGet('sm_players', `id=eq.${_adminTargetPlayer.id}&select=ach_unlocked,ach_points,hero_gold&limit=1`);
+    const pl = p?.[0];
+    const unlocked = JSON.parse(pl?.ach_unlocked || '[]');
+    if (unlocked.includes(id)) { _adminLog(`⚠️ Spieler hat "${ach.name}" bereits!`); return; }
+    unlocked.push(id);
+    const newGold = (pl?.hero_gold||0) + (ach.reward?.gold||0);
+    const newPts  = (pl?.ach_points||0) + (ach.reward?.xp||0);
+    await sbFetch(`${SUPA_URL}/rest/v1/sm_players?id=eq.${_adminTargetPlayer.id}`,
+      {method:'PATCH',headers:{...SUPA_HDR,'Prefer':'return=minimal'},
+       body:JSON.stringify({ach_unlocked:JSON.stringify(unlocked), ach_points:newPts, hero_gold:newGold})});
+    _adminLogAction(`🏅 Achievement vergeben: "${ach.name}" → ${_adminTargetPlayer.name} (+${ach.reward?.gold||0}G)`);
+  } catch(e) { _adminLog('❌ '+e.message); }
+}
+
+async function _adminRevokeAchievement() {
+  if (!_adminLoggedIn || !_adminTargetPlayer) { _adminLog('❌ Kein Spieler!'); return; }
+  const id = document.getElementById('adminAchRevokeId')?.value?.trim();
+  if (!id) { _adminLog('❌ Achievement-ID eingeben'); return; }
+  try {
+    const p = await sbGet('sm_players', `id=eq.${_adminTargetPlayer.id}&select=ach_unlocked&limit=1`);
+    const unlocked = JSON.parse(p?.[0]?.ach_unlocked || '[]');
+    const newList = unlocked.filter(x => x !== id);
+    if (newList.length === unlocked.length) { _adminLog(`⚠️ Achievement "${id}" nicht gefunden`); return; }
+    await sbFetch(`${SUPA_URL}/rest/v1/sm_players?id=eq.${_adminTargetPlayer.id}`,
+      {method:'PATCH',headers:{...SUPA_HDR,'Prefer':'return=minimal'},
+       body:JSON.stringify({ach_unlocked:JSON.stringify(newList)})});
+    _adminLogAction(`🗑️ Achievement entfernt: "${id}" von ${_adminTargetPlayer.name}`);
+    document.getElementById('adminAchRevokeId').value = '';
+  } catch(e) { _adminLog('❌ '+e.message); }
+}
+
+async function _adminResetAchievements() {
+  if (!_adminLoggedIn || !_adminTargetPlayer) { _adminLog('❌ Kein Spieler!'); return; }
+  if (!confirm(`🔄 Alle Achievements von "${_adminTargetPlayer.name}" zurücksetzen?`)) return;
+  try {
+    await sbFetch(`${SUPA_URL}/rest/v1/sm_players?id=eq.${_adminTargetPlayer.id}`,
+      {method:'PATCH',headers:{...SUPA_HDR,'Prefer':'return=minimal'},
+       body:JSON.stringify({ach_unlocked:'[]', ach_progress:'{}', ach_points:0})});
+    _adminLogAction(`🔄 Alle Achievements reset: ${_adminTargetPlayer.name}`);
+  } catch(e) { _adminLog('❌ '+e.message); }
+}
+
+async function _adminLoadAchStats() {
+  if (!_adminLoggedIn) return;
+  const el = document.getElementById('adminAchStats');
+  if (!el) return;
+  el.innerHTML = '<div class="u-xs-muted">Lade...</div>';
+  try {
+    const players = await sbGet('sm_players', 'select=ach_unlocked,ach_points&limit=1000');
+    if (!players?.length) { el.innerHTML = '<div class="u-xs-muted">Keine Daten.</div>'; return; }
+    // Zähle welche Achievements wie oft vergeben wurden
+    const counts = {};
+    let totalUnlocks = 0;
+    players.forEach(p => {
+      try {
+        const list = JSON.parse(p.ach_unlocked || '[]');
+        list.forEach(id => { counts[id] = (counts[id]||0)+1; totalUnlocks++; });
+      } catch(e) {}
+    });
+    const top10 = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,10);
+    const avgPts = Math.round(players.reduce((s,p)=>s+(p.ach_points||0),0)/players.length);
+    el.innerHTML = `
+      <div class="admin-stat-row"><span>Gesamt-Unlocks</span><b style="color:var(--gold2);">${totalUnlocks.toLocaleString()}</b></div>
+      <div class="admin-stat-row"><span>Ø Punkte/Spieler</span><b>${avgPts.toLocaleString()}</b></div>
+      <div style="margin-top:8px;font-size:.6rem;color:var(--text3);font-family:Cinzel,serif;">TOP 10 HÄUFIGSTE:</div>
+      ${top10.map(([id,cnt]) => {
+        const ach = typeof ACHIEVEMENTS !== 'undefined' ? ACHIEVEMENTS.find(a=>a.id===id) : null;
+        return `<div class="admin-stat-row"><span>${ach?`${ach.icon} ${ach.name}`:id}</span><b>${cnt}×</b></div>`;
+      }).join('')}`;
+    _adminLog(`📊 Achievement-Stats: ${totalUnlocks} Unlocks gesamt`);
+  } catch(e) { _adminLog('❌ Ach-Stats: '+e.message); }
+}
+
+// ── BULK RESETS ──────────────────────────────────
+async function _adminBulkResetDailyLogin() {
+  if (!_adminLoggedIn) return;
+  if (!confirm('📅 Alle Login-Streaks zurücksetzen?')) return;
+  try {
+    await sbFetch(`${SUPA_URL}/rest/v1/sm_players`,
+      {method:'PATCH',headers:{...SUPA_HDR,'Prefer':'return=minimal'},
+       body:JSON.stringify({daily_claimed:'{}'})});
+    _adminLogAction('📅 Alle Login-Streaks zurückgesetzt');
+  } catch(e) { _adminLog('❌ '+e.message); }
+}
+
+async function _adminBulkResetPvpSeason() {
+  if (!_adminLoggedIn) return;
+  if (prompt('Tippe "PVP RESET" zur Bestätigung:') !== 'PVP RESET') { _adminLog('❌ Abgebrochen'); return; }
+  try {
+    _adminLog('⏳ PVP-Saison wird zurückgesetzt...');
+    // Backup: Exportiere aktuelle PVP-Stände
+    const data = await sbGet('sm_players', 'select=id,player_name,pvp_points,pvp_wins&order=pvp_points.desc&limit=1000');
+    const blob = new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `pvp_season_backup_${new Date().toISOString().slice(0,10)}.json`;
+    a.click();
+    // PVP zurücksetzen
+    await sbFetch(`${SUPA_URL}/rest/v1/sm_players`,
+      {method:'PATCH',headers:{...SUPA_HDR,'Prefer':'return=minimal'},
+       body:JSON.stringify({pvp_points:0, pvp_wins:0, pvp_losses:0, pvp_streak:0, pvp_fought_today:'{}'})});
+    // Leaderboard neu aufbauen
+    await sbFetch(`${SUPA_URL}/rest/v1/sm_leaderboard`,
+      {method:'DELETE',headers:{...SUPA_HDR,'Prefer':'return=minimal'}}).catch(()=>{});
+    _adminLogAction(`⚔️ PVP-Saison zurückgesetzt (${data?.length} Spieler, Backup exportiert)`);
+  } catch(e) { _adminLog('❌ PVP Reset: '+e.message); }
+}
+
+// ── TAB-HOOK: Daten beim Tab-Wechsel laden ────────
+// Direkt in _adminTab eingebaut (kein Override)
+
 
 // ── ADMIN-AKTIONSPROTOKOLL ──────────────────────
 const _adminActionHistory = [];
@@ -15330,6 +15650,7 @@ function _adminForceEvent(eventId) {
       `<span class="admin-badge warn">▶ AKTIV: ${ev.icon} ${ev.name}</span>
        <span style="color:var(--text3);font-size:.58rem;margin-left:6px;">Nur für diese Session</span>`;
     _adminLogAction(`🎃 Event erzwungen: ${ev.name}`);
+    try { _adminBuildEventCalendar(); } catch(e) {}
     // Tab aktualisieren
     try { renderEventPage(); } catch(e) {}
     try {
@@ -15344,6 +15665,7 @@ function _adminForceEvent(eventId) {
     document.getElementById('adminEventStatus').innerHTML =
       '<span class="admin-badge ok">✓ Normal (nach Datum)</span>';
     _adminLogAction('✕ Event-Override entfernt');
+    try { _adminBuildEventCalendar(); } catch(e) {}
     try {
       const t = document.getElementById('tab-event');
       if (t && !isEventActive()) t.style.display = 'none';
@@ -15435,6 +15757,8 @@ async function _adminBulkHeal() {
         <button class="admin-tab active" onclick="_adminTab('stats')">📊 Stats</button>
         <button class="admin-tab" onclick="_adminTab('players')">👥 Spieler</button>
         <button class="admin-tab" onclick="_adminTab('manage')">🎯 Verwaltung</button>
+        <button class="admin-tab" onclick="_adminTab('events')">🎃 Events</button>
+        <button class="admin-tab" onclick="_adminTab('achievements')">🏅 Erfolge</button>
         <button class="admin-tab" onclick="_adminTab('global')">⚡ Global</button>
         <button class="admin-tab" onclick="_adminTab('security')">🔒 Sicherheit</button>
       </div>
@@ -15453,6 +15777,12 @@ async function _adminBulkHeal() {
           <div id="adminActivity"><div class="u-xs-muted">Wird mit Stats geladen...</div></div>
         </div>
         <div class="admin-section">
+          <div class="admin-section-title">📈 LEVEL-VERTEILUNG</div>
+          <div id="adminLevelChart" style="height:80px;display:flex;align-items:flex-end;gap:2px;padding:4px;">
+            <div class="u-xs-muted">Wird mit Stats geladen...</div>
+          </div>
+        </div>
+        <div class="admin-section">
           <div class="admin-section-title">🏆 TOP-LISTEN</div>
           <div style="display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap;">
             <button class="admin-btn blue" onclick="_adminTopList('hero_level')" style="font-size:.6rem;padding:4px 10px;">⭐ Level</button>
@@ -15462,12 +15792,6 @@ async function _adminBulkHeal() {
           </div>
           <div id="adminTopList"><div class="u-xs-muted">Klicke eine Kategorie oben.</div></div>
         </div>
-        <div class="admin-section">
-          <div class="admin-section-title">📈 LEVEL-VERTEILUNG</div>
-          <div id="adminLevelChart" style="height:80px;display:flex;align-items:flex-end;gap:2px;padding:4px;">
-            <div class="u-xs-muted">Wird mit Stats geladen...</div>
-          </div>
-        </div>
       </div>
 
       <!-- TAB: SPIELER -->
@@ -15476,12 +15800,12 @@ async function _adminBulkHeal() {
           <div class="admin-section-title" style="display:flex;justify-content:space-between;align-items:center;">
             <span>👥 ALLE SPIELER</span>
             <div style="display:flex;gap:4px;">
-              <input id="adminSearchInput" class="admin-input" placeholder="Suche..." style="width:120px;padding:3px 8px;font-size:.62rem;" oninput="_adminFilterPlayers()">
-              <button class="admin-btn blue" onclick="_adminLoadPlayers()" style="padding:3px 10px;font-size:.6rem;">🔄 Laden</button>
+              <input id="adminSearchInput" class="admin-input" placeholder="Suche..." style="width:110px;padding:3px 8px;font-size:.62rem;" oninput="_adminFilterPlayers()">
+              <button class="admin-btn blue" onclick="_adminLoadPlayers()" style="padding:3px 8px;font-size:.6rem;">🔄</button>
             </div>
           </div>
-          <div id="adminPlayerList" style="max-height:250px;overflow-y:auto;">
-            <div class="u-xs-muted">Klicke "Laden" um Spieler zu sehen.</div>
+          <div id="adminPlayerList" style="max-height:200px;overflow-y:auto;">
+            <div class="u-xs-muted">Klicke 🔄 um Spieler zu laden.</div>
           </div>
         </div>
         <div class="admin-section">
@@ -15489,11 +15813,19 @@ async function _adminBulkHeal() {
           <button class="admin-btn blue" onclick="_adminLoadGuilds()" style="font-size:.6rem;padding:4px 10px;margin-bottom:8px;">🔄 Gilden laden</button>
           <div id="adminGuildList"><div class="u-xs-muted">Noch nicht geladen.</div></div>
         </div>
+        <div class="admin-section">
+          <div class="admin-section-title" style="display:flex;justify-content:space-between;">
+            <span>💬 GLOBALER CHAT MODERIEREN</span>
+            <button class="admin-btn blue" onclick="_adminLoadGlobalChat()" style="padding:2px 8px;font-size:.58rem;">🔄</button>
+          </div>
+          <div id="adminChatLog" style="max-height:200px;overflow-y:auto;">
+            <div class="u-xs-muted">Klicke 🔄 um Chat zu laden.</div>
+          </div>
+        </div>
       </div>
 
       <!-- TAB: VERWALTUNG -->
       <div id="adminTab-manage" class="admin-tab-content">
-        <!-- Spieler suchen -->
         <div class="admin-section">
           <div class="admin-section-title">🔍 SPIELER AUSWÄHLEN</div>
           <div class="admin-input-row">
@@ -15501,75 +15833,64 @@ async function _adminBulkHeal() {
             <button class="admin-btn blue" onclick="_adminFindPlayer()">🔍 Suchen</button>
           </div>
           <div id="adminTargetInfo" style="font-size:.65rem;color:var(--text3);margin-bottom:8px;min-height:18px;"></div>
-          <!-- Detail-Ansicht -->
           <div id="adminPlayerDetail" style="display:none;" class="admin-detail-card">
             <div style="font-family:Cinzel,serif;font-size:.75rem;color:#ff8888;margin-bottom:6px;" id="adminDetailName">—</div>
             <div class="admin-detail-grid" id="adminDetailGrid"></div>
           </div>
         </div>
-
-        <!-- Level & Gold setzen -->
         <div class="admin-section">
           <div class="admin-section-title">✏️ WERTE SETZEN</div>
           <div class="admin-input-row">
             <span class="admin-input-label">Level:</span>
             <input id="adminSetLvInput" class="admin-input" type="number" min="1" max="200" placeholder="z.B. 50" style="width:80px;">
-            <button class="admin-btn gold" onclick="_adminSetLevelCustom()">✓ Setzen</button>
+            <button class="admin-btn gold" onclick="_adminSetLevelCustom()">✓</button>
           </div>
           <div class="admin-input-row">
             <span class="admin-input-label">Gold:</span>
             <input id="adminSetGoldInput" class="admin-input" type="number" min="0" placeholder="z.B. 500000" style="width:120px;">
-            <button class="admin-btn gold" onclick="_adminSetGoldCustom()">✓ Setzen</button>
+            <button class="admin-btn gold" onclick="_adminSetGoldCustom()">✓</button>
           </div>
           <div class="admin-input-row">
             <span class="admin-input-label">Prestige ✦:</span>
             <input id="adminSetPrestigeInput" class="admin-input" type="number" min="0" max="8" placeholder="0–8" style="width:60px;">
-            <button class="admin-btn gold" onclick="_adminSetPrestige()">✓ Setzen</button>
+            <button class="admin-btn gold" onclick="_adminSetPrestige()">✓</button>
           </div>
           <div class="admin-input-row">
             <span class="admin-input-label">PVP-Pkt:</span>
             <input id="adminSetPvpInput" class="admin-input" type="number" min="0" placeholder="z.B. 1000" style="width:100px;">
-            <button class="admin-btn" onclick="_adminSetPvp()">✓ Setzen</button>
+            <button class="admin-btn" onclick="_adminSetPvp()">✓</button>
+          </div>
+          <div class="admin-input-row">
+            <span class="admin-input-label">Dungeon:</span>
+            <input id="adminSetDungInput" class="admin-input" type="number" min="1" max="100" placeholder="Etage 1-100" style="width:90px;">
+            <button class="admin-btn blue" onclick="_adminSetDungeonFloor()">✓</button>
           </div>
         </div>
-
-        <!-- Schnell-Aktionen -->
         <div class="admin-section">
           <div class="admin-section-title">⚡ SCHNELL-AKTIONEN</div>
           <div style="display:flex;flex-wrap:wrap;gap:4px;">
             <button class="admin-btn gold" onclick="_adminGiveGold()">💰 +1M Gold</button>
-            <button class="admin-btn gold" onclick="_adminGiveDungeonKeys()">🗝️ Schlüssel auffüllen</button>
-            <button class="admin-btn green" onclick="_adminFullHeal()">❤️ Vollheilen</button>
-            <button class="admin-btn blue" onclick="_adminViewInventory()">🎒 Inventar ansehen</button>
-            <button class="admin-btn blue" onclick="_adminClearInventory()">🗑️ Inventar leeren</button>
-            <button class="admin-btn" onclick="_adminToggleBan()">🔒 Sperren / Entsperren</button>
-            <button class="admin-btn" onclick="_adminResetPlayer()">🔄 Komplett resetten</button>
-            <button class="admin-btn" onclick="_adminBanPlayer()" style="border-color:rgba(220,40,40,.6);">🚫 Account löschen</button>
+            <button class="admin-btn gold" onclick="_adminGiveDungeonKeys()">🗝️ Schlüssel</button>
+            <button class="admin-btn green" onclick="_adminFullHeal()">❤️ Heilen</button>
+            <button class="admin-btn blue" onclick="_adminViewInventory()">🎒 Inventar</button>
+            <button class="admin-btn blue" onclick="_adminClearInventory()">🗑️ Inv. leeren</button>
+            <button class="admin-btn blue" onclick="_adminResetDailyLogin()">📅 Login-Streak</button>
+            <button class="admin-btn blue" onclick="_adminResetQuests()">📜 Quests reset</button>
+            <button class="admin-btn blue" onclick="_adminResetResearch()">🔬 Forschung reset</button>
+            <button class="admin-btn" onclick="_adminToggleBan()">🔒 Sperren/Entsperren</button>
+            <button class="admin-btn" onclick="_adminResetPlayer()">🔄 Komplett reset</button>
+            <button class="admin-btn" onclick="_adminBanPlayer()" style="border-color:rgba(220,40,40,.6);">🚫 Löschen</button>
           </div>
         </div>
-
-        <!-- Inventar-Ansicht -->
         <div id="adminInventorySection" class="admin-section" style="display:none;">
           <div class="admin-section-title" style="display:flex;justify-content:space-between;">
             <span>🎒 INVENTAR</span>
             <button class="admin-btn" onclick="document.getElementById('adminInventorySection').style.display='none'" style="padding:1px 6px;font-size:.55rem;">✕</button>
           </div>
-          <div id="adminInventoryList" style="max-height:180px;overflow-y:auto;font-size:.63rem;"></div>
+          <div id="adminInventoryList" style="max-height:160px;overflow-y:auto;font-size:.63rem;"></div>
         </div>
-
-        <!-- Admin-Notizen -->
         <div class="admin-section">
-          <div class="admin-section-title">📝 ADMIN-NOTIZEN ZUM SPIELER</div>
-          <div id="adminNoteDisplay" style="font-size:.63rem;color:var(--text3);min-height:24px;margin-bottom:6px;font-style:italic;">Kein Spieler ausgewählt.</div>
-          <div class="admin-input-row">
-            <textarea id="adminNoteInput" class="admin-input" rows="2" placeholder="Notiz hinzufügen..." style="flex:1;resize:vertical;font-family:monospace;"></textarea>
-            <button class="admin-btn green" onclick="_adminSaveNote()" style="align-self:flex-end;">💾 Speichern</button>
-          </div>
-        </div>
-
-        <!-- Nachricht senden -->
-        <div class="admin-section">
-          <div class="admin-section-title">📨 BELOHNUNG / NACHRICHT SENDEN</div>
+          <div class="admin-section-title">📨 BELOHNUNG SENDEN</div>
           <div class="admin-input-row">
             <span class="admin-input-label">Gold:</span>
             <input id="adminRewardGold" class="admin-input" type="number" placeholder="0" style="width:100px;">
@@ -15578,34 +15899,101 @@ async function _adminBulkHeal() {
             <span class="admin-input-label">Grund:</span>
             <input id="adminRewardMsg" class="admin-input" placeholder="Entschuldigung / Belohnung..." style="flex:1;">
           </div>
-          <button class="admin-btn green" onclick="_adminSendReward()" style="margin-top:4px;">🎁 Belohnung senden</button>
+          <button class="admin-btn green" onclick="_adminSendReward()" style="margin-top:4px;">🎁 Senden</button>
+        </div>
+        <div class="admin-section">
+          <div class="admin-section-title">📝 ADMIN-NOTIZEN</div>
+          <div id="adminNoteDisplay" style="font-size:.63rem;color:var(--text3);min-height:24px;margin-bottom:6px;font-style:italic;">Kein Spieler ausgewählt.</div>
+          <div class="admin-input-row">
+            <textarea id="adminNoteInput" class="admin-input" rows="2" placeholder="Notiz..." style="flex:1;resize:vertical;font-family:monospace;"></textarea>
+            <button class="admin-btn green" onclick="_adminSaveNote()" style="align-self:flex-end;">💾</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: EVENTS -->
+      <div id="adminTab-events" class="admin-tab-content">
+        <div class="admin-section">
+          <div class="admin-section-title">🎃 EVENT AKTIVIEREN / ERZWINGEN</div>
+          <div id="adminEventStatus" style="font-size:.65rem;margin-bottom:10px;">Lade...</div>
+          <div id="adminEventBtns" style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px;"></div>
+          <button class="admin-btn" onclick="_adminForceEvent(null)" style="width:100%;margin-top:4px;">✕ Event deaktivieren (nach Datum)</button>
+          <p style="font-size:.6rem;color:var(--text3);margin-top:6px;">⚠️ Erzwingt ein Event für alle Spieler dieser Session, ignoriert das Datum.</p>
+        </div>
+        <div class="admin-section">
+          <div class="admin-section-title">📅 EVENT-KALENDER</div>
+          <div id="adminEventCalendar"></div>
+        </div>
+        <div class="admin-section">
+          <div class="admin-section-title">📊 EVENT-TEILNEHMER</div>
+          <button class="admin-btn blue" onclick="_adminLoadEventStats()" style="font-size:.6rem;padding:4px 10px;margin-bottom:8px;">🔄 Statistiken laden</button>
+          <div id="adminEventStats"><div class="u-xs-muted">Noch nicht geladen.</div></div>
+        </div>
+        <div class="admin-section">
+          <div class="admin-section-title">🏪 EVENT-VERWALTUNG (ausgewählter Spieler)</div>
+          <p style="font-size:.62rem;color:var(--text3);margin-bottom:6px;">Spieler muss im Tab "Verwaltung" ausgewählt sein.</p>
+          <div style="display:flex;gap:4px;flex-wrap:wrap;">
+            <button class="admin-btn blue" onclick="_adminResetEventProgress()">🔄 Event-Fortschritt reset</button>
+            <button class="admin-btn gold" onclick="_adminGiveEventCurrency()">💎 Event-Währung geben</button>
+          </div>
+          <div class="admin-input-row" style="margin-top:6px;">
+            <span class="admin-input-label">Menge:</span>
+            <input id="adminEventCurrencyAmt" class="admin-input" type="number" min="1" value="50" style="width:80px;">
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: ACHIEVEMENTS -->
+      <div id="adminTab-achievements" class="admin-tab-content">
+        <div class="admin-section">
+          <div class="admin-section-title" style="display:flex;justify-content:space-between;">
+            <span>📊 ACHIEVEMENT-STATISTIKEN</span>
+            <button class="admin-btn blue" onclick="_adminLoadAchStats()" style="padding:2px 8px;font-size:.58rem;">🔄</button>
+          </div>
+          <div id="adminAchStats"><div class="u-xs-muted">Klicke 🔄 zum Laden.</div></div>
+        </div>
+        <div class="admin-section">
+          <div class="admin-section-title">🏅 ACHIEVEMENT VERGEBEN</div>
+          <p style="font-size:.62rem;color:var(--text3);margin-bottom:8px;">Spieler muss im Tab "Verwaltung" ausgewählt sein.</p>
+          <div class="admin-input-row">
+            <span class="admin-input-label">Kategorie:</span>
+            <select id="adminAchCatSelect" class="admin-input" style="flex:1;" onchange="_adminUpdateAchSelect()">
+              <option value="">— Wählen —</option>
+            </select>
+          </div>
+          <div class="admin-input-row">
+            <span class="admin-input-label">Achievement:</span>
+            <select id="adminAchSelect" class="admin-input" style="flex:1;" onchange="_adminPreviewAch()">
+              <option value="">— Wählen —</option>
+            </select>
+          </div>
+          <div id="adminAchPreview" style="font-size:.63rem;color:var(--gold2);margin:6px 0;min-height:18px;"></div>
+          <button class="admin-btn gold" onclick="_adminGrantAchievement()">🏅 Achievement vergeben</button>
+        </div>
+        <div class="admin-section">
+          <div class="admin-section-title">🗑️ ACHIEVEMENT ENTFERNEN</div>
+          <div class="admin-input-row">
+            <input id="adminAchRevokeId" class="admin-input" placeholder="Achievement-ID (z.B. kill_100)" style="flex:1;">
+            <button class="admin-btn" onclick="_adminRevokeAchievement()">✕ Entfernen</button>
+          </div>
+        </div>
+        <div class="admin-section">
+          <div class="admin-section-title">🔄 BULK ACHIEVEMENT RESET</div>
+          <p style="font-size:.62rem;color:var(--text3);margin-bottom:6px;">Setzt alle Achievements eines Spielers zurück.</p>
+          <button class="admin-btn" onclick="_adminResetAchievements()">🔄 Alle Achievements reset</button>
         </div>
       </div>
 
       <!-- TAB: GLOBAL -->
       <div id="adminTab-global" class="admin-tab-content">
-
-        <!-- Event Control -->
-        <div class="admin-section">
-          <div class="admin-section-title">🎃 EVENT-STEUERUNG</div>
-          <div id="adminEventStatus" style="font-size:.65rem;color:var(--text3);margin-bottom:8px;">Lade Event-Status...</div>
-          <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px;">
-            <button class="admin-btn green" onclick="_adminForceEvent('halloween')">🎃 Halloween</button>
-            <button class="admin-btn green" onclick="_adminForceEvent('weihnachten')">🎄 Weihnachten</button>
-            <button class="admin-btn green" onclick="_adminForceEvent('ostern')">🐣 Ostern</button>
-            <button class="admin-btn green" onclick="_adminForceEvent('sommer')">☀️ Sommer</button>
-            <button class="admin-btn" onclick="_adminForceEvent(null)">✕ Event deaktivieren</button>
-          </div>
-          <p style="font-size:.6rem;color:var(--text3);">⚠️ Erzwingt ein Event für ALLE Spieler, ignoriert das Datum.</p>
-        </div>
-
-        <!-- Bulk-Aktionen -->
         <div class="admin-section">
           <div class="admin-section-title">👥 BULK-AKTIONEN (alle Spieler)</div>
           <div style="display:flex;flex-wrap:wrap;gap:4px;">
-            <button class="admin-btn gold" onclick="_adminBulkGiveGold()">💰 Allen +Gold geben</button>
-            <button class="admin-btn green" onclick="_adminBulkHeal()">❤️ Alle vollheilen</button>
-            <button class="admin-btn gold" onclick="_adminRefillAllKeys()">🗝️ Alle Schlüssel auffüllen</button>
+            <button class="admin-btn gold" onclick="_adminBulkGiveGold()">💰 Gold an alle</button>
+            <button class="admin-btn green" onclick="_adminBulkHeal()">❤️ Alle heilen</button>
+            <button class="admin-btn gold" onclick="_adminRefillAllKeys()">🗝️ Alle Schlüssel</button>
+            <button class="admin-btn blue" onclick="_adminBulkResetDailyLogin()">📅 Alle Login-Streaks</button>
+            <button class="admin-btn blue" onclick="_adminBulkResetPvpSeason()">⚔️ PVP-Saison reset</button>
           </div>
           <div class="admin-input-row" style="margin-top:8px;">
             <span class="admin-input-label">Gold (alle):</span>
@@ -15620,23 +16008,15 @@ async function _adminBulkHeal() {
             placeholder="Nachricht an alle Spieler (erscheint im Guild-Chat aller Gilden)..."></textarea>
           <button class="admin-btn blue" onclick="_adminSendAnnouncement()">📢 An alle Gilden senden</button>
         </div>
-
-        <div class="admin-section">
-          <div class="admin-section-title">🗝️ GLOBALE SCHLÜSSEL</div>
-          <p style="font-size:.65rem;color:var(--text3);margin-bottom:8px;">Allen Spielern Dungeon-Schlüssel wieder auf Maximum auffüllen.</p>
-          <button class="admin-btn green" onclick="_adminRefillAllKeys()">🗝️ Allen Spielern Schlüssel geben</button>
-        </div>
-
         <div class="admin-section">
           <div class="admin-section-title">⚠️ GEFÄHRLICHE AKTIONEN</div>
           <div style="display:flex;flex-wrap:wrap;gap:4px;">
-            <button class="admin-btn blue" onclick="_adminExportData()">📥 Daten exportieren</button>
-            <button class="admin-btn blue" onclick="_adminImportData()">📤 Daten importieren</button>
-            <button class="admin-btn" onclick="_adminRebuildLeaderboard()">🏆 Leaderboard neu aufbauen</button>
+            <button class="admin-btn blue" onclick="_adminExportData()">📥 Exportieren</button>
+            <button class="admin-btn blue" onclick="_adminImportData()">📤 Importieren</button>
+            <button class="admin-btn" onclick="_adminRebuildLeaderboard()">🏆 Leaderboard reset</button>
             <button class="admin-btn" onclick="_adminResetAll()">🔄 ALLE resetten</button>
           </div>
-          <div style="font-size:.6rem;color:#ff4444;margin-top:6px;">⚠️ Diese Aktionen sind unwiderruflich!</div>
-          <!-- Hidden file input for import -->
+          <div style="font-size:.6rem;color:#ff4444;margin-top:6px;">⚠️ Unwiderruflich!</div>
           <input type="file" id="adminImportFile" accept=".json" style="display:none;" onchange="_adminDoImport(this)">
         </div>
       </div>
@@ -15645,42 +16025,37 @@ async function _adminBulkHeal() {
       <div id="adminTab-security" class="admin-tab-content">
         <div class="admin-section">
           <div class="admin-section-title" style="display:flex;justify-content:space-between;">
-            <span>🚨 AUDIT-LOG (verdächtige Aktivitäten)</span>
+            <span>🚨 AUDIT-LOG</span>
             <button class="admin-btn blue" onclick="_adminLoadAuditLog()" style="padding:2px 8px;font-size:.58rem;">🔄</button>
           </div>
           <div id="adminAuditLog" style="max-height:200px;overflow-y:auto;">
-            <div class="u-xs-muted">Klicke 🔄 um den Audit-Log zu laden.</div>
+            <div class="u-xs-muted">Klicke 🔄 zum Laden.</div>
           </div>
         </div>
-
         <div class="admin-section">
           <div class="admin-section-title">🔑 ADMIN-PASSWORT ÄNDERN</div>
           <p style="font-size:.62rem;color:var(--text3);margin-bottom:8px;">
-            SHA-256 Hash auf <a href="https://emn178.github.io/online-tools/sha256.html" target="_blank" style="color:#80aaff;">dieser Seite</a> erzeugen, dann hier eingeben.
+            SHA-256 Hash auf <a href="https://emn178.github.io/online-tools/sha256.html" target="_blank" style="color:#80aaff;">dieser Seite</a> erzeugen.
           </p>
           <div class="admin-input-row">
             <input id="adminNewHash" class="admin-input" placeholder="Neuer SHA-256 Hash..." style="flex:1;font-size:.6rem;">
             <button class="admin-btn blue" onclick="_adminChangePassword()">✓ Setzen</button>
           </div>
-          <div style="font-size:.6rem;color:var(--text3);margin-top:4px;">Aktueller Hash: <span id="adminCurrentHash" style="color:#ff8888;">***</span></div>
+          <div style="font-size:.6rem;color:var(--text3);margin-top:4px;">Hash: <span id="adminCurrentHash" style="color:#ff8888;">***</span></div>
         </div>
-
         <div class="admin-section">
-          <div class="admin-section-title">📋 GELÖSCHTE SPIELER LOG</div>
-          <div id="adminDeletedLog" style="max-height:120px;overflow-y:auto;font-size:.63rem;color:var(--text3);">
-            Noch keine gelöschten Spieler in dieser Session.
+          <div class="admin-section-title">📋 GELÖSCHTE SPIELER</div>
+          <div id="adminDeletedLog" style="max-height:100px;overflow-y:auto;font-size:.63rem;color:var(--text3);">
+            Noch keine gelöschten Spieler.
           </div>
         </div>
-
         <div class="admin-section">
           <div class="admin-section-title">🕵️ ADMIN-AKTIONSPROTOKOLL</div>
-          <p style="font-size:.62rem;color:var(--text3);margin-bottom:6px;">Alle Admin-Aktionen dieser Session.</p>
           <div id="adminActionLog" style="max-height:150px;overflow-y:auto;font-size:.62rem;font-family:monospace;color:var(--text3);background:rgba(0,0,0,.3);border-radius:7px;padding:8px;">
             Noch keine Aktionen.
           </div>
         </div>
       </div>
-
       <!-- Admin Log (immer sichtbar) -->
       <div class="admin-section" style="margin-top:8px;">
         <div class="admin-section-title" style="display:flex;justify-content:space-between;">
