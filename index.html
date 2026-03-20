@@ -398,19 +398,19 @@ body {
 }
 
 .inv-slot {
-  aspect-ratio:1;
+  aspect-ratio: 3/4;
   background:rgba(0,0,0,.3);
   border:1px solid var(--border);
   border-radius:8px;
   display:flex; flex-direction:column; align-items:center; justify-content:center;
   gap:2px; cursor:pointer; transition:all .18s;
-  position:relative; overflow:hidden; padding:4px;
+  position:relative; overflow:hidden; padding:4px 3px;
 }
 
 .inv-slot:hover { transform:translateY(-3px) scale(1.03); box-shadow:0 6px 18px rgba(0,0,0,.6),0 0 8px rgba(201,162,39,.15); }
-.inv-slot .ii { font-size:1.55rem; }
-.inv-slot .in { font-size:0.5rem; text-align:center; line-height:1.2; font-family:'Cinzel',serif; font-weight:700; }
-.inv-slot .is { font-size:0.5rem; font-family:'Cinzel',serif; }
+.inv-slot .ii { font-size:1.4rem; line-height:1; }
+.inv-slot .in { font-size:0.48rem; text-align:center; line-height:1.2; font-family:'Cinzel',serif; font-weight:700; word-break:break-word; max-width:100%; }
+.inv-slot .is { font-size:0.48rem; font-family:'Cinzel',serif; text-align:center; }
 
 .inv-slot.rarity-common  {border-color:#445;}
 .inv-slot.rarity-uncommon{border-color:#2e8b57;box-shadow:0 0 7px rgba(46,139,87,.2);}
@@ -4783,75 +4783,92 @@ const RAR_TIER_FACTORS = [0, 0.2, 0.4, 0.7, 1.2, 1.8];
 // ── Item-Sondereffekte ─────────────────────────────────────────
 
 const ITEM_DEFS = [
-  // ─── WAFFEN ─────────────────────────────────────────────
-  { name:'Holzknüppel',     emoji:'🪵', slot:'weapon', sk:'atk', sv:2,   eff:null,           desc:'Primitiv, aber schmerzhaft.' },
-  { name:'Stein-Dolch',     emoji:'🗿', slot:'weapon', sk:'atk', sv:3,   eff:null,           desc:'Geschärfter Kieselstein.' },
-  { name:'Eisenschwert',    emoji:'⚔️', slot:'weapon', sk:'atk', sv:6,   eff:null,           desc:'Solide Klinge aus gutem Stahl.' },
-  { name:'Jäger-Speer',     emoji:'🏹', slot:'weapon', sk:'atk', sv:5,   eff:'poison_on_hit',desc:'Vergiftet Gegner bei jedem Treffer.' },
-  { name:'Flammenklinge',   emoji:'🔥', slot:'weapon', sk:'atk', sv:7,   eff:'aoe',          desc:'30% Chance: Feuer trifft alle Monster.' },
-  { name:'Runenschwert',    emoji:'🗡️', slot:'weapon', sk:'atk', sv:14,  eff:'crit_dmg',     desc:'Krit-Schaden +40%.' },
-  { name:'Vampirklinge',    emoji:'🧛', slot:'weapon', sk:'atk', sv:12,  eff:'lifesteal',    desc:'Heilt 12% des verursachten Schadens.' },
-  { name:'Kettenbrecher',   emoji:'⛓️', slot:'weapon', sk:'atk', sv:13,  eff:'chain',        desc:'Treffer springt auf ein zweites Monster über.' },
-  { name:'Frostklinge',     emoji:'❄️', slot:'weapon', sk:'atk', sv:11,  eff:'frost',        desc:'20% Chance: verlangsamt Monster für 2 Runden.' },
-  { name:'Schattenmesser',  emoji:'🌑', slot:'weapon', sk:'atk', sv:22,  eff:'execute',      desc:'Gegner unter 20% HP: +80% Schaden.' },
-  { name:'Kriegshammer',    emoji:'🔨', slot:'weapon', sk:'atk', sv:25,  eff:'aoe',          desc:'Erschütterung — 45% Chance Flächenschaden.' },
-  { name:'Drachentöter',    emoji:'🐉', slot:'weapon', sk:'atk', sv:28,  eff:'crit_dmg',     desc:'Krit-Schaden +60%. Erschaffen für Endgegner.' },
-  { name:'Berserkerklinge', emoji:'🩸', slot:'weapon', sk:'atk', sv:20,  eff:'berserker',    desc:'ATK steigt je 10% fehlender HP um +8%.' },
-  { name:'Götterschwerter', emoji:'⚡', slot:'weapon', sk:'atk', sv:38,  eff:'mana_drain',   desc:'Volles Mana: +20% Schaden. Mana wird verbraucht.' },
-  { name:'Seelenzerstörer', emoji:'💫', slot:'weapon', sk:'atk', sv:45,  eff:'lifesteal',    desc:'Lebensraub 18% — die Seelen der Gefallenen.' },
-  { name:'Sternensense',    emoji:'🌟', slot:'weapon', sk:'atk', sv:42,  eff:'execute',      desc:'Execute trifft unter 30% HP. Götterwaffe.' },
-  { name:'Weltvernichter',  emoji:'🌍', slot:'weapon', sk:'atk', sv:70,  eff:'aoe',          desc:'60% Flächenschaden. Nichts überlebt.' },
-  { name:'Ursprungsklinge', emoji:'🔱', slot:'weapon', sk:'atk', sv:65,  eff:'chain',        desc:'Kettenangriff auf alle Monster gleichzeitig.' },
+  // ─── WAFFEN ──────────────────────────────────────────────────
+  // Sortiert nach sv (Basis-ATK), je 3 Items pro Seltenheits-Tier
+  { name:'Holzknüppel',      emoji:'🪵', slot:'weapon', sk:'atk', sv:2,  eff:null,               desc:'Primitiv aber schmerzhaft.' },
+  { name:'Stein-Dolch',      emoji:'🗿', slot:'weapon', sk:'atk', sv:4,  eff:null,               desc:'Geschärfter Kieselstein.' },
+  { name:'Kupferdolch',      emoji:'🔪', slot:'weapon', sk:'atk', sv:5,  eff:null,               desc:'Leicht und präzise.' },
+  { name:'Eisenschwert',     emoji:'⚔️', slot:'weapon', sk:'atk', sv:7,  eff:null,               desc:'Solide Klinge aus gutem Stahl.' },
+  { name:'Jäger-Speer',      emoji:'🏹', slot:'weapon', sk:'atk', sv:8,  eff:null,               desc:'Reichweite entscheidet.' },
+  { name:'Streitkolben',     emoji:'🔨', slot:'weapon', sk:'atk', sv:9,  eff:null,               desc:'Wuchtig und zuverlässig.' },
+  { name:'Flammenklinge',    emoji:'🔥', slot:'weapon', sk:'atk', sv:12, eff:null,               desc:'Brennt auf Berührung.' },
+  { name:'Frostklinge',      emoji:'❄️', slot:'weapon', sk:'atk', sv:13, eff:null,               desc:'Lässt Feinde erstarren.' },
+  { name:'Runenschwert',     emoji:'⚔️', slot:'weapon', sk:'atk', sv:15, eff:null,               desc:'Mit alten Runen beschrieben.' },
+  { name:'Vampirklinge',     emoji:'🩸', slot:'weapon', sk:'atk', sv:18, eff:'lifesteal',        desc:'Saugt Lebenskraft.' },
+  { name:'Kettenbrecher',    emoji:'⛓️', slot:'weapon', sk:'atk', sv:20, eff:null,               desc:'Bricht jede Verteidigung.' },
+  { name:'Schattenmesser',   emoji:'🌑', slot:'weapon', sk:'atk', sv:22, eff:null,               desc:'Schlägt aus dem Schatten.' },
+  { name:'Kriegshammer',     emoji:'🔱', slot:'weapon', sk:'atk', sv:28, eff:'stun_on_hit',      desc:'Betäubt bei schwerem Treffer.' },
+  { name:'Drachentöter',     emoji:'🐉', slot:'weapon', sk:'atk', sv:32, eff:null,               desc:'Legendär unter Drachenjägern.' },
+  { name:'Berserkerklinge',  emoji:'😤', slot:'weapon', sk:'atk', sv:35, eff:'berserk',          desc:'Stärker bei niedrigem Leben.' },
+  { name:'Seelenzerstörer',  emoji:'💀', slot:'weapon', sk:'atk', sv:45, eff:null,               desc:'Zerstört Seele und Körper.' },
+  { name:'Sternensense',     emoji:'⭐', slot:'weapon', sk:'atk', sv:50, eff:null,               desc:'Geformt aus gefallenen Sternen.' },
+  { name:'Götterschwerter',  emoji:'⚡', slot:'weapon', sk:'atk', sv:55, eff:null,               desc:'Die Klinge der Götter.' },
+  { name:'Weltvernichter',   emoji:'🌍', slot:'weapon', sk:'atk', sv:70, eff:'chain_lightning',  desc:'Blitz springt auf Nachbarziele.' },
+  { name:'Ursprungsklinge',  emoji:'🌟', slot:'weapon', sk:'atk', sv:80, eff:null,               desc:'Die erste aller Klingen.' },
+  { name:'Schöpfungsaxt',    emoji:'🌈', slot:'weapon', sk:'atk', sv:95, eff:null,               desc:'Erschuf Welten. Zerstört sie jetzt.' },
 
-  // ─── HELME ──────────────────────────────────────────────
-  { name:'Lederkappe',      emoji:'🎓', slot:'helmet', sk:'def', sv:1,   eff:null,           desc:'Minimal Schutz.' },
-  { name:'Kupferhelm',      emoji:'🪖', slot:'helmet', sk:'def', sv:3,   eff:null,           desc:'Besser als nichts.' },
-  { name:'Eisenhelm',       emoji:'⛑️', slot:'helmet', sk:'def', sv:5,   eff:null,           desc:'Schützt den Kopf.' },
-  { name:'Dornenhelm',      emoji:'🌵', slot:'helmet', sk:'def', sv:6,   eff:'thorns',       desc:'Reflektiert 20% des eingehenden Schadens.' },
-  { name:'Scherbenmaske',   emoji:'💀', slot:'helmet', sk:'def', sv:8,   eff:'reflect_crit', desc:'Gegner-Krits reflektieren 30% zurück.' },
-  { name:'Drachenhelm',     emoji:'🐲', slot:'helmet', sk:'def', sv:12,  eff:'thorns',       desc:'Dornen reflektieren 35% Schaden.' },
-  { name:'Aegis-Helm',      emoji:'🛡️', slot:'helmet', sk:'def', sv:18,  eff:'shield_on_hit',desc:'15% Chance auf Schadensschild (50 HP) bei Treffer.' },
-  { name:'Engelhelm',       emoji:'🪽', slot:'helmet', sk:'def', sv:22,  eff:'regen',        desc:'Regeneriert 2% Max-HP pro Sekunde.' },
-  { name:'Götterkrone',     emoji:'👑', slot:'helmet', sk:'def', sv:35,  eff:'reflect_crit', desc:'Reflektiert 50% aller Krit-Treffer.' },
+  // ─── HELME ───────────────────────────────────────────────────
+  { name:'Lederkappe',       emoji:'🪖', slot:'helmet', sk:'def', sv:2,  eff:null,               desc:'Einfacher Leder-Kopfschutz.' },
+  { name:'Kupferhelm',       emoji:'⛑️', slot:'helmet', sk:'def', sv:4,  eff:null,               desc:'Leichter Metallhelm.' },
+  { name:'Eisenhelm',        emoji:'🪖', slot:'helmet', sk:'def', sv:6,  eff:null,               desc:'Robuster Schutz.' },
+  { name:'Dornenhelm',       emoji:'🌿', slot:'helmet', sk:'def', sv:9,  eff:'thorns',           desc:'Gibt Schaden zurück.' },
+  { name:'Scherbenmaske',    emoji:'🎭', slot:'helmet', sk:'def', sv:11, eff:null,               desc:'Aus Kristallscherben gefertigt.' },
+  { name:'Stahlhaube',       emoji:'⚙️', slot:'helmet', sk:'def', sv:13, eff:null,               desc:'Solider Schutz aus Stahl.' },
+  { name:'Drachenhelm',      emoji:'🐲', slot:'helmet', sk:'def', sv:18, eff:null,               desc:'Aus echten Drachenschuppen.' },
+  { name:'Aegis-Helm',       emoji:'🛡️', slot:'helmet', sk:'def', sv:24, eff:'shield_on_hit',    desc:'Kryptenschild absorbiert Schaden.' },
+  { name:'Titanhaube',       emoji:'💠', slot:'helmet', sk:'def', sv:30, eff:null,               desc:'Härtestes bekanntes Metall.' },
+  { name:'Engelhelm',        emoji:'😇', slot:'helmet', sk:'def', sv:38, eff:null,               desc:'Göttlicher Schutz.' },
+  { name:'Shadowhood',       emoji:'🌒', slot:'helmet', sk:'def', sv:42, eff:null,               desc:'Verschmilzt mit dem Schatten.' },
+  { name:'Götterkrone',      emoji:'👑', slot:'helmet', sk:'def', sv:55, eff:null,               desc:'Nur Götter tragen dieses Diadem.' },
 
-  // ─── RÜSTUNGEN ──────────────────────────────────────────
-  { name:'Lederhemd',       emoji:'🧥', slot:'chest',  sk:'def', sv:2,   eff:null,           desc:'Schützt den Torso.' },
-  { name:'Ringpanzer',      emoji:'🔗', slot:'chest',  sk:'def', sv:4,   eff:null,           desc:'Vernietete Ringe aus Eisen.' },
-  { name:'Kettenhemd',      emoji:'🛡️', slot:'chest',  sk:'def', sv:7,   eff:null,           desc:'Guter Schutz.' },
-  { name:'Dornenpanzer',    emoji:'🌺', slot:'chest',  sk:'def', sv:9,   eff:'thorns',       desc:'Feinde die dich treffen nehmen 25% Schaden.' },
-  { name:'Mithrilrüstung',  emoji:'💠', slot:'chest',  sk:'def', sv:14,  eff:'shield_on_hit',desc:'Automatischer Schild (80 HP) alle 10 Sekunden.' },
-  { name:'Drachenpanzer',   emoji:'🦎', slot:'chest',  sk:'def', sv:18,  eff:'regen',        desc:'Heilt 1.5% HP pro Sekunde passiv.' },
-  { name:'Titanrüstung',    emoji:'⚙️', slot:'chest',  sk:'def', sv:28,  eff:'thorns',       desc:'Dornen: 40% Rückschaden. Unzerstörbar.' },
-  { name:'Gottesrüstung',   emoji:'✨', slot:'chest',  sk:'def', sv:38,  eff:'regen',        desc:'Regeneriert 3% HP/s. Göttlich geschmiedet.' },
+  // ─── BRUST-RÜSTUNG ───────────────────────────────────────────
+  { name:'Lederhemd',        emoji:'👕', slot:'chest',  sk:'def', sv:3,  eff:null,               desc:'Weich aber schützend.' },
+  { name:'Ringpanzer',       emoji:'🔗', slot:'chest',  sk:'def', sv:5,  eff:null,               desc:'Vernietete Ringe aus Eisen.' },
+  { name:'Kettenhemd',       emoji:'⛓️', slot:'chest',  sk:'def', sv:8,  eff:null,               desc:'Flexibel und robust.' },
+  { name:'Dornenpanzer',     emoji:'🌵', slot:'chest',  sk:'def', sv:12, eff:'thorns',           desc:'Angreifer nehmen Schaden.' },
+  { name:'Plattenpanzer',    emoji:'🛡️', slot:'chest',  sk:'def', sv:16, eff:null,               desc:'Maximaler Schutz, schwer zu tragen.' },
+  { name:'Mithrilrüstung',   emoji:'💎', slot:'chest',  sk:'def', sv:22, eff:null,               desc:'Leichter als Stahl, härter als Fels.' },
+  { name:'Drachenpanzer',    emoji:'🐉', slot:'chest',  sk:'def', sv:30, eff:null,               desc:'Aus Drachenschuppen gewebt.' },
+  { name:'Titanrüstung',     emoji:'⚙️', slot:'chest',  sk:'def', sv:40, eff:null,               desc:'Unzerbrechliches Titan.' },
+  { name:'Seelenpanzer',     emoji:'👻', slot:'chest',  sk:'def', sv:52, eff:null,               desc:'Mit Seelen verstärkt.' },
+  { name:'Gottesrüstung',    emoji:'✨', slot:'chest',  sk:'def', sv:65, eff:null,               desc:'Direkt von Göttern erschaffen.' },
 
-  // ─── HANDSCHUHE ─────────────────────────────────────────
-  { name:'Faustlinge',      emoji:'🧤', slot:'gloves', sk:'atk', sv:1,   eff:null,           desc:'Erhöht Griffstärke.' },
-  { name:'Lederhandschuhe', emoji:'🤛', slot:'gloves', sk:'atk', sv:3,   eff:null,           desc:'Besserer Griff.' },
-  { name:'Feuerhandschuh',  emoji:'🔥', slot:'gloves', sk:'atk', sv:5,   eff:'poison_on_hit',desc:'Brennende Faust: vergiftet Gegner dauerhaft.' },
-  { name:'Titanfaust',      emoji:'🤜', slot:'gloves', sk:'atk', sv:10,  eff:'aoe',          desc:'Erschütterung beim Aufprall — 35% Flächenschaden.' },
-  { name:'Blitzhandschuh',  emoji:'⚡', slot:'gloves', sk:'atk', sv:14,  eff:'chain',        desc:'Blitz springt auf Nachbarziele über.' },
-  { name:'Schattenklaue',   emoji:'🖤', slot:'gloves', sk:'atk', sv:18,  eff:'lifesteal',    desc:'Stiehlt 10% Lebenskraft bei jedem Treffer.' },
-  { name:'Sternengreifer',  emoji:'✨', slot:'gloves', sk:'atk', sv:30,  eff:'crit_dmg',     desc:'Krit-Treffer machen +70% Schaden.' },
+  // ─── HANDSCHUHE ──────────────────────────────────────────────
+  { name:'Faustlinge',       emoji:'🥊', slot:'gloves', sk:'atk', sv:2,  eff:null,               desc:'Gepolsterte Kampfhandschuhe.' },
+  { name:'Lederhandschuhe',  emoji:'🧤', slot:'gloves', sk:'atk', sv:4,  eff:null,               desc:'Flexibel und griffig.' },
+  { name:'Feuerhandschuh',   emoji:'🔥', slot:'gloves', sk:'atk', sv:7,  eff:null,               desc:'Heiße Fäuste.' },
+  { name:'Knochengreifer',   emoji:'💀', slot:'gloves', sk:'atk', sv:10, eff:null,               desc:'Aus Knochen der Gefallenen.' },
+  { name:'Titanfaust',       emoji:'🤛', slot:'gloves', sk:'atk', sv:14, eff:null,               desc:'Zerschlägt Fels wie Papier.' },
+  { name:'Blitzhandschuh',   emoji:'⚡', slot:'gloves', sk:'atk', sv:18, eff:'chain_lightning',  desc:'Blitz springt auf Nachbarziele.' },
+  { name:'Schattenklaue',    emoji:'🌑', slot:'gloves', sk:'atk', sv:24, eff:null,               desc:'Greift aus dem Nichts an.' },
+  { name:'Sternenfaust',     emoji:'⭐', slot:'gloves', sk:'atk', sv:32, eff:null,               desc:'Trifft mit der Kraft der Sterne.' },
+  { name:'Sternengreifer',   emoji:'🌟', slot:'gloves', sk:'atk', sv:40, eff:null,               desc:'Greift Feinde wo immer sie sind.' },
 
-  // ─── STIEFEL ────────────────────────────────────────────
-  { name:'Lederstiefel',    emoji:'👢', slot:'boots',  sk:'spd', sv:0.05,eff:null,           desc:'Leichtere Schritte.' },
-  { name:'Rennstiefel',     emoji:'🏃', slot:'boots',  sk:'spd', sv:0.08,eff:null,           desc:'Optimiert für Geschwindigkeit.' },
-  { name:'Windstiefel',     emoji:'💨', slot:'boots',  sk:'spd', sv:0.12,eff:'dodge',        desc:'+10% Ausweich-Chance. Schnell wie Wind.' },
-  { name:'Schattenstiefel', emoji:'🌑', slot:'boots',  sk:'spd', sv:0.15,eff:'dodge',        desc:'+15% Ausweichen. Du bist kaum sichtbar.' },
-  { name:'Geisterstiefel',  emoji:'👻', slot:'boots',  sk:'spd', sv:0.18,eff:'dodge',        desc:'+20% Ausweichen. Phasiert durch Angriffe.' },
-  { name:'Hermesstiefel',   emoji:'🪶', slot:'boots',  sk:'spd', sv:0.22,eff:'xp_boost',    desc:'+25% XP aus Kämpfen. Göttliche Schnelligkeit.' },
-  { name:'Weltläufer',      emoji:'🌍', slot:'boots',  sk:'spd', sv:0.28,eff:'gold_find',   desc:'+30% Gold. Überall zugleich.' },
+  // ─── STIEFEL ─────────────────────────────────────────────────
+  { name:'Lederstiefel',     emoji:'👟', slot:'boots',  sk:'spd', sv:0.08, eff:null,             desc:'Leichte Reiseschuhe.' },
+  { name:'Rennstiefel',      emoji:'🏃', slot:'boots',  sk:'spd', sv:0.12, eff:null,             desc:'Gebaut für Schnelligkeit.' },
+  { name:'Windstiefel',      emoji:'💨', slot:'boots',  sk:'spd', sv:0.15, eff:null,             desc:'Schnell wie der Wind.' },
+  { name:'Eisenstiefel',     emoji:'⚙️', slot:'boots',  sk:'def', sv:8,  eff:null,               desc:'Schwer aber unzerstörbar.' },
+  { name:'Schattenstiefel',  emoji:'🌑', slot:'boots',  sk:'spd', sv:0.18, eff:null,             desc:'Lautlose Schritte.' },
+  { name:'Feuerstiefel',     emoji:'🔥', slot:'boots',  sk:'spd', sv:0.20, eff:null,             desc:'Hinterlassen Flammenspuren.' },
+  { name:'Geisterstiefel',   emoji:'👻', slot:'boots',  sk:'spd', sv:0.22, eff:null,             desc:'Gehen durch alles hindurch.' },
+  { name:'Hermesstiefel',    emoji:'⚡', slot:'boots',  sk:'spd', sv:0.25, eff:null,             desc:'Göttliche Geschwindigkeit.' },
+  { name:'Titanstiefel',     emoji:'💠', slot:'boots',  sk:'def', sv:25, eff:null,               desc:'Unzerbrechlicher Schutz.' },
+  { name:'Weltläufer',       emoji:'🌍', slot:'boots',  sk:'spd', sv:0.30, eff:null,             desc:'Durchquert Welten in Sekunden.' },
 
-  // ─── RINGE ──────────────────────────────────────────────
-  { name:'Eisenring',       emoji:'💍', slot:'ring',   sk:'crit',sv:2,   eff:null,           desc:'Ein alter Ring.' },
-  { name:'Kupferring',      emoji:'🟫', slot:'ring',   sk:'crit',sv:3,   eff:null,           desc:'Schwach, aber solide.' },
-  { name:'Runenring',       emoji:'🔮', slot:'ring',   sk:'crit',sv:6,   eff:'crit_dmg',    desc:'Krit-Schaden +30%.' },
-  { name:'Blutring',        emoji:'🩸', slot:'ring',   sk:'crit',sv:8,   eff:'lifesteal',   desc:'Heilt 8% des Krit-Schadens.' },
-  { name:'Giftring',        emoji:'☠️', slot:'ring',   sk:'crit',sv:7,   eff:'poison_on_hit',desc:'Jeder Treffer vergiftet zusätzlich.' },
-  { name:'Seelenstein',     emoji:'💎', slot:'ring',   sk:'crit',sv:12,  eff:'crit_dmg',    desc:'Krit-Schaden +50%. Trifft immer.' },
-  { name:'Plündererring',   emoji:'💰', slot:'ring',   sk:'crit',sv:10,  eff:'gold_find',   desc:'+40% Gold von Monstern.' },
-  { name:'Ewigkeitsring',   emoji:'♾️', slot:'ring',   sk:'crit',sv:18,  eff:'crit_dmg',    desc:'Krit-Schaden +80%. Existiert seit Anbeginn.' },
-  { name:'Schicksalsring',  emoji:'🌀', slot:'ring',   sk:'crit',sv:22,  eff:'execute',     desc:'Execute-Effekt bei Kritischen Treffern.' },
+  // ─── RINGE ───────────────────────────────────────────────────
+  { name:'Eisenring',        emoji:'⭕', slot:'ring',   sk:'crit', sv:2,  eff:null,              desc:'Einfacher Eisenring.' },
+  { name:'Kupferring',       emoji:'🟤', slot:'ring',   sk:'crit', sv:4,  eff:null,              desc:'Glänzender Kupferring.' },
+  { name:'Runenring',        emoji:'🔮', slot:'ring',   sk:'crit', sv:7,  eff:null,              desc:'Mit alten Runen graviert.' },
+  { name:'Blutring',         emoji:'🩸', slot:'ring',   sk:'crit', sv:9,  eff:'lifesteal',       desc:'Stiehlt Leben bei Kritischen.' },
+  { name:'Giftring',         emoji:'☠️', slot:'ring',   sk:'crit', sv:10, eff:'poison',          desc:'Vergiftet den Feind langsam.' },
+  { name:'Arkaner Ring',     emoji:'✨', slot:'ring',   sk:'crit', sv:13, eff:null,              desc:'Pulsiert mit arkaner Energie.' },
+  { name:'Seelenstein',      emoji:'💠', slot:'ring',   sk:'crit', sv:15, eff:null,              desc:'Enthält eine eingefangene Seele.' },
+  { name:'Plündererring',    emoji:'💰', slot:'ring',   sk:'crit', sv:16, eff:'gold_bonus',      desc:'Mehr Gold bei Kritischen Treffern.' },
+  { name:'Ewigkeitsring',    emoji:'♾️', slot:'ring',   sk:'crit', sv:20, eff:null,              desc:'Existiert seit Anbeginn der Zeit.' },
+  { name:'Drachenring',      emoji:'🐉', slot:'ring',   sk:'crit', sv:24, eff:null,              desc:'Aus Drachenblut geschmiedet.' },
+  { name:'Schicksalsring',   emoji:'🌟', slot:'ring',   sk:'crit', sv:30, eff:null,              desc:'Verbindet sich mit dem Schicksal.' },
+  { name:'Götterring',       emoji:'👑', slot:'ring',   sk:'crit', sv:40, eff:'gold_bonus',      desc:'Träger wurde zum Gott ernannt.' }
 ];
 
 const UPGRADES = [
@@ -5703,8 +5720,10 @@ function renderEquipSlots() {
       const statLabel = item.sk === 'spd'
         ? '-' + item.sv + 's'
         : '+' + item.sv + ' ' + item.sk.toUpperCase();
+      const slotLabel = slotNames[slot] || slot;
       div.innerHTML = `
         ${enchRune ? `<div class="es-enchant">${enchRune.emoji}</div>` : ''}
+        <div style="position:absolute;top:2px;left:3px;font-size:.42rem;color:${col};opacity:.7;font-family:'Cinzel',serif;">${slotLabel}</div>
         <div class="es-icon">${item.emoji}</div>
         <div class="es-stat" style="color:${col};">${statLabel}</div>
         <div class="es-name" style="color:${col};">${item.name}</div>`;
@@ -5832,13 +5851,34 @@ function renderInvGrid(id, items, showEquip) {
     const slot=document.createElement('div');
     slot.className=`inv-slot rarity-${item.rarity}`;
     const RCOL={'common':'#888','uncommon':'#40c070','rare':'#50a0e0','epic':'#9060e0','legendary':'#c9a227','mythic':'#f07070'};
-    const effTag = item.eff ? `<div style="font-size:.42rem;color:#f0cc55;font-family:'Cinzel',serif;line-height:1;">${(EFF_LABELS[item.eff]||item.eff).split(' ')[0]}</div>` : '';
+    const col = RCOL[item.rarity] || '#888';
+
+    // Slot-Indikator oben links (Waffe/Helm/etc.)
+    const SLOT_ICONS = { weapon:'⚔️', helmet:'⛑️', chest:'🛡️', gloves:'🧤', boots:'👢', ring:'💍' };
+    const SLOT_DE    = { weapon:'Waffe', helmet:'Helm', chest:'Rüstung', gloves:'Handsch.', boots:'Stiefel', ring:'Ring' };
+    const slotIcon   = SLOT_ICONS[item.slot] || '?';
+
+    // Stat-Anzeige
+    const SNAMES = { atk:'ATK', def:'DEF', spd:'SPD', crit:'CRIT' };
+    const svDisplay = item.sk === 'spd'
+      ? '-' + item.sv.toFixed(2) + 's'
+      : '+' + item.sv + ' ' + (SNAMES[item.sk] || item.sk);
+
+    // Effekt-Tag
+    const effTag = item.eff
+      ? `<div style="font-size:.38rem;color:#f0cc55;font-family:'Cinzel',serif;line-height:1;margin-top:1px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${(EFF_LABELS[item.eff]||item.eff).split(' ').slice(0,2).join(' ')}</div>`
+      : '';
+
+    // Name: max 9 Zeichen dann kürzen
+    const dispName = item.name.length > 9 ? item.name.slice(0, 8) + '…' : item.name;
+
     slot.innerHTML=`
-      ${item.equipped?'<div class="eq-badge">EQ</div>':''}
-      ${item.isNew&&!item.equipped?'<div class="item-new-dot"></div>':''}
+      ${item.equipped ? '<div class="eq-badge">EQ</div>' : ''}
+      ${item.isNew && !item.equipped ? '<div class="item-new-dot"></div>' : ''}
+      <div style="position:absolute;top:2px;left:3px;font-size:.5rem;opacity:.6;">${slotIcon}</div>
       <div class="ii">${item.emoji}</div>
-      <div class="in">${item.name.length>7?item.name.slice(0,6)+'…':item.name}</div>
-      <div class="is" style="color:${RCOL[item.rarity]}">+${item.sv} ${item.sk.toUpperCase()}</div>
+      <div class="in">${dispName}</div>
+      <div class="is" style="color:${col};">${svDisplay}</div>
       ${effTag}
     `;
     // Daten für Event-Delegation am Element speichern (kein Listener nötig)
@@ -6523,13 +6563,25 @@ function forgeWithFurnace() {
       log('✨✨ MEISTERWERK! ' + rar.label + ' Item erschmiedet!', 'l');
     }
     const rarIdx = RARITIES.findIndex(r => r.id === rar.id);
-    const minI = Math.max(0, Math.floor(rarIdx * ITEM_DEFS.length / 6) - 2);
-    const pool = ITEM_DEFS.slice(minI);
+
+    // Slot-aware Item-Auswahl: erst nach Slot filtern, dann nach Seltenheits-Tier
+    // Alle 6 Slots gleich wahrscheinlich
+    const allSlots = ['weapon','helmet','chest','gloves','boots','ring'];
+    const pickedSlot = allSlots[Math.floor(Math.random() * allSlots.length)];
+    const slotItems  = ITEM_DEFS.filter(d => d.slot === pickedSlot);
+
+    // Seltenheits-Tier bestimmt aus welchem Bereich des Slot-Arrays wir picken
+    // Tier 0-1 = erste Hälfte (schwächere Items), Tier 4-5 = letzte Hälfte (stärkere)
+    const tierFrac = rarIdx / 5;
+    const poolStart = Math.max(0, Math.floor(tierFrac * (slotItems.length - 1) - 1));
+    const pool = slotItems.slice(poolStart);
     const proto = pool[rng(0, pool.length - 1)];
-    const mult = 1 + rarIdx * 0.55 + Math.random() * 0.45;
+
+    // Multiplikator: Seltenheit + leichte Zufalls-Varianz (±15%)
+    const mult = 1 + rarIdx * 0.60 + (Math.random() * 0.30 - 0.05);
     const item = {
       ...proto,
-      sv: proto.sk === 'spd' ? parseFloat((proto.sv*mult).toFixed(3)) : Math.round(proto.sv*mult),
+      sv: proto.sk === 'spd' ? parseFloat((proto.sv * mult).toFixed(3)) : Math.round(proto.sv * mult),
       rarity: rar.id, rarityLabel: rar.label, rarityColor: rar.col,
       isNew: true, equipped: false, id: makeUUID()
     };
@@ -7480,10 +7532,15 @@ function dropItem(fromForge=false) {
     if(rIdx<2) rar=RARITIES[2];
   }
   const rarIdx=RARITIES.findIndex(r=>r.id===rar.id);
-  const minI=Math.max(0,Math.floor(rarIdx*ITEM_DEFS.length/6)-2);
-  const pool=ITEM_DEFS.slice(minI);
+  // Slot-aware wie forgeWithFurnace
+  const allSlots=['weapon','helmet','chest','gloves','boots','ring'];
+  const pickedSlot=allSlots[Math.floor(Math.random()*allSlots.length)];
+  const slotItems=ITEM_DEFS.filter(d=>d.slot===pickedSlot);
+  const tierFrac=rarIdx/5;
+  const poolStart=Math.max(0,Math.floor(tierFrac*(slotItems.length-1)-1));
+  const pool=slotItems.slice(poolStart);
   const proto=pool[rng(0,pool.length-1)];
-  const mult=1+rarIdx*0.55+Math.random()*0.45;
+  const mult=1+rarIdx*0.60+(Math.random()*0.30-0.05);
   const item={
     ...proto,
     sv: proto.sk==='spd' ? parseFloat((proto.sv*mult).toFixed(3)) : Math.round(proto.sv*mult),
@@ -8615,24 +8672,68 @@ const EFF_LABELS = {
 
 function showTT(e,item,hint='') {
   const tt=document.getElementById('tt');
-  document.getElementById('ttN').textContent=item.emoji+' '+item.name;
-  document.getElementById('ttN').style.color=item.rarityColor;
-  document.getElementById('ttR').textContent=item.rarityLabel;
-  document.getElementById('ttR').style.color=item.rarityColor;
-  const SNAMES={atk:'Angriff',def:'Verteidigung',spd:'Geschwindigkeit (-s)',crit:'Krit-Chance (%)'};
-  document.getElementById('ttS').textContent='+'+item.sv+' '+( SNAMES[item.sk]||item.sk );
+  const SLOT_DE = { weapon:'Waffe', helmet:'Helm', chest:'Rüstung', gloves:'Handschuhe', boots:'Stiefel', ring:'Ring' };
+  const SNAMES  = { atk:'Angriff', def:'Verteidigung', spd:'Geschw. (-s)', crit:'Krit-Chance (%)' };
+
+  // Name + Seltenheit
+  document.getElementById('ttN').textContent = item.emoji + ' ' + item.name;
+  document.getElementById('ttN').style.color  = item.rarityColor;
+
+  // Seltenheit + Slot
+  const slotLabel = SLOT_DE[item.slot] || item.slot;
+  const rarEl = document.getElementById('ttR');
+  rarEl.textContent = (item.rarityLabel || '') + ' · ' + slotLabel;
+  rarEl.style.color = item.rarityColor;
+
+  // Stat
+  const svDisplay = item.sk === 'spd'
+    ? '-' + item.sv.toFixed(3) + 's ' + (SNAMES.spd)
+    : '+' + item.sv + ' ' + (SNAMES[item.sk] || item.sk);
+  document.getElementById('ttS').textContent = svDisplay;
+
+  // Effekt + Enchant + Desc
   const effEl = document.getElementById('ttD');
   if (effEl) {
-    const effLabel = item.eff ? (EFF_LABELS[item.eff] || item.eff) : '';
-    const enchSlot = Object.entries(G.equipped||{}).find(([s,it]) => it && it.id === item.id)?.[0];
-    const enchId   = enchSlot ? (G.enchants||{})[enchSlot] : null;
-    const enchRune = enchId ? getRuneDef(enchId) : null;
-    const enchStr  = enchRune
-      ? '<div style="display:inline-block;background:rgba(144,96,224,.1);border:1px solid rgba(144,96,224,.35);border-radius:5px;padding:1px 6px;font-size:.62rem;margin-bottom:3px;color:var(--purple2);">✨ ' + enchRune.emoji + ' ' + enchRune.name + '</div><br>'
+    const effLabel  = item.eff ? (EFF_LABELS[item.eff] || item.eff) : '';
+    const enchSlot  = Object.entries(G.equipped||{}).find(([s,it]) => it && it.id === item.id)?.[0];
+    const enchId    = enchSlot ? (G.enchants||{})[enchSlot] : null;
+    const enchRune  = enchId ? (typeof getRuneDef === 'function' ? getRuneDef(enchId) : null) : null;
+    const enchStr   = enchRune
+      ? '<div style="background:rgba(144,96,224,.1);border:1px solid rgba(144,96,224,.35);border-radius:5px;padding:1px 6px;font-size:.62rem;margin-bottom:3px;color:var(--purple2);">✨ ' + enchRune.emoji + ' ' + enchRune.name + '</div>'
       : '';
-    effEl.innerHTML = (effLabel ? '<span style="display:inline-block;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:5px;padding:1px 6px;font-size:.62rem;margin-bottom:3px;color:var(--gold2);">' + effLabel + '</span><br>' : '') + enchStr + item.desc;
+    const effStr    = effLabel
+      ? '<div style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:5px;padding:1px 6px;font-size:.62rem;margin-bottom:3px;color:var(--gold2);">' + effLabel + '</div>'
+      : '';
+    effEl.innerHTML = effStr + enchStr + (item.desc || '');
   }
-  document.getElementById('ttE').textContent=hint;
+
+  // Vergleich mit ausgerüstetem Item im selben Slot
+  const compareEl   = document.getElementById('ttCompare');
+  const compareRows = document.getElementById('ttCompareRows');
+  const equipped    = G.equipped ? G.equipped[item.slot] : null;
+
+  if (equipped && equipped.id !== item.id && compareEl && compareRows) {
+    const diff = item.sk === equipped.sk
+      ? item.sv - equipped.sv
+      : null;
+    const sameStatLabel = diff !== null
+      ? (diff > 0 ? `<span style="color:var(--green2);">▲ +${item.sk==='spd' ? Math.abs(diff).toFixed(3)+'s schneller' : diff + ' ' + (SNAMES[item.sk]||item.sk)}</span>`
+                  : diff < 0 ? `<span style="color:var(--red2);">▼ ${item.sk==='spd' ? Math.abs(diff).toFixed(3)+'s langsamer' : diff + ' ' + (SNAMES[item.sk]||item.sk)}</span>`
+                  : '<span style="color:var(--text3);">= Gleich</span>')
+      : `<span style="color:var(--text3);">${SNAMES[item.sk]||item.sk} statt ${SNAMES[equipped.sk]||equipped.sk}</span>`;
+
+    compareRows.innerHTML = `
+      <div style="display:flex;justify-content:space-between;gap:8px;font-size:.62rem;">
+        <span style="color:var(--text3);">Ausgerüstet:</span>
+        <span style="color:${equipped.rarityColor};">${equipped.emoji} ${equipped.name} (+${equipped.sv} ${equipped.sk.toUpperCase()})</span>
+      </div>
+      <div style="margin-top:3px;">${sameStatLabel}</div>`;
+    compareEl.style.display = 'block';
+  } else if (compareEl) {
+    compareEl.style.display = 'none';
+  }
+
+  document.getElementById('ttE').textContent = hint;
   tt.classList.add('show'); moveTT(e);
 }
 
@@ -8643,6 +8744,29 @@ function moveTT(e) {
   tt.style.top=Math.min(e.clientY-10,window.innerHeight-170)+'px';
 }
 document.addEventListener('mousemove',e=>{ if(document.getElementById('tt').classList.contains('show'))moveTT(e); });
+
+// ── TASTATUR-SHORTCUTS ───────────────────────────────────────
+document.addEventListener('keydown', e => {
+  // Kein Shortcut wenn in Input/Textarea
+  if (['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName)) return;
+  // Kein Shortcut wenn Admin-Panel oder Overlay offen
+  if (document.getElementById('adminDashboard')?.style.display === 'block') return;
+  if (!document.getElementById('globalChatOverlay')?.style.display?.includes('none') &&
+       document.getElementById('globalChatOverlay')?.style.display) return;
+
+  const TAB_KEYS = { '1':'arena', '2':'held', '3':'forge', '4':'dungeon', '5':'pvp', '6':'gilde', '7':'pets', '8':'rang' };
+  if (TAB_KEYS[e.key] && !e.ctrlKey && !e.altKey && !e.metaKey) {
+    e.preventDefault();
+    switchTab(TAB_KEYS[e.key]);
+  }
+  // Escape schließt Tooltips und Overlays
+  if (e.key === 'Escape') {
+    hideTT();
+    try { closeGlobalChat(); } catch(ex) {}
+    try { closeSupport(); } catch(ex) {}
+    try { closeProfile(); } catch(ex) {}
+  }
+});
 
 // ════════════════════════════════════════════
 // ── TAB NAVIGATION ──────────────────────────
