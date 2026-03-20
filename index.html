@@ -2343,11 +2343,29 @@ input[type=range].vol-slider::-webkit-slider-thumb:hover { transform:scale(1.2);
 }
 .gchat-name {
   font-family: 'Cinzel', serif; font-size: .65rem; font-weight: 700;
-  color: var(--gold2); flex-shrink: 0; min-width: 60px; max-width: 90px;
+  color: var(--gold2); flex-shrink: 0; min-width: 60px; max-width: 100px;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
+.gchat-name.admin {
+  color: #ff4444;
+}
 .gchat-text { color: var(--text2); flex: 1; line-height: 1.5; word-break: break-word; }
+.gchat-text.admin { color: #ffaaaa; }
 .gchat-time { color: var(--text3); font-size: .58rem; flex-shrink: 0; margin-top: 1px; }
+.gchat-admin-badge {
+  display: inline-block; background: rgba(220,40,40,.18);
+  border: 1px solid rgba(220,40,40,.45); border-radius: 4px;
+  font-size: .52rem; color: #ff8888; padding: 0px 4px;
+  font-family: 'Cinzel', serif; font-weight: 700;
+  vertical-align: middle; margin-left: 3px; flex-shrink: 0;
+}
+.gchat-system {
+  text-align: center; color: var(--text3); font-size: .62rem;
+  font-style: italic; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,.03);
+}
+.gchat-msg.mine { flex-direction: row-reverse; }
+.gchat-msg.mine .gchat-name { color: var(--blue2); text-align: right; }
+.gchat-msg.mine .gchat-text { text-align: right; }
 
 /* ══ SPIELER-PROFIL ══ */
 .profile-overlay {
@@ -3670,20 +3688,28 @@ button, .nav-tab, .ctrl-btn, .upg-card, .skill-card,
 </div>
 
 <!-- ═══ GLOBALER CHAT ═══ -->
-<div class="profile-overlay hidden" id="globalChatOverlay" onclick="if(event.target===this)closeGlobalChat()">
-  <div class="profile-box" style="max-width:420px;width:94vw;">
+<div id="globalChatOverlay" style="display:none;position:fixed;inset:0;z-index:10100;background:rgba(0,0,0,.82);align-items:center;justify-content:center;">
+  <div id="globalChatBox" style="background:var(--panel);border:1.5px solid var(--border2);border-radius:16px;padding:20px 20px 16px;width:min(440px,94vw);max-height:90vh;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,.9);">
+    <!-- Header -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-      <div style="font-family:'Cinzel',serif;font-size:.9rem;color:var(--gold2);">🌍 Globaler Chat</div>
-      <button onclick="closeGlobalChat()" style="background:none;border:none;color:var(--text3);font-size:1.1rem;cursor:pointer;">✕</button>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-family:'Cinzel',serif;font-size:.95rem;color:var(--gold2);">🌍 Globaler Chat</span>
+        <span id="gchatOnlineIndicator" style="font-size:.6rem;color:var(--green2);"></span>
+      </div>
+      <button id="gchatCloseBtn" style="background:none;border:none;color:var(--text3);font-size:1.2rem;cursor:pointer;padding:4px 8px;line-height:1;">✕</button>
     </div>
-    <div id="globalChatLog" style="height:220px;overflow-y:auto;margin-bottom:10px;scrollbar-width:thin;scrollbar-color:var(--border) transparent;"></div>
-    <div style="display:flex;gap:6px;">
-      <input id="globalChatInput" type="text" maxlength="120" placeholder="Nachricht..."
-        style="flex:1;background:rgba(0,0,0,.4);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-size:.72rem;padding:7px 10px;outline:none;"
-        onkeydown="if(event.key==='Enter')sendGlobalChat()">
-      <button onclick="sendGlobalChat()" class="ctrl-btn" style="border-color:var(--gold);color:var(--gold2);padding:7px 12px;">📤</button>
+    <!-- Nachrichten -->
+    <div id="globalChatLog" style="flex:1;min-height:200px;max-height:300px;overflow-y:auto;margin-bottom:12px;scrollbar-width:thin;scrollbar-color:var(--border) transparent;"></div>
+    <!-- Eingabe -->
+    <div style="display:flex;gap:8px;">
+      <input id="globalChatInput" type="text" maxlength="120" placeholder="Nachricht eingeben..."
+        style="flex:1;background:rgba(0,0,0,.5);border:1.5px solid var(--border2);border-radius:9px;color:var(--text);font-size:.78rem;padding:9px 12px;outline:none;font-family:inherit;">
+      <button id="gchatSendBtn" style="background:rgba(201,162,39,.15);border:1.5px solid var(--gold);border-radius:9px;color:var(--gold2);font-size:.9rem;padding:9px 14px;cursor:pointer;">📤</button>
     </div>
-    <div style="font-size:.58rem;color:var(--text3);margin-top:5px;">Öffentlich für alle Spieler · max 120 Zeichen</div>
+    <div style="display:flex;justify-content:space-between;margin-top:5px;">
+      <span style="font-size:.57rem;color:var(--text3);">Enter = Senden · öffentlich für alle Spieler</span>
+      <span style="font-size:.57rem;color:var(--text3);"><span id="gchatCharCount">120</span> Zeichen übrig</span>
+    </div>
   </div>
 </div>
 
@@ -9196,7 +9222,7 @@ function renderPVPOpponentCards(opponents) {
     d.innerHTML = `
       <div style="font-size:1.5rem;flex-shrink:0;">⚔️</div>
       <div style="flex:1;min-width:0;">
-        <div class="pvp-opp-name" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${oppName}</div>
+        <div class="pvp-opp-name" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;" onclick="openProfile('${opp.player_id||opp.id||''}','${oppName.replace(/'/g,"\\'")}')">👤 ${oppName}</div>
         <div class="pvp-opp-stats">Lv ${oppLv} · ATK ${oppAtk} · DEF ${oppDef}</div>
         <div style="display:flex;gap:4px;margin-top:3px;flex-wrap:wrap;">
           <span class="pvp-rank-badge" style="color:${oppRank.color};">${oppRank.label}</span>
@@ -10010,7 +10036,7 @@ async function loadWorldLeaderboard(){
   data.forEach((p,i)=>{
     const isMe=p.player_id===getPlayerId();const medals=['🥇','🥈','🥉'];
     const d=document.createElement('div');d.className='rank-row';if(isMe)d.style.borderColor='var(--gold)';
-    d.innerHTML=`<div style="font-family:'Cinzel',serif;font-size:.8rem;color:${i<3?'var(--gold2)':'var(--text2)'};width:26px;">${medals[i]||'#'+(i+1)}</div><div class="rank-info"><div class="rank-name"${isMe?' style="color:var(--gold2);"':''}>${p.player_name||'Krieger'}${isMe?' 👈':''}</div><div class="rank-req">Lv ${p.hero_level} · ${(p.total_kills||0).toLocaleString()} Kills</div></div><div style="font-family:'Cinzel',serif;font-size:.7rem;color:var(--gold);">💰 ${(p.hero_gold||0).toLocaleString()}</div>`;
+    d.innerHTML=`<div style="font-family:'Cinzel',serif;font-size:.8rem;color:${i<3?'var(--gold2)':'var(--text2)'};width:26px;">${medals[i]||'#'+(i+1)}</div><div class="rank-info"><div class="rank-name"${isMe?' style="color:var(--gold2);"':''}>${p.player_name||'Krieger'}${isMe?' 👈':''}</div><div class="rank-req">Lv ${p.hero_level} · ${(p.total_kills||0).toLocaleString()} Kills</div></div><div style="font-family:'Cinzel',serif;font-size:.7rem;color:var(--gold);">💰 ${(p.hero_gold||0).toLocaleString()}</div>${!isMe?`<button onclick="openProfile('${p.player_id||''}','${(p.player_name||'').replace(/'/g,"\\'")}');event.stopPropagation();" style="background:none;border:1px solid var(--border);border-radius:5px;color:var(--text3);font-size:.55rem;padding:2px 5px;cursor:pointer;flex-shrink:0;">👤</button>`:''}`;
     div.appendChild(d);
   });
 }
@@ -13445,6 +13471,10 @@ const CHANGELOG_DATA = [
   { type:"FIX",  text:"Level-Up Sound: playSfxSafe() stellt sicher dass AudioContext entsperrt ist",    date:"2025-03" },
   { type:"PERF", text:"Memory-Leak-Fix: Event-Delegation auf Inventar/Equip-Containern",                date:"2025-03" },
   { type:"NEU",  text:"Admin: 2 neue Tabs (Events, Achievements) + 19 neue Funktionen",             date:"2025-03" },
+  { type:"FIX",  text:"Globaler Chat: Eingabe-Bug behoben (Event-Bubbling), Auto-Focus auf Input",     date:"2025-03" },
+  { type:"NEU",  text:"Admin-Badge im Chat: ⚔️ ADMIN erscheint neben dem Namen wenn Admin schreibt",   date:"2025-03" },
+  { type:"NEU",  text:"Admin kann direkt im globalen Chat schreiben inkl. Quick-Messages",              date:"2025-03" },
+  { type:"NEU",  text:"Profil-Button in PVP und Weltrangliste",                                        date:"2025-03" },
 ];
 
 // ════════════════════════════════════════════
@@ -14135,45 +14165,110 @@ let _globalChatLastTs   = null;
 
 function openGlobalChat() {
   const overlay = document.getElementById('globalChatOverlay');
-  if (overlay) overlay.classList.remove('hidden');
+  if (!overlay) return;
+  overlay.style.display = 'flex';
+
+  // Event-Listener einmalig setzen
+  if (!overlay._initialized) {
+    overlay._initialized = true;
+
+    // Klick auf Hintergrund schließt
+    overlay.addEventListener('click', e => {
+      if (e.target === overlay) closeGlobalChat();
+    });
+
+    // Schließen-Button
+    document.getElementById('gchatCloseBtn')?.addEventListener('click', closeGlobalChat);
+
+    // Senden-Button
+    document.getElementById('gchatSendBtn')?.addEventListener('click', sendGlobalChat);
+
+    // Enter-Taste
+    const input = document.getElementById('globalChatInput');
+    if (input) {
+      input.addEventListener('keydown', e => {
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendGlobalChat(); }
+      });
+      input.addEventListener('input', () => {
+        const counter = document.getElementById('gchatCharCount');
+        if (counter) counter.textContent = 120 - input.value.length;
+      });
+    }
+  }
+
   loadGlobalChat();
-  // Polling alle 8s während Chat offen
+  clearInterval(_globalChatInterval);
   _globalChatInterval = setInterval(loadGlobalChat, 8000);
+
   // Badge weg
   const badge = document.getElementById('globalChatBadge');
   if (badge) badge.style.display = 'none';
+
+  // Input fokussieren
+  setTimeout(() => document.getElementById('globalChatInput')?.focus(), 100);
 }
 
 function closeGlobalChat() {
   const overlay = document.getElementById('globalChatOverlay');
-  if (overlay) overlay.classList.add('hidden');
+  if (overlay) overlay.style.display = 'none';
   clearInterval(_globalChatInterval);
   _globalChatInterval = null;
 }
 
 async function loadGlobalChat() {
   try {
-    // Nutze sm_guild_chat mit einer speziellen "global" guild_id
     const msgs = await sbGet('sm_guild_chat',
-      `guild_id=eq.00000000-0000-0000-0000-000000000000&order=created_at.desc&limit=50`);
+      `guild_id=eq.00000000-0000-0000-0000-000000000000&order=created_at.desc&limit=60`);
     const el = document.getElementById('globalChatLog');
     if (!el) return;
     if (!msgs?.length) {
-      el.innerHTML = '<div style="text-align:center;color:var(--text3);font-size:.68rem;padding:20px;">Noch keine Nachrichten. Schreib die erste!</div>';
+      el.innerHTML = '<div class="gchat-system">Noch keine Nachrichten — schreib die erste! 👋</div>';
       return;
     }
-    const isAtBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 50;
+    const isAtBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 60;
+    const myId = getPlayerId();
+
     el.innerHTML = [...msgs].reverse().map(m => {
-      const ts = new Date(m.created_at).toLocaleTimeString('de-DE', {hour:'2-digit',minute:'2-digit'});
-      const isMe = m.player_id === getPlayerId();
-      return `<div class="gchat-msg" style="${isMe ? 'flex-direction:row-reverse;' : ''}">
-        <span class="gchat-name" style="${isMe ? 'color:var(--blue2);text-align:right;' : ''}">${m.player_name||'?'}</span>
-        <span class="gchat-text" style="${isMe ? 'text-align:right;' : ''}">${m.message.replace(/[<>]/g,'')}</span>
-        <span class="gchat-time">${ts}</span>
+      const ts   = new Date(m.created_at).toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'});
+      const isMe = m.player_id === myId;
+      const isAdmin   = m.role === 'admin';
+      const isSupport = m.role === 'support';
+      const isSystem  = m.player_id === 'system';
+
+      // System-Nachrichten (Ankündigungen)
+      if (isSystem || m.player_id === 'admin') {
+        return `<div class="gchat-system">📢 ${m.message.replace(/[<>]/g,'')}</div>`;
+      }
+
+      // Name + Badge
+      let nameBadge = '';
+      let nameCls   = isMe ? '' : (isAdmin ? ' admin' : '');
+      if (isAdmin)   nameBadge = `<span class="gchat-admin-badge">⚔️ ADMIN</span>`;
+      if (isSupport) nameBadge = `<span class="gchat-admin-badge" style="background:rgba(60,120,220,.18);border-color:rgba(60,120,220,.45);color:#80aaff;">🛡️ SUPPORT</span>`;
+
+      const msgCls = isMe ? 'gchat-msg mine' : 'gchat-msg';
+      const textCls = isAdmin ? 'gchat-text admin' : 'gchat-text';
+
+      return `<div class="${msgCls}">
+        <div style="display:flex;flex-direction:column;align-items:${isMe?'flex-end':'flex-start'};flex-shrink:0;gap:2px;">
+          <span class="gchat-name${nameCls}">${(m.player_name||'?').replace(/[<>]/g,'')}${nameBadge}</span>
+          <span class="gchat-time">${ts}</span>
+        </div>
+        <span class="${textCls}">${m.message.replace(/[<>]/g,'')}</span>
       </div>`;
     }).join('');
+
     if (isAtBottom) el.scrollTop = el.scrollHeight;
     _globalChatLastTs = msgs[0]?.created_at;
+
+    // Online-Indikator
+    const recentCount = msgs.filter(m =>
+      Date.now() - new Date(m.created_at) < 300000 && // 5 Minuten
+      m.player_id !== 'system'
+    ).length;
+    const onlineEl = document.getElementById('gchatOnlineIndicator');
+    if (onlineEl) onlineEl.textContent = recentCount > 0 ? `${recentCount} aktiv` : '';
+
   } catch(e) { /* offline ok */ }
 }
 
@@ -14186,17 +14281,28 @@ async function sendGlobalChat() {
     showErrToast('Bitte 3 Sekunden warten', '⏳'); return;
   }
   _lastGlobalChatSent = Date.now();
+
+  // Admin-Rolle automatisch setzen wenn Admin eingeloggt
+  const role = (typeof _adminLoggedIn !== 'undefined' && _adminLoggedIn) ? 'admin' : 'member';
+  // Spielername für Admin: zeige ⚔️ vor dem Namen
+  const name = role === 'admin'
+    ? getPlayerName()   // Badge wird im loadGlobalChat per role gesetzt
+    : getPlayerName();
+
   try {
     await sbPost('sm_guild_chat', {
       id: makeUUID(),
       guild_id: '00000000-0000-0000-0000-000000000000',
       player_id: getPlayerId(),
-      player_name: getPlayerName(),
+      player_name: name,
       message: msg.slice(0, 120),
-      role: 'member',
+      role,
       created_at: new Date().toISOString()
     });
-    if (input) input.value = '';
+    if (input) {
+      input.value = '';
+      document.getElementById('gchatCharCount').textContent = '120';
+    }
     loadGlobalChat();
     // Achievement tracken
     try {
@@ -14209,18 +14315,18 @@ async function sendGlobalChat() {
 
 // Polling im Hintergrund — Badge anzeigen wenn neue Nachricht
 setInterval(async () => {
-  if (document.getElementById('globalChatOverlay')?.classList.contains('hidden')) {
-    try {
-      const msgs = await sbGet('sm_guild_chat',
-        `guild_id=eq.00000000-0000-0000-0000-000000000000&order=created_at.desc&limit=1`);
-      if (msgs?.[0] && msgs[0].created_at !== _globalChatLastTs &&
-          msgs[0].player_id !== getPlayerId()) {
-        const badge = document.getElementById('globalChatBadge');
-        if (badge) badge.style.display = 'block';
-        _globalChatLastTs = msgs[0].created_at;
-      }
-    } catch(e) {}
-  }
+  const overlay = document.getElementById('globalChatOverlay');
+  if (!overlay || overlay.style.display !== 'none' && overlay.style.display !== '') return; // Chat ist offen
+  try {
+    const msgs = await sbGet('sm_guild_chat',
+      `guild_id=eq.00000000-0000-0000-0000-000000000000&order=created_at.desc&limit=1`);
+    if (msgs?.[0] && msgs[0].created_at !== _globalChatLastTs &&
+        msgs[0].player_id !== getPlayerId()) {
+      const badge = document.getElementById('globalChatBadge');
+      if (badge) badge.style.display = 'block';
+      _globalChatLastTs = msgs[0].created_at;
+    }
+  } catch(e) {}
 }, 30000);
 
 // ════════════════════════════════════════════
@@ -15070,15 +15176,49 @@ async function _adminSendAnnouncement() {
     for (const g of (guilds||[])) {
       await sbPost('sm_guild_chat', {
         id: makeUUID(), guild_id: g.id,
-        player_id: 'admin', player_name: '📢 ADMIN',
-        message: msg, role: 'leader',
+        player_id: 'system', player_name: '📢 ADMIN',
+        message: msg, role: 'admin',
         created_at: new Date().toISOString()
       }).catch(()=>{});
       sent++;
     }
+    // Auch in globalen Chat
+    await sbPost('sm_guild_chat', {
+      id: makeUUID(),
+      guild_id: '00000000-0000-0000-0000-000000000000',
+      player_id: 'system', player_name: '📢 ADMIN',
+      message: msg, role: 'admin',
+      created_at: new Date().toISOString()
+    }).catch(()=>{});
     document.getElementById('adminAnnounce').value = '';
-    _adminLog(`📢 Ankündigung gesendet an ${sent} Gilden`);
+    _adminLogAction(`📢 Ankündigung an ${sent} Gilden + globaler Chat: "${msg.slice(0,40)}..."`);
   } catch(e) { _adminLog('❌ '+e.message); }
+}
+
+async function _adminSendChatMsg() {
+  if (!_adminLoggedIn) return;
+  const input = document.getElementById('adminChatMsg');
+  const msg   = input?.value?.trim();
+  if (!msg) { _adminLog('❌ Leere Nachricht'); return; }
+  try {
+    await sbPost('sm_guild_chat', {
+      id: makeUUID(),
+      guild_id: '00000000-0000-0000-0000-000000000000',
+      player_id: getPlayerId() || 'admin',
+      player_name: getPlayerName() || 'Admin',
+      message: msg.slice(0, 120),
+      role: 'admin',
+      created_at: new Date().toISOString()
+    });
+    if (input) input.value = '';
+    _adminLogAction(`💬 Chat-Nachricht (Admin): "${msg.slice(0,50)}"`);
+  } catch(e) { _adminLog('❌ '+e.message); }
+}
+
+function _adminQuickMsg(msg) {
+  const input = document.getElementById('adminChatMsg');
+  if (input) input.value = msg;
+  _adminSendChatMsg();
 }
 
 async function _adminRefillAllKeys() {
@@ -16002,10 +16142,24 @@ async function _adminBulkHeal() {
           </div>
         </div>
         <div class="admin-section">
-          <div class="admin-section-title">📢 SERVER-ANKÜNDIGUNG</div>
+          <div class="admin-section-title">💬 ALS ADMIN IM CHAT SCHREIBEN</div>
+          <p style="font-size:.62rem;color:var(--text3);margin-bottom:6px;">Nachricht erscheint mit ⚔️ ADMIN-Badge im globalen Chat.</p>
+          <div style="display:flex;gap:6px;">
+            <input id="adminChatMsg" class="admin-input" placeholder="Nachricht im globalen Chat..." style="flex:1;">
+            <button class="admin-btn green" onclick="_adminSendChatMsg()">⚔️ Senden</button>
+          </div>
+          <div style="display:flex;gap:4px;margin-top:6px;flex-wrap:wrap;">
+            <button class="admin-btn blue" style="font-size:.58rem;" onclick="_adminQuickMsg('🔧 Wartungsarbeiten in Kürze.')">🔧 Wartung</button>
+            <button class="admin-btn blue" style="font-size:.58rem;" onclick="_adminQuickMsg('🎃 Neues Event ist gestartet! Viel Spaß!')">🎃 Event</button>
+            <button class="admin-btn blue" style="font-size:.58rem;" onclick="_adminQuickMsg('⚔️ Admin ist online — bei Fragen einfach schreiben!')">👋 Online</button>
+            <button class="admin-btn blue" style="font-size:.58rem;" onclick="_adminQuickMsg('🔒 Admin geht offline. Viel Spaß beim Spielen!')">🔒 Offline</button>
+          </div>
+        </div>
+        <div class="admin-section">
+          <div class="admin-section-title">📢 SERVER-ANKÜNDIGUNG (alle Gilden)</div>
           <textarea id="adminAnnounce" class="admin-input" rows="3"
             style="width:100%;resize:vertical;margin-bottom:6px;font-family:monospace;"
-            placeholder="Nachricht an alle Spieler (erscheint im Guild-Chat aller Gilden)..."></textarea>
+            placeholder="Nachricht erscheint im Guild-Chat ALLER Gilden..."></textarea>
           <button class="admin-btn blue" onclick="_adminSendAnnouncement()">📢 An alle Gilden senden</button>
         </div>
         <div class="admin-section">
