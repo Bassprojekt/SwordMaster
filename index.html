@@ -14854,32 +14854,43 @@ async function _supportOpenTicket(ticketId) {
       ts:   t.created_at
     });
 
-    // 2. Admin-Antwort(en) aus sm_private_messages laden
-    let pmMsgs = [];
-    try {
-      pmMsgs = await sbGet('sm_private_messages', `ticket_id=eq.${ticketId}&order=created_at.asc&limit=50`) || [];
-    } catch(e) {}
-
-    pmMsgs.forEach(pm => {
-      msgs.push({
-        side: pm.sender_role === 'player' ? 'mine' : 'theirs',
-        name: pm.sender_name,
-        role: pm.sender_role,
-        text: pm.message,
-        ts:   pm.created_at
-      });
-    });
-
-    // 3. Falls noch keine pm_messages: ältere admin_reply aus Ticket direkt zeigen
-    if (!pmMsgs.length && t.admin_reply) {
+    // 2. Admin-Antwort aus Ticket-Feld (älteres Format — IMMER zeigen wenn vorhanden)
+    if (t.admin_reply) {
       msgs.push({
         side: 'theirs',
         name: t.admin_name || '⚔️ Support',
         role: 'admin',
         text: t.admin_reply,
-        ts:   t.replied_at || t.updated_at
+        ts:   t.replied_at || t.updated_at,
+        _isTicketReply: true // Markierung um Duplikate zu erkennen
       });
     }
+
+    // 3. Private Messages laden (neueres Format — enthält Konversationsverlauf)
+    let pmMsgs = [];
+    try {
+      pmMsgs = await sbGet('sm_private_messages',
+        `ticket_id=eq.${ticketId}&order=created_at.asc&limit=100`) || [];
+    } catch(e) {}
+
+    // Nur pm_messages einfügen die NICHT die ursprüngliche admin_reply duplizieren
+    // (Admin-Antwort wird in _adminReplyTicket sowohl in admin_reply als auch in pm_messages gespeichert)
+    pmMsgs.forEach(pm => {
+      // Duplikat-Check: wenn Text identisch mit admin_reply und Zeitstempel ähnlich → überspringen
+      const isDuplicate = t.admin_reply &&
+        pm.sender_role === 'admin' &&
+        pm.message === t.admin_reply &&
+        Math.abs(new Date(pm.created_at) - new Date(t.replied_at || t.updated_at)) < 5000;
+      if (!isDuplicate) {
+        msgs.push({
+          side: pm.sender_role === 'player' ? 'mine' : 'theirs',
+          name: pm.sender_name,
+          role: pm.sender_role,
+          text: pm.message,
+          ts:   pm.created_at
+        });
+      }
+    });
 
     // Render
     const msgsEl = document.getElementById('supportConvMessages');
