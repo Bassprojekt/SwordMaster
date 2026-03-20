@@ -2934,6 +2934,23 @@ button, .nav-tab, .ctrl-btn, .upg-card, .skill-card,
 
     <div class="log-box" id="gameLog"><div class="log-e n">⚔️ Willkommen! Kämpfe beginnen automatisch.</div></div>
   </div>
+
+  <!-- Wöchentliche Quest + Weltboss -->
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+
+    <!-- Wöchentliche Quest -->
+    <div class="card" style="flex:1;min-width:240px;">
+      <div style="font-family:'Cinzel',serif;font-size:.72rem;color:var(--purple2);margin-bottom:8px;">📅 WÖCHENTLICHE QUEST</div>
+      <div id="weeklyQuestCard"><div style="color:var(--text3);font-size:.68rem;">Lädt...</div></div>
+    </div>
+
+    <!-- Weltboss -->
+    <div class="card" style="flex:1;min-width:200px;">
+      <div style="font-family:'Cinzel',serif;font-size:.72rem;color:var(--red2);margin-bottom:8px;">⚠️ WELTBOSS</div>
+      <div id="worldBossPanel"><div style="color:var(--text3);font-size:.68rem;">Lädt...</div></div>
+    </div>
+
+  </div>
 </div>
 
 <!-- ═══ FORGE PAGE ═══ -->
@@ -2970,6 +2987,7 @@ button, .nav-tab, .ctrl-btn, .upg-card, .skill-card,
           <div style="font-size:.68rem;color:var(--text2);margin-top:3px;" id="fItems"></div>
           <div style="font-size:.64rem;color:var(--text2);font-style:italic;" id="fAutoSpeed"></div>
           <div style="font-size:.62rem;color:var(--orange2);margin-top:2px;" id="forgeMatCost"></div>
+          <div id="forgeRarHint" style="margin-top:5px;font-size:.6rem;text-align:center;"></div>
         </div>
       </div>
     </div>
@@ -3695,6 +3713,15 @@ button, .nav-tab, .ctrl-btn, .upg-card, .skill-card,
 
   <!-- Achievement Grid -->
   <div id="achGrid"></div>
+
+  <!-- Achievement-Shop -->
+  <div class="card" style="margin-top:10px;border-color:rgba(144,96,224,.3);">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+      <div style="font-family:'Cinzel',serif;font-size:.82rem;color:var(--purple2);">⭐ ERFOLGS-SHOP</div>
+      <div style="font-size:.68rem;color:var(--text3);">Punkte ausgeben: <b id="achShopPts" style="color:var(--purple2);">0</b></div>
+    </div>
+    <div id="achShopGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;"></div>
+  </div>
 
 </div>
 
@@ -4769,16 +4796,16 @@ const MONSTERS = [
 ];
 
 const RARITIES = [
-  // Gewichte so kalibriert dass Legendary ~0.4% base, Mythic ~0.07% base
-  { id:'common',    label:'Gewöhnlich',   col:'#888',   weight:1000 },
-  { id:'uncommon',  label:'Ungewöhnlich', col:'#40c070',weight:350  },
+  // Gewichte: Legendary ~0.06% base (ab Lv60), Mythic ~0.002% base (ab Lv100)
+  { id:'common',    label:'Gewöhnlich',   col:'#888',   weight:1800 },
+  { id:'uncommon',  label:'Ungewöhnlich', col:'#40c070',weight:600  },
   { id:'rare',      label:'Selten',       col:'#50a0e0',weight:120  },
-  { id:'epic',      label:'Episch',       col:'#9060e0',weight:28   },
-  { id:'legendary', label:'Legendär',     col:'#c9a227',weight:6    },
-  { id:'mythic',    label:'Mystisch',     col:'#f07070',weight:1    },
+  { id:'epic',      label:'Episch',       col:'#9060e0',weight:18   },
+  { id:'legendary', label:'Legendär',     col:'#c9a227',weight:1.5  },
+  { id:'mythic',    label:'Mystisch',     col:'#f07070',weight:0.3  },
 ];
 // Seltener = profitiert mehr vom Bonus (statt flaches +b*0.3 für alle)
-const RAR_TIER_FACTORS = [0, 0.2, 0.4, 0.7, 1.2, 1.8];
+const RAR_TIER_FACTORS = [0, 0.15, 0.3, 0.5, 0.8, 1.2];
 
 // ── Item-Sondereffekte ─────────────────────────────────────────
 
@@ -5379,6 +5406,9 @@ function getStats() {
     }
   } catch(e) {}
 
+  // ── Achievement-Shop Boni ─────────────────
+  if (G.achCritBonus) crit = Math.min(75, crit + G.achCritBonus);
+
   // ── Set-Boni anwenden ─────────────────────
   const statsObj = { atk, def, spd, crit: Math.min(75, crit), fx, armorPen: armorPenBonus || 0 };
   try { applySetBonuses(statsObj); } catch(e) {}
@@ -5426,10 +5456,11 @@ function dropBonus()  {
 function idleMult()   { return 1 + (G.upgrades.idle_mul||0)*0.6; }
 function rarBonus()   { return (G.upgrades.item_qual||0)*0.10; }
 function forgeMs() {
-  let ms = 2000 - (G.upgrades.forge_spd||0)*320;
-  if (G.shopBoosts && G.shopBoosts.forgeMaster) ms *= 0.75;   // -25%
-  if (G.skills.has('master_smith'))              ms *= 0.70;   // -30%
-  return Math.max(400, Math.round(ms));
+  let ms = 3000 - (G.upgrades.forge_spd||0)*360;
+  if (G.shopBoosts && G.shopBoosts.forgeMaster) ms *= 0.80;   // -20%
+  if (G.skills.has('master_smith'))              ms *= 0.75;   // -25%
+  if (G.achForgeBonus)                           ms *= (1 - G.achForgeBonus); // Ach-Shop -20%
+  return Math.max(1200, Math.round(ms));  // Minimum 1.2s
 }
 function upgCost(u)   { const lv=G.upgrades[u.id]||0; return Math.floor(u.baseCost*Math.pow(u.cm,lv)); }
 
@@ -5463,12 +5494,12 @@ function pickRarity() {
   const b   = rarBonus();
   const lv  = G.hero ? G.hero.level : 1;
   const w = RARITIES.map((r,i) => {
-    // Harte Level-Sperren: Seltenheit erst ab bestimmtem Level möglich
-    if (i === 4 && lv < 25)  return 0;  // Legendary: ab Lv25
-    if (i === 5 && lv < 50)  return 0;  // Mythic:    ab Lv50
-    if (i === 3 && lv < 10)  return 0;  // Epic:      ab Lv10
-    if (i === 2 && lv < 5)   return 0;  // Rare:      ab Lv5
-    if (i === 0) return Math.max(50, r.weight * Math.max(0.05, 1 - b * 0.6));
+    // Harte Level-Sperren — Seltenheit erst spät verfügbar
+    if (i === 5 && lv < 100) return 0;  // Mythic:    ab Lv100
+    if (i === 4 && lv < 60)  return 0;  // Legendary: ab Lv60
+    if (i === 3 && lv < 25)  return 0;  // Epic:      ab Lv25
+    if (i === 2 && lv < 10)  return 0;  // Rare:      ab Lv10
+    if (i === 0) return Math.max(80, r.weight * Math.max(0.1, 1 - b * 0.5));
     return r.weight * (1 + b * RAR_TIER_FACTORS[i]);
   });
   const tot = w.reduce((s,x) => s+x, 0);
@@ -5627,6 +5658,19 @@ function updateHeroPage() {
     }
   } catch(e) {}
   _s('fItems','text','Items im Inventar: '+G.inventory.length);
+
+  // Seltenheits-Fortschritts-Hinweis
+  const rarHint = document.getElementById('forgeRarHint');
+  if (rarHint) {
+    const lv = G.hero.level;
+    let hint = '';
+    if      (lv < 8)   hint = `<span style="color:#50a0e0;">⭐ Lv 8: Selten freischalten</span>`;
+    else if (lv < 20)  hint = `<span style="color:#9060e0;">⭐ Lv 20: Episch freischalten</span>`;
+    else if (lv < 60)  hint = `<span style="color:#c9a227;">⭐ Lv 60: Legendär freischalten</span>`;
+    else if (lv < 100) hint = `<span style="color:#c9a227;">🌟 Legendär verfügbar!</span> · <span style="color:#f07070;">Lv 100: Mythisch freischalten</span>`;
+    else               hint = `<span style="color:#f07070;">✨ Mythisch verfügbar!</span>`;
+    rarHint.innerHTML = hint;
+  }
   const autoMs=forgeMs();
   _s('fAutoSpeed','text',G.autoForge?('Auto-Schmied: alle '+autoMs+'ms'):'');
   try { renderEquipSlots(); } catch(e) {}
@@ -6553,14 +6597,18 @@ function forgeWithFurnace() {
       const rIdx = RARITIES.findIndex(r => r.id === rar.id);
       if (rIdx < 2) rar = RARITIES[2];
     }
-    const mythChance = 0.01 + (G.furnaceLevel - 1) * 0.002 + (G.research && G.research.has('forge3') ? 0.015 : 0);
+    // Mythic-Meisterwerk: NUR ab Lv100, NUR wenn bereits Legendary gewürfelt
+    // Kein Bypass des Gewichtssystems — nur ein Upgrade von Legendary → Mythic
+    const mythChance = (lv >= 100 && rar.id === 'legendary')
+      ? 0.05 + (G.furnaceLevel - 1) * 0.01 + (G.research && G.research.has('forge3') ? 0.03 : 0)
+      : 0;
     if (Math.random() < mythChance) {
-      rar = RARITIES[Math.min(5, Math.max(4, RARITIES.findIndex(r => r.id === rar.id) + 1))];
+      rar = RARITIES[5]; // Mythic
       setTimeout(() => {
         const btn = document.getElementById('forgeBtn');
         if (btn) { btn.classList.add('masterwork-flash'); setTimeout(() => btn.classList.remove('masterwork-flash'), 900); }
       }, 50);
-      log('✨✨ MEISTERWERK! ' + rar.label + ' Item erschmiedet!', 'l');
+      log('✨✨ MEISTERWERK! Mystisches Item erschmiedet!', 'l');
     }
     const rarIdx = RARITIES.findIndex(r => r.id === rar.id);
 
@@ -6595,6 +6643,8 @@ function forgeWithFurnace() {
       if (rar.id === 'epic'      && !rp.rarity_epic)  trackAch('rarity_epic',  1);
       if (rar.id === 'legendary' && !rp.rarity_leg)   trackAch('rarity_leg',   1);
       if (rar.id === 'mythic'    && !rp.rarity_myth)  trackAch('rarity_myth',  1);
+      // Weekly Quest: Legendary schmieden
+      if (rar.id === 'legendary' || rar.id === 'mythic') try { trackWeeklyProgress('legendary', 1); } catch(e) {}
     } catch(e) {}
     checkAutoSellItem(item);
   }
@@ -6620,11 +6670,11 @@ function pickRarityWithFurnace() {
   const b   = rarBonus() + f.rarBonus + (G._forgeMatBonus || 0);
   const lv  = G.hero ? G.hero.level : 1;
   const w = RARITIES.map((r, i) => {
-    if (i === 4 && lv < 25)  return 0;  // Legendary: ab Lv25
-    if (i === 5 && lv < 50)  return 0;  // Mythic:    ab Lv50
-    if (i === 3 && lv < 10)  return 0;  // Epic:      ab Lv10
-    if (i === 2 && lv < 5)   return 0;  // Rare:      ab Lv5
-    if (i === 0) return Math.max(50, r.weight * Math.max(0.05, 1 - b * 0.6));
+    if (i === 5 && lv < 100) return 0;  // Mythic:    ab Lv100
+    if (i === 4 && lv < 60)  return 0;  // Legendary: ab Lv60
+    if (i === 3 && lv < 25)  return 0;  // Epic:      ab Lv25
+    if (i === 2 && lv < 10)  return 0;  // Rare:      ab Lv10
+    if (i === 0) return Math.max(80, r.weight * Math.max(0.1, 1 - b * 0.5));
     return r.weight * (1 + b * RAR_TIER_FACTORS[i]);
   });
   const tot = w.reduce((s,x) => s+x, 0);
@@ -7111,6 +7161,17 @@ function tick() {
       G.wave++; G.monstersInWave = 0;
       G.monstersPerWave = 3 + Math.floor(G.wave / 3);
       if (G.wave % 5 === 0 || G.wave <= 3) log('🌊 Welle ' + G.wave + ' — ' + currentZone().name, 'n');
+      // Weltboss prüfen
+      try {
+        const wb = getAvailableWorldBoss();
+        if (wb && wb.minWave === G.wave) {
+          log(`⚠️ WELTBOSS verfügbar: ${wb.emoji} ${wb.name}! Gehe zur Arena!`, 'l');
+          renderWorldBossPanel();
+        }
+        // Weekly Wave-Quest Basis setzen
+        if (!G.weeklyWaveBase) G.weeklyWaveBase = G.wave;
+        trackWeeklyProgress('wave_add', 1);
+      } catch(e) {}
       setTimeout(spawnWave, 1500);
     } else {
       setTimeout(spawnWave, 700);
@@ -7351,7 +7412,7 @@ function tick() {
 }
 
 function monsterKilled(m) {
-  const lk = luckMult(); const gm = goldMult() * eventGoldMult(); const xm = xpMult() * eventXpMult();
+  const lk = luckMult(); const gm = goldMult() * eventGoldMult(); const xm = xpMult() * eventXpMult() * (1 + (G.achXpBonus || 0));
   const waveXpBonus = (G.research && G.research.has('dung3') && G.wave >= 100) ? 1.2 : 1.0;
   const xp   = Math.round((m.xp + Math.floor(G.wave * 0.08)) * lk * xm * waveXpBonus);
   // ── Gold skaliert mit Kampfhärte (Lösung E) ──────────────
@@ -7364,6 +7425,7 @@ function monsterKilled(m) {
   if (G.skills.has('pickpocket') && Math.random() < 0.05) { pickpocketBonus = Math.floor(gold * 0.5 + rng(5,20)); }
   G.hero.xp += xp; G.hero.gold += gold + pickpocketBonus; G.kills++;
   try { checkAchievements(); } catch(e){ console.warn("[SwordMaster]", e); }
+  try { trackWeeklyProgress('gold_earn', gold + pickpocketBonus); } catch(e) {}
   const hardnessStr = hits >= 5 ? ' 💪×' + hardnessMult.toFixed(1) : '';
   // Log nur jeden 10. Kill oder wenn Bonus-Event (spart Performance)
   if (G.kills % 10 === 0 || pickpocketBonus > 0 || hardnessMult >= 2.5) {
@@ -8002,6 +8064,24 @@ function _saveLocalSnapshot() {
       autoSellEarned: G.autoSellEarned || 0,
     }));
   } catch(e) {}
+  try {
+    localStorage.setItem('sm3_extra', JSON.stringify({
+      weeklyProgress:    G.weeklyProgress    || {},
+      weeklyClaimed:     G.weeklyClaimed     || false,
+      weeklyReset:       G.weeklyReset       || 0,
+      weeklyWaveBase:    G.weeklyWaveBase    || 0,
+      worldBossDefeated: G.worldBossDefeated || [],
+      worldBossActive:   G.worldBossActive   || null,
+      achPurchased:      G.achPurchased      || [],
+      achForgeBonus:     G.achForgeBonus     || 0,
+      achXpBonus:        G.achXpBonus        || 0,
+      achPetBonus:       G.achPetBonus       || 0,
+      achCritBonus:      G.achCritBonus      || 0,
+      playerTitle:       G.playerTitle       || null,
+      inventoryLimit:    G.inventoryLimit    || 200,
+      dungeonKeysMax:    G.dungeonKeysMax    || 3,
+    }));
+  } catch(e) {}
 }
 
 function markDirty(priority = 'normal') {
@@ -8331,6 +8411,25 @@ async function loadFromSupabase() {
     try { G.achUnlocked = new Set(JSON.parse(p.ach_unlocked || '[]')); } catch(e) { G.achUnlocked = new Set(); }
     G.achPoints = p.ach_points || 0;
 
+    // Neue Features — aus localStorage laden (kein extra Supabase-Feld nötig)
+    try {
+      const extra = JSON.parse(localStorage.getItem('sm3_extra') || '{}');
+      G.weeklyProgress      = extra.weeklyProgress      || {};
+      G.weeklyClaimed       = extra.weeklyClaimed       || false;
+      G.weeklyReset         = extra.weeklyReset         || 0;
+      G.weeklyWaveBase      = extra.weeklyWaveBase      || G.wave;
+      G.worldBossDefeated   = extra.worldBossDefeated   || [];
+      G.worldBossActive     = extra.worldBossActive     || null;
+      G.achPurchased        = extra.achPurchased        || [];
+      G.achForgeBonus       = extra.achForgeBonus       || 0;
+      G.achXpBonus          = extra.achXpBonus          || 0;
+      G.achPetBonus         = extra.achPetBonus         || 0;
+      G.achCritBonus        = extra.achCritBonus        || 0;
+      G.playerTitle         = extra.playerTitle         || null;
+      G.inventoryLimit      = extra.inventoryLimit      || 200;
+      G.dungeonKeysMax      = extra.dungeonKeysMax      || 3;
+    } catch(e) { /* defaults ok */ }
+
     const upgrades = await sbGet('sm_upgrades', `player_id=eq.${pid}`);
     G.upgrades = {};
     if (upgrades) upgrades.forEach(u => { G.upgrades[u.upgrade_id] = u.level; });
@@ -8391,6 +8490,10 @@ async function loadFromSupabase() {
 
     const savedTs = new Date(p.last_seen).getTime();
     localStorage.setItem('sm3_save', savedTs.toString());
+
+    // ── OFFLINE-PROGRESS ─────────────────────────────────────
+    // Berechne Belohnungen für die Zeit seit dem letzten Login
+    try { calcOfflineRewards(savedTs); } catch(e) {}
 
     setSaveStatus('✅ Geladen ' + new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}), 'var(--green2)');
     return true;
@@ -8795,7 +8898,7 @@ function switchTab(name) {
   document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
   document.getElementById('page-'+name)?.classList.add('active');
   document.getElementById('tab-'+name)?.classList.add('active');
-  if(name==='arena'){renderArena();updateArenaPanel();}
+  if(name==='arena'){renderArena();updateArenaPanel();try{renderWeeklyQuest();}catch(e){}try{renderWorldBossPanel();}catch(e){}}
   if(name==='held'){renderEquipSlots();renderEquipBonus();renderInventory();renderSkills();renderEraTimeline();updatePrestigeHeldCard();try{renderSetBonuses();}catch(e){}try{renderHeroPanel();}catch(e){}}
   if(name==='forge'){renderInventory();renderUpgrades();renderForgedGrid();try{renderMaterials();}catch(e){}try{renderFurnace();}catch(e){}try{renderRecipes();}catch(e){}try{renderAutoSellRules();}catch(e){}try{renderEnchanting();}catch(e){}}
   if(name==='dungeon'){renderDungeon();}
@@ -8814,7 +8917,7 @@ function switchTab(name) {
   if(name==='shop'){renderShop();}
   if(name==='forschung'){renderUpgrades();renderResearch();}
   if(name==='quests'){renderQuests();}
-  if(name==='achievements'){checkAchievements();renderAchievements();}
+  if(name==='achievements'){checkAchievements();renderAchievements();try{renderAchShop();const sp=document.getElementById('achShopPts');if(sp)sp.textContent=G.achPoints||0;}catch(e){}}
   if(name==='event'){renderEventPage();}
   if(name==='skills'){renderSkills();}
   if(name==='ages'){renderEraTimeline();}
@@ -9324,6 +9427,7 @@ function claimDungeonReward() {
     log('🗝️ Bonus-Schlüssel für 5 Etagen!', 'i');
   }
   if (G.dungeonFloor % 10 === 1) { G._dungTempAtk = 0; G._dungTempDef = 0; }
+  try { trackWeeklyProgress('dungeon', 1); } catch(e) {}
   renderDungeon(); markDirty('normal'); // Dungeon: Floor gewechselt
 }
 
@@ -9640,6 +9744,7 @@ function finalizePVPBattle(won, ptsGain, ptsLoss, opp, oppPts, resultEl) {
     G.pvpPoints += ptsGain;
     G.pvpWins++;
     try { checkAchievements(); } catch(e){ console.warn("[SwordMaster]", e); }
+    try { trackWeeklyProgress('pvp_win', 1); } catch(e) {}
     G.pvpStreak = (G.pvpStreak || 0) + 1;
     const gold = Math.min(500, Math.floor(10 + G.pvpPoints * 0.02 + rng(0, 15)));
     G.hero.gold += gold;
@@ -10504,6 +10609,7 @@ let questTabCurrent='daily';
 function checkDailyReset(){
   const midnight=new Date();midnight.setHours(0,0,0,0);
   if(G.dailyReset<midnight.getTime()){G.dailyProgress={};G.dailyClaimed=new Set();G.dailyReset=Date.now();log('📅 Tägliche Quests zurückgesetzt!','n');}
+  try { checkWeeklyReset(); } catch(e) {}
 }
 
 function trackQuestProgress(type,amount=1){
@@ -10529,6 +10635,10 @@ function trackQuestProgress(type,amount=1){
   if(type==='craft') G.questProgress.craft_recipe=(G.questProgress.craft_recipe||0)+1;
   if(type==='donate') G.questProgress.donate_gold=(G.questProgress.donate_gold||0)+amount;
   if(type==='research') G.questProgress.research_done=(G.questProgress.research_done||0)+1;
+
+  // Wöchentliche Quest mitzählen
+  try { trackWeeklyProgress(type, amount); } catch(e) {}
+
   checkQuestBadge();
 }
 
@@ -12805,8 +12915,15 @@ const RUNES = [
   },
 ];
 
-if (!G.runes)    G.runes    = {};  // { runeId: count }
-if (!G.enchants) G.enchants = {};  // { slot: runeId }  — welches Item hat welche Rune
+if (!G.runes)    G.runes    = {};
+if (!G.enchants) G.enchants = {};
+
+// Neue Feature-Defaults
+if (!G.weeklyProgress)    G.weeklyProgress    = {};
+if (!G.worldBossDefeated) G.worldBossDefeated = [];
+if (!G.achPurchased)      G.achPurchased      = [];
+if (!G.inventoryLimit)    G.inventoryLimit    = 200;
+if (!G.dungeonKeysMax)    G.dungeonKeysMax    = 3;
 
 let _enchantSelectedRune = null;
 let _enchantSelectedSlot = null;
@@ -14797,7 +14914,360 @@ if (!document.getElementById('lvlUpStyle')) {
 // ════════════════════════════════════════════
 
 // ════════════════════════════════════════════
-// ── SUPPORT-TICKET SYSTEM
+// ════════════════════════════════════════════
+// ── OFFLINE-PROGRESS
+// ════════════════════════════════════════════
+
+function calcOfflineRewards(lastSavedTs) {
+  const now    = Date.now();
+  const diff   = now - lastSavedTs;
+  const minMs  = 60 * 1000;
+  const maxMs  = 8 * 60 * 60 * 1000; // max 8 Stunden
+
+  if (diff < 2 * minMs) return; // unter 2 Minuten → kein Popup
+
+  const offlineMins = Math.min(diff, maxMs) / minMs;
+  const lv = G.hero?.level || 1;
+
+  // Formel: Gold pro Minute = 10% des aktuellen Kill-Gold
+  const killGoldPerMin = Math.floor(lv * 2.5 * (1 + (G.upgrades?.gold_mult || 0) * 0.06));
+  const goldEarned     = Math.floor(killGoldPerMin * offlineMins * 0.6);
+  const xpEarned       = Math.floor(lv * 8 * offlineMins * 0.4);
+
+  // Belohnungen vergeben
+  if (goldEarned > 0) G.hero.gold = (G.hero.gold || 0) + goldEarned;
+  if (xpEarned  > 0) {
+    G.hero.xp = (G.hero.xp || 0) + xpEarned;
+    // Level-Ups verarbeiten
+    try { while (G.hero.xp >= xpNeed()) { G.hero.xp -= xpNeed(); G.hero.level++; } } catch(e) {}
+  }
+
+  // Dungeon-Schlüssel aufladen
+  const maxKeys = 3 + (G.research?.has?.('keys_up') ? 2 : 0);
+  G.dungeonKeys = Math.min(maxKeys, (G.dungeonKeys || 0) + Math.floor(offlineMins / 30));
+
+  // Popup anzeigen
+  const hrsText = offlineMins >= 60
+    ? Math.floor(offlineMins / 60) + 'h ' + Math.round(offlineMins % 60) + 'min'
+    : Math.round(offlineMins) + ' Minuten';
+
+  setTimeout(() => showOfflinePopup(hrsText, goldEarned, xpEarned), 1200);
+}
+
+function showOfflinePopup(time, gold, xp) {
+  const existing = document.getElementById('offlinePopup');
+  if (existing) existing.remove();
+
+  const popup = document.createElement('div');
+  popup.id = 'offlinePopup';
+  popup.style.cssText = 'position:fixed;inset:0;z-index:10300;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;';
+  popup.innerHTML = `
+    <div style="background:var(--panel);border:1.5px solid var(--gold);border-radius:18px;padding:26px 28px;width:min(360px,92vw);text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.9);" onclick="event.stopPropagation()">
+      <div style="font-size:2.2rem;margin-bottom:8px;">⏰</div>
+      <div style="font-family:'Cinzel',serif;font-size:1rem;color:var(--gold2);margin-bottom:4px;">Willkommen zurück!</div>
+      <div style="font-size:.7rem;color:var(--text3);margin-bottom:18px;">Du warst <b style="color:var(--text)">${time}</b> abwesend</div>
+      <div style="display:flex;gap:10px;justify-content:center;margin-bottom:20px;flex-wrap:wrap;">
+        <div style="background:rgba(201,162,39,.12);border:1px solid var(--gold);border-radius:10px;padding:10px 16px;">
+          <div style="font-size:1.4rem;">💰</div>
+          <div style="font-family:'Cinzel',serif;font-size:.85rem;color:var(--gold2);">+${gold.toLocaleString()}</div>
+          <div style="font-size:.6rem;color:var(--text3);">Gold</div>
+        </div>
+        <div style="background:rgba(80,160,224,.1);border:1px solid rgba(80,160,224,.4);border-radius:10px;padding:10px 16px;">
+          <div style="font-size:1.4rem;">⭐</div>
+          <div style="font-family:'Cinzel',serif;font-size:.85rem;color:#80aaff;">+${xp.toLocaleString()}</div>
+          <div style="font-size:.6rem;color:var(--text3);">Erfahrung</div>
+        </div>
+      </div>
+      <button onclick="document.getElementById('offlinePopup').remove();updateAll();" style="background:linear-gradient(135deg,rgba(201,162,39,.2),rgba(201,162,39,.1));border:1.5px solid var(--gold);border-radius:10px;color:var(--gold2);font-family:'Cinzel',serif;font-size:.82rem;padding:10px 28px;cursor:pointer;width:100%;">
+        ⚔️ Weiterkämpfen!
+      </button>
+    </div>`;
+  popup.addEventListener('click', e => { if (e.target === popup) popup.remove(); });
+  document.body.appendChild(popup);
+}
+
+
+// ════════════════════════════════════════════
+// ── WÖCHENTLICHE QUESTS
+// ════════════════════════════════════════════
+
+const WEEKLY_QUESTS = [
+  { id:'wq_kills',    icon:'💀', name:'Massenmörder',    desc:'Töte 5.000 Monster',    type:'kill',    target:5000,  reward:{gold:25000, xp:10000} },
+  { id:'wq_forge',    icon:'🔨', name:'Fleißiger Schmied',desc:'Schmied 200 Items',     type:'forge',   target:200,   reward:{gold:15000, xp:8000}  },
+  { id:'wq_wave',     icon:'🌊', name:'Wellenreiter',    desc:'Erreiche Welle +50',    type:'wave_add',target:50,    reward:{gold:20000, xp:12000} },
+  { id:'wq_dungeon',  icon:'🏚️', name:'Tiefer Forscher', desc:'Schließe 10 Dungeons ab',type:'dungeon', target:10,    reward:{gold:18000, xp:9000}  },
+  { id:'wq_gold',     icon:'💰', name:'Goldgier',        desc:'Verdiene 100.000 Gold', type:'gold_earn',target:100000,reward:{gold:30000, xp:15000} },
+  { id:'wq_pvp',      icon:'⚔️', name:'Kämpfer der Woche',desc:'Gewinne 10 PVP-Kämpfe',type:'pvp_win', target:10,    reward:{gold:20000, xp:10000} },
+  { id:'wq_legendary',icon:'🌟', name:'Legenden-Schmied',desc:'Schmied 1 Legendäres Item',type:'legendary',target:1, reward:{gold:50000, xp:20000} },
+];
+
+function getWeeklyQuest() {
+  // Jede Woche eine andere Quest (deterministisch nach Kalenderwoche)
+  const week = Math.floor(Date.now() / (7 * 24 * 60 * 60 * 1000));
+  return WEEKLY_QUESTS[week % WEEKLY_QUESTS.length];
+}
+
+function checkWeeklyReset() {
+  const weekStart = getWeekStart();
+  if (!G.weeklyReset || G.weeklyReset < weekStart) {
+    G.weeklyProgress = {};
+    G.weeklyClaimed  = false;
+    G.weeklyReset    = Date.now();
+    log('📅 Wöchentliche Quest zurückgesetzt!', 'n');
+  }
+}
+
+function getWeekStart() {
+  const now = new Date();
+  const day = now.getDay() || 7;
+  const mon = new Date(now);
+  mon.setHours(0,0,0,0);
+  mon.setDate(now.getDate() - (day - 1));
+  return mon.getTime();
+}
+
+function trackWeeklyProgress(type, amount = 1) {
+  if (!G.weeklyProgress) G.weeklyProgress = {};
+  const q = getWeeklyQuest();
+  if (q.type === type) {
+    G.weeklyProgress[type] = (G.weeklyProgress[type] || 0) + amount;
+  }
+}
+
+function claimWeeklyReward() {
+  if (G.weeklyClaimed) { showErrToast('Bereits eingesammelt!', '✅'); return; }
+  const q  = getWeeklyQuest();
+  const prog = (G.weeklyProgress?.[q.type] || 0);
+  if (q.type === 'wave_add') {
+    if ((G.weeklyWaveBase || 0) + prog < q.target) {
+      showErrToast('Noch nicht abgeschlossen', '❌'); return;
+    }
+  } else if (prog < q.target) {
+    showErrToast('Noch nicht abgeschlossen', '❌'); return;
+  }
+  G.weeklyClaimed = true;
+  G.hero.gold  = (G.hero.gold  || 0) + q.reward.gold;
+  G.hero.xp    = (G.hero.xp   || 0) + q.reward.xp;
+  try { while(G.hero.xp >= xpNeed()){G.hero.xp -= xpNeed(); G.hero.level++;} } catch(e){}
+  log(`🎁 Wöchentliche Quest abgeschlossen: +${q.reward.gold.toLocaleString()}G +${q.reward.xp.toLocaleString()} XP`, 'l');
+  try { updateAll(); renderWeeklyQuest(); } catch(e) {}
+  markDirty();
+}
+
+function renderWeeklyQuest() {
+  const el = document.getElementById('weeklyQuestCard');
+  if (!el) return;
+  const q    = getWeeklyQuest();
+  const prog = G.weeklyProgress?.[q.type] || 0;
+  const done = q.type === 'wave_add'
+    ? (G.weeklyWaveBase || 0) + prog >= q.target
+    : prog >= q.target;
+  const pct  = Math.min(100, Math.floor(prog / q.target * 100));
+
+  el.innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+      <span style="font-size:1.5rem;">${q.icon}</span>
+      <div style="flex:1;">
+        <div style="font-family:'Cinzel',serif;font-size:.8rem;color:var(--gold2);">${q.name}
+          <span style="font-size:.58rem;color:var(--text3);font-family:inherit;margin-left:6px;">WÖCHENTLICH</span>
+        </div>
+        <div style="font-size:.65rem;color:var(--text2);margin-top:1px;">${q.desc}</div>
+      </div>
+    </div>
+    <div style="background:rgba(255,255,255,.06);border-radius:4px;height:7px;margin-bottom:6px;overflow:hidden;">
+      <div style="height:100%;width:${pct}%;background:${done?'var(--green2)':'var(--gold)'};border-radius:4px;transition:width .4s;"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-size:.62rem;color:var(--text3);">${Math.min(prog, q.target).toLocaleString()} / ${q.target.toLocaleString()}</span>
+      <div style="display:flex;gap:6px;align-items:center;">
+        <span style="font-size:.62rem;color:var(--gold2);">💰 ${q.reward.gold.toLocaleString()}</span>
+        <button onclick="claimWeeklyReward()" ${done && !G.weeklyClaimed ? '' : 'disabled'}
+          style="background:${done&&!G.weeklyClaimed?'rgba(201,162,39,.2)':'rgba(0,0,0,.2)'};border:1px solid ${done&&!G.weeklyClaimed?'var(--gold)':'var(--border)'};border-radius:7px;color:${done&&!G.weeklyClaimed?'var(--gold2)':'var(--text3)'};font-family:'Cinzel',serif;font-size:.62rem;padding:4px 10px;cursor:${done&&!G.weeklyClaimed?'pointer':'default'};">
+          ${G.weeklyClaimed ? '✅ Erhalten' : done ? '🎁 Einsammeln' : '🔒 Gesperrt'}
+        </button>
+      </div>
+    </div>`;
+}
+
+
+// ════════════════════════════════════════════
+// ── ACHIEVEMENT-SHOP
+// ════════════════════════════════════════════
+
+const ACH_SHOP_ITEMS = [
+  { id:'ach_gold_1',    icon:'💰', name:'Goldschatz',        desc:'Erhalte 50.000 Gold sofort',    cost:100,  eff:'gold_50k' },
+  { id:'ach_gold_2',    icon:'💎', name:'Goldmine',          desc:'Erhalte 250.000 Gold sofort',   cost:300,  eff:'gold_250k' },
+  { id:'ach_inv',       icon:'🎒', name:'Großes Inventar',   desc:'Inventar permanent +50 Slots',  cost:200,  eff:'inv_50',   once:true },
+  { id:'ach_keys',      icon:'🗝️', name:'Schlüsselring',     desc:'Dungeon-Schlüssel Max +2',      cost:150,  eff:'keys_max', once:true },
+  { id:'ach_forge',     icon:'⚒️', name:'Schmied-Geheimnis', desc:'Schmiedgeschwindigkeit -20%',   cost:250,  eff:'forge_20', once:true },
+  { id:'ach_xp',        icon:'⭐', name:'XP-Segen',          desc:'+25% XP dauerhaft',             cost:400,  eff:'xp_25',    once:true },
+  { id:'ach_pet',       icon:'🐾', name:'Pet-Flüsterer',     desc:'Alle Pets +25% Schaden',        cost:350,  eff:'pet_25',   once:true },
+  { id:'ach_crit',      icon:'🎯', name:'Präzisionsmeister', desc:'+5% Krit-Chance dauerhaft',     cost:200,  eff:'crit_5',   once:true },
+  { id:'ach_cosmetic1', icon:'🌟', name:'Goldener Titel',    desc:'Titel: ✦ Legendärer Kämpfer',  cost:500,  eff:'title_gold',once:true },
+  { id:'ach_cosmetic2', icon:'💜', name:'Mystischer Titel',  desc:'Titel: ⚡ Auserwählter',        cost:1000, eff:'title_myst',once:true },
+];
+
+function renderAchShop() {
+  const el = document.getElementById('achShopGrid');
+  if (!el) return;
+  if (!G.achPurchased) G.achPurchased = [];
+  const pts = G.achPoints || 0;
+
+  el.innerHTML = ACH_SHOP_ITEMS.map(item => {
+    const owned   = item.once && G.achPurchased.includes(item.id);
+    const canBuy  = !owned && pts >= item.cost;
+    return `<div style="background:rgba(0,0,0,.25);border:1px solid ${owned?'var(--green2)':canBuy?'var(--border2)':'var(--border)'};border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:4px;">
+      <div style="font-size:1.4rem;text-align:center;">${item.icon}</div>
+      <div style="font-family:'Cinzel',serif;font-size:.7rem;color:${owned?'var(--green2)':'var(--text)'};text-align:center;">${item.name}</div>
+      <div style="font-size:.6rem;color:var(--text3);text-align:center;flex:1;">${item.desc}</div>
+      <button onclick="buyAchShopItem('${item.id}')" ${canBuy?'':'disabled'}
+        style="background:${owned?'rgba(40,180,80,.1)':canBuy?'rgba(201,162,39,.15)':'rgba(0,0,0,.2)'};border:1px solid ${owned?'var(--green2)':canBuy?'var(--gold)':'var(--border)'};border-radius:7px;color:${owned?'var(--green2)':canBuy?'var(--gold2)':'var(--text3)'};font-size:.62rem;font-family:'Cinzel',serif;padding:5px;cursor:${canBuy?'pointer':'default'};margin-top:4px;">
+        ${owned ? '✅ Besitzt du' : '⭐ ' + item.cost + ' Pkt'}
+      </button>
+    </div>`;
+  }).join('');
+}
+
+function buyAchShopItem(id) {
+  if (!G.achPurchased) G.achPurchased = [];
+  const item = ACH_SHOP_ITEMS.find(x => x.id === id);
+  if (!item || (item.once && G.achPurchased.includes(id))) return;
+  if ((G.achPoints || 0) < item.cost) { showErrToast('Nicht genug Punkte!', '❌'); return; }
+  G.achPoints -= item.cost;
+  if (item.once) G.achPurchased.push(id);
+
+  // Effekt anwenden
+  switch (item.eff) {
+    case 'gold_50k':  G.hero.gold = (G.hero.gold||0) + 50000; break;
+    case 'gold_250k': G.hero.gold = (G.hero.gold||0) + 250000; break;
+    case 'inv_50':    G.inventoryLimit = (G.inventoryLimit||200) + 50; break;
+    case 'keys_max':  G.dungeonKeysMax = (G.dungeonKeysMax||3) + 2; break;
+    case 'forge_20':  G.achForgeBonus = (G.achForgeBonus||0) + 0.2; break;
+    case 'xp_25':     G.achXpBonus = (G.achXpBonus||0) + 0.25; break;
+    case 'pet_25':    G.achPetBonus = (G.achPetBonus||0) + 0.25; break;
+    case 'crit_5':    G.achCritBonus = (G.achCritBonus||0) + 5; break;
+    case 'title_gold': G.playerTitle = '✦ Legendärer Kämpfer'; break;
+    case 'title_myst': G.playerTitle = '⚡ Auserwählter'; break;
+  }
+  log(`⭐ ${item.name} gekauft! (${item.cost} Punkte)`, 'l');
+  markDirty();
+  renderAchShop();
+  try { updateAll(); } catch(e) {}
+}
+
+
+// ════════════════════════════════════════════
+// ── WELTBOSSE (alle 100 Wellen)
+// ════════════════════════════════════════════
+
+const WORLD_BOSSES = [
+  { id:'wb_100',  name:'Knochendrache',    emoji:'🐉', minWave:100,  hpMult:8,   atkMult:3,  reward:{gold:15000,  xp:8000,  keys:2} },
+  { id:'wb_250',  name:'Schattentitan',    emoji:'👹', minWave:250,  hpMult:12,  atkMult:4,  reward:{gold:35000,  xp:20000, keys:3} },
+  { id:'wb_500',  name:'Lavagigant',       emoji:'🌋', minWave:500,  hpMult:20,  atkMult:6,  reward:{gold:80000,  xp:45000, keys:4} },
+  { id:'wb_1000', name:'Zeitenwächter',    emoji:'⏳', minWave:1000, hpMult:35,  atkMult:8,  reward:{gold:200000, xp:100000,keys:5} },
+  { id:'wb_2500', name:'Weltenzerstörer',  emoji:'🌍', minWave:2500, hpMult:60,  atkMult:12, reward:{gold:500000, xp:250000,keys:6} },
+  { id:'wb_5000', name:'Ursprungsdämon',   emoji:'👿', minWave:5000, hpMult:100, atkMult:18, reward:{gold:1000000,xp:500000,keys:8} },
+];
+
+function getAvailableWorldBoss() {
+  if (!G.worldBossDefeated) G.worldBossDefeated = [];
+  const wave = G.wave || 1;
+  // Nächster verfügbarer Boss der noch nicht besiegt wurde
+  return WORLD_BOSSES.find(b => wave >= b.minWave && !G.worldBossDefeated.includes(b.id)) || null;
+}
+
+function startWorldBoss() {
+  const boss = getAvailableWorldBoss();
+  if (!boss) { showErrToast('Kein Weltboss verfügbar', '❌'); return; }
+  if (G.worldBossActive) { showErrToast('Bereits im Kampf!', '❌'); return; }
+
+  const s = getStats();
+  const bossHp  = Math.floor(s.atk * 80 * boss.hpMult);
+  const bossAtk = Math.floor(s.def * 1.5 * boss.atkMult);
+
+  G.worldBossActive = {
+    ...boss,
+    hp:    bossHp,
+    maxHp: bossHp,
+    atk:   bossAtk,
+  };
+  log(`⚠️ WELTBOSS erscheint: ${boss.emoji} ${boss.name}! HP: ${bossHp.toLocaleString()}`, 'l');
+  markDirty();
+  renderWorldBossPanel();
+}
+
+function attackWorldBoss() {
+  if (!G.worldBossActive) return;
+  const s   = getStats();
+  const wb  = G.worldBossActive;
+  const isCrit = Math.random() * 100 < s.crit;
+  const dmg    = Math.floor(s.atk * (isCrit ? 2 : 1) * (0.9 + Math.random() * 0.2));
+
+  wb.hp = Math.max(0, wb.hp - dmg);
+  log(`⚔️ ${isCrit ? '💥 KRIT! ' : ''}${dmg.toLocaleString()} Schaden an ${wb.emoji} ${wb.name}`, 'i');
+
+  // Boss schlägt zurück
+  const bossDmg = Math.floor(wb.atk * (0.8 + Math.random() * 0.4));
+  G.hero.hp = Math.max(1, G.hero.hp - bossDmg);
+  log(`💢 ${wb.name} trifft für ${bossDmg.toLocaleString()} Schaden!`, 'c');
+
+  if (wb.hp <= 0) {
+    defeatWorldBoss(wb);
+  } else {
+    renderWorldBossPanel();
+    try { updateAll(); } catch(e) {}
+  }
+}
+
+function defeatWorldBoss(wb) {
+  if (!G.worldBossDefeated) G.worldBossDefeated = [];
+  G.worldBossDefeated.push(wb.id);
+  G.worldBossActive = null;
+
+  G.hero.gold = (G.hero.gold || 0) + wb.reward.gold;
+  G.hero.xp   = (G.hero.xp   || 0) + wb.reward.xp;
+  G.dungeonKeys = Math.min(10, (G.dungeonKeys || 0) + wb.reward.keys);
+  try { while(G.hero.xp >= xpNeed()){G.hero.xp -= xpNeed(); G.hero.level++;} } catch(e){}
+
+  log(`🎉 ${wb.emoji} ${wb.name} besiegt! +${wb.reward.gold.toLocaleString()}G +${wb.reward.xp.toLocaleString()} XP +${wb.reward.keys}🗝️`, 'l');
+  markDirty();
+  renderWorldBossPanel();
+  try { updateAll(); } catch(e) {}
+}
+
+function renderWorldBossPanel() {
+  const el = document.getElementById('worldBossPanel');
+  if (!el) return;
+  const boss = getAvailableWorldBoss();
+  const active = G.worldBossActive;
+
+  if (active) {
+    const pct = Math.round(active.hp / active.maxHp * 100);
+    el.innerHTML = `
+      <div style="text-align:center;font-size:2.5rem;margin-bottom:6px;">${active.emoji}</div>
+      <div style="font-family:'Cinzel',serif;font-size:.85rem;color:var(--red2);text-align:center;margin-bottom:6px;">${active.name}</div>
+      <div style="background:rgba(255,0,0,.15);border:1px solid rgba(255,0,0,.3);border-radius:5px;height:10px;margin-bottom:6px;overflow:hidden;">
+        <div style="height:100%;width:${pct}%;background:var(--red2);border-radius:5px;transition:width .3s;"></div>
+      </div>
+      <div style="font-size:.65rem;color:var(--text3);text-align:center;margin-bottom:10px;">${active.hp.toLocaleString()} / ${active.maxHp.toLocaleString()} HP</div>
+      <button onclick="attackWorldBoss()" style="width:100%;background:rgba(220,40,40,.2);border:1.5px solid var(--red2);border-radius:10px;color:#ff8888;font-family:'Cinzel',serif;font-size:.78rem;padding:10px;cursor:pointer;">
+        ⚔️ Angreifen!
+      </button>`;
+  } else if (boss) {
+    el.innerHTML = `
+      <div style="text-align:center;font-size:2rem;margin-bottom:6px;opacity:.7;">${boss.emoji}</div>
+      <div style="font-family:'Cinzel',serif;font-size:.8rem;color:var(--orange2);text-align:center;margin-bottom:4px;">${boss.name}</div>
+      <div style="font-size:.62rem;color:var(--text3);text-align:center;margin-bottom:10px;">Weltboss ab Welle ${boss.minWave}</div>
+      <div style="font-size:.6rem;color:var(--gold2);text-align:center;margin-bottom:10px;">Belohnung: 💰${boss.reward.gold.toLocaleString()} ⭐${boss.reward.xp.toLocaleString()} 🗝️${boss.reward.keys}</div>
+      <button onclick="startWorldBoss()" style="width:100%;background:rgba(220,40,40,.15);border:1.5px solid var(--orange2);border-radius:10px;color:var(--orange2);font-family:'Cinzel',serif;font-size:.78rem;padding:10px;cursor:pointer;">
+        ⚠️ Herausfordern!
+      </button>`;
+  } else {
+    el.innerHTML = `<div style="text-align:center;color:var(--text3);font-size:.68rem;padding:16px 0;">Alle Weltbosse besiegt!<br>⭐ Meister aller Bosse</div>`;
+  }
+}
+
+// ── OFFLINE-DETECTION ────────────────────────────────────
 // ════════════════════════════════════════════
 
 function openSupport() {
