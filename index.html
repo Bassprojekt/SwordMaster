@@ -3894,6 +3894,23 @@ button, .nav-tab, .ctrl-btn, .upg-card, .skill-card,
   </div>
 </div>
 
+<!-- ═══ WARTUNGSMODUS SCREEN ═══ -->
+<div id="maintenanceScreen" style="display:none;position:fixed;inset:0;z-index:99999;background:linear-gradient(160deg,#0a0812,#05030d);align-items:center;justify-content:center;flex-direction:column;gap:20px;">
+  <div style="text-align:center;padding:30px 24px;max-width:420px;">
+    <div style="font-size:3rem;margin-bottom:12px;">🔧</div>
+    <div style="font-family:'Cinzel',serif;font-size:1.4rem;color:var(--gold2);margin-bottom:8px;">Wartungsarbeiten</div>
+    <div style="font-size:.78rem;color:var(--text2);margin-bottom:20px;line-height:1.6;" id="maintenanceMsg">Das Spiel wird gerade gewartet.</div>
+    <div id="maintenanceTimer" style="font-family:'Cinzel',serif;font-size:1.1rem;color:var(--orange2);margin-bottom:16px;"></div>
+    <div style="font-size:.65rem;color:var(--text3);font-style:italic;">Bitte später wieder vorbeischauen.</div>
+    <!-- Admin kann trotzdem spielen — versteckter Bypass -->
+    <div style="margin-top:24px;">
+      <input id="maintenanceBypass" type="password" placeholder="Admin-Passwort..." 
+        style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:var(--text2);font-size:.7rem;padding:7px 12px;outline:none;text-align:center;width:180px;"
+        onkeydown="if(event.key==='Enter')_checkMaintenanceBypass()">
+    </div>
+  </div>
+</div>
+
 <!-- ═══ ERROR TOAST ═══ -->
 <div id="errToast">
   <div id="errToastIcon">⚠️</div>
@@ -7624,6 +7641,7 @@ function dropItem(fromForge=false) {
 }
 
 function forge() {
+  if (!requireFeature('forge')) return;
   const btn=document.getElementById('forgeBtn');
   btn.classList.add('forging');
   setTimeout(()=>btn.classList.remove('forging'),180);
@@ -9087,6 +9105,7 @@ function renderDungeon() {
 }
 
 function startDungeon() {
+  if (!requireFeature('dungeon')) return;
   const roomType = getDungeonRoomType(G.dungeonFloor);
   const freeEntry = G.skills.has('masterThief') && roomType !== 'boss';
   if (!freeEntry && G.dungeonKeys <= 0) { log('❌ Keine Dungeon-Schlüssel! Warte auf Aufladen.', 'c'); return; }
@@ -9537,6 +9556,7 @@ let _pvpOpponents = [];  // Cache: echte Spieler
 let _pvpLbTab = 'pvp';
 
 async function loadPVPOpponents() {
+  if (!requireFeature('pvp')) return;
   const div = document.getElementById('pvpOpponents');
   const info = document.getElementById('pvpOppsInfo');
   if (!div) return;
@@ -10068,6 +10088,7 @@ async function sendGuildChat(){
 }
 
 function openCreateGuild(){
+  if (!requireFeature('guild')) return;
   if(G.hero.gold<500){log('❌ Gilde kostet 500 Gold!','c');alert('Du brauchst 500 Gold um eine Gilde zu gründen!');return;}
   const ep=document.getElementById('guildEmojiPicker');
   if(ep){
@@ -10484,6 +10505,7 @@ function renderShop(){
 }
 
 function buyShopItem(item){
+  if (!requireFeature('shop')) return;
   if(G.hero.gold<item.cost){log('❌ Zu wenig Gold für '+item.name,'c');return;}
   G.hero.gold-=item.cost;G.shopPurchases[item.id]=(G.shopPurchases[item.id]||0)+1;
   if(item.eff==='healHalf'){G.hero.hp=Math.min(G.hero.maxHp,G.hero.hp+Math.floor(G.hero.maxHp*.5));log('🧪 HP geheilt!','i');}
@@ -10798,6 +10820,12 @@ setInterval(() => { try { checkDailyReset(); } catch(e) {} }, 60000);
 // ── INIT
 // ════════════════════════════════════════════
 async function init() {
+  // ── Schritt 0: Wartungsmodus prüfen ──
+  try {
+    const inMaintenance = await checkMaintenance();
+    if (inMaintenance) return; // Wartungsscreen zeigen, nicht weiterladen
+  } catch(e) {}
+
   // ── Schritt 1: OAuth-Callback prüfen (Google Redirect zurück) ──
   // Supabase schreibt nach dem Redirect einen Hash oder Code in die URL
   const url = window.location.href;
@@ -10858,6 +10886,9 @@ async function init() {
 }
 
 async function continueInit() {
+  // Feature-Locks im Hintergrund laden
+  try { await checkFeatureLocks(); } catch(e) {}
+
   document.body.insertAdjacentHTML('beforeend', `
     <div id="loadingScreen" style="position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;">
       <div style="font-family:'Cinzel',serif;font-size:2rem;color:var(--gold2);text-shadow:0 0 30px rgba(240,204,85,.5);">⚔ SWORDMASTER</div>
@@ -13876,6 +13907,29 @@ const CHANGELOG_DATA = [
   { type:"NEU",  text:"Admin-Badge im Chat: ⚔️ ADMIN erscheint neben dem Namen wenn Admin schreibt",   date:"2025-03" },
   { type:"NEU",  text:"Admin kann direkt im globalen Chat schreiben inkl. Quick-Messages",              date:"2025-03" },
   { type:"NEU",  text:"Profil-Button in PVP und Weltrangliste",                                        date:"2025-03" },
+  { type:"NEU",  text:"Support-Ticket-System: Spieler können Tickets erstellen, Admin antwortet",       date:"2025-03" },
+  { type:"NEU",  text:"Support-Konversation: Spieler kann auf Admin-Antworten antworten (Chat-Verlauf)",date:"2025-03" },
+  { type:"NEU",  text:"🎫 Support-Button im Header + eigener Admin-Tab mit Ticket-Verwaltung",          date:"2025-03" },
+  { type:"FIX",  text:"Globaler Chat: Foreign Key Fix (00000000-Gilde), kein 409 mehr",                 date:"2025-03" },
+  { type:"FIX",  text:"Chat Rate-Limit: RETURN NULL statt RAISE EXCEPTION (kein 409 Conflict mehr)",   date:"2025-03" },
+  { type:"NEU",  text:"74 Items gesamt — alle 6 Slots gleichmäßig verteilt, Slot-aware Auswahl",       date:"2025-03" },
+  { type:"NEU",  text:"Item-Karten: Slot-Emoji, voller Name, Stat mit Einheit, Effekt-Label sichtbar", date:"2025-03" },
+  { type:"NEU",  text:"Tooltip: zeigt Slot-Typ, Vergleich ▲/▼ mit ausgerüstetem Item",                 date:"2025-03" },
+  { type:"NEU",  text:"Tastatur-Shortcuts: 1-8 für Tabs, Escape schließt Overlays",                    date:"2025-03" },
+  { type:"BALANCE", text:"Legendär ab Lv60 (war Lv25), Mystisch ab Lv100 (war Lv50)",                  date:"2025-03" },
+  { type:"BALANCE", text:"Legendary-Chance 0.18% base (war 0.40%), Mythic 0.009% base (war 0.07%)",    date:"2025-03" },
+  { type:"NEU",  text:"Schmiede: Hinweis zeigt welche Seltenheit als nächstes freigeschaltet wird",    date:"2025-03" },
+  { type:"NEU",  text:"⏰ Offline-Progress: Gold + XP wenn man weg war (max 8h), Popup beim Login",   date:"2025-03" },
+  { type:"NEU",  text:"📅 Wöchentliche Quests: 7 rotierende Quests in der Arena-Seite",               date:"2025-03" },
+  { type:"NEU",  text:"⭐ Achievement-Shop: Punkte gegen permanente Boni + Titel einlösen",            date:"2025-03" },
+  { type:"NEU",  text:"⚠️ Weltbosse: 6 einmalige Bosse ab Welle 100/250/500/1000/2500/5000",          date:"2025-03" },
+  { type:"NEU",  text:"Admin Events-Tab: Event-Boss reset, Bulk Event-Reset, Weltboss-Verwaltung",     date:"2025-03" },
+  { type:"NEU",  text:"Admin Achievements-Tab: Punkte setzen/hinzufügen, Shop-Reset, Bulk-Punkte",     date:"2025-03" },
+  { type:"FIX",  text:"slotNames ReferenceError in renderEquipSlots behoben",                          date:"2025-03" },
+  { type:"FIX",  text:"lv ReferenceError in forgeWithFurnace (mythChance) behoben",                    date:"2025-03" },
+  { type:"NEU",  text:"🔧 Wartungsmodus: Admin kann Spiel für alle sperren (mit Countdown-Timer)",     date:"2025-03" },
+  { type:"NEU",  text:"🔒 Feature-Sperren: Shop, Schmiede, PVP, Dungeon etc. einzeln deaktivierbar",  date:"2025-03" },
+  { type:"NEU",  text:"Admin-Panel Tab 🔧 Wartung: Wartung aktivieren/beenden + Feature-Locks",       date:"2025-03" },
 ];
 
 // ════════════════════════════════════════════
@@ -14702,6 +14756,7 @@ async function loadGlobalChat() {
 
 let _lastGlobalChatSent = 0;
 async function sendGlobalChat() {
+  if (!requireFeature('chat')) return;
   const input = document.getElementById('globalChatInput');
   const msg   = input?.value?.trim();
   if (!msg) return;
@@ -15134,6 +15189,7 @@ function renderAchShop() {
 }
 
 function buyAchShopItem(id) {
+  if (!requireFeature('achShop')) return;
   if (!G.achPurchased) G.achPurchased = [];
   const item = ACH_SHOP_ITEMS.find(x => x.id === id);
   if (!item || (item.once && G.achPurchased.includes(id))) return;
@@ -15270,6 +15326,289 @@ function renderWorldBossPanel() {
   } else {
     el.innerHTML = `<div style="text-align:center;color:var(--text3);font-size:.68rem;padding:16px 0;">Alle Weltbosse besiegt!<br>⭐ Meister aller Bosse</div>`;
   }
+}
+
+// ════════════════════════════════════════════
+// ── WARTUNGSMODUS SYSTEM
+// ════════════════════════════════════════════
+
+// Maintenance-Config wird in Supabase sm_guild_chat mit player_id='__maintenance__' gespeichert
+// Einfache Lösung ohne extra Tabelle
+
+const MAINTENANCE_KEY = '__maintenance__';
+const FEATURE_LOCK_KEY = '__feature_locks__';
+
+// Maintenance beim Start prüfen
+async function checkMaintenance() {
+  // Admin darf immer spielen
+  if (_adminLoggedIn) return false;
+
+  try {
+    const data = await sbGet('sm_guild_chat',
+      `player_id=eq.${MAINTENANCE_KEY}&guild_id=eq.00000000-0000-0000-0000-000000000000&order=created_at.desc&limit=1`);
+    if (!data?.length) return false;
+
+    const maint = JSON.parse(data[0].message);
+    if (!maint.active) return false;
+
+    // Zeitstempel prüfen — abgelaufen?
+    if (maint.until && maint.until > 0 && Date.now() > maint.until) {
+      return false; // Wartung abgelaufen
+    }
+
+    // Wartungsscreen zeigen
+    const screen = document.getElementById('maintenanceScreen');
+    if (screen) {
+      screen.style.display = 'flex';
+      document.getElementById('maintenanceMsg').textContent = maint.msg || 'Wartungsarbeiten laufen.';
+      _updateMaintenanceTimer(maint.until);
+    }
+    return true;
+  } catch(e) { return false; }
+}
+
+function _updateMaintenanceTimer(until) {
+  const el = document.getElementById('maintenanceTimer');
+  if (!el) return;
+  if (!until || until === 0) { el.textContent = 'Dauer: Unbegrenzt'; return; }
+  const update = () => {
+    const remaining = until - Date.now();
+    if (remaining <= 0) { el.textContent = 'Wartung endet bald...'; return; }
+    const h = Math.floor(remaining / 3600000);
+    const m = Math.floor((remaining % 3600000) / 60000);
+    const s = Math.floor((remaining % 60000) / 1000);
+    el.textContent = `Endet in: ${h > 0 ? h + 'h ' : ''}${m}min ${s}s`;
+    setTimeout(update, 1000);
+  };
+  update();
+}
+
+async function _checkMaintenanceBypass() {
+  const input = document.getElementById('maintenanceBypass');
+  const pw = input?.value?.trim();
+  if (!pw) return;
+  // SHA-256 Hash prüfen
+  const encoder = new TextEncoder();
+  const data = encoder.encode(pw);
+  const hashBuf = await crypto.subtle.digest('SHA-256', data);
+  const hashHex = Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2,'0')).join('');
+  if (hashHex === _ADMIN_HASH) {
+    document.getElementById('maintenanceScreen').style.display = 'none';
+    _adminLoggedIn = true;
+    log('🔧 Admin-Bypass: Wartungsmodus übersprungen', 'n');
+  } else {
+    input.style.borderColor = 'var(--red2)';
+    setTimeout(() => { if(input) input.style.borderColor = ''; }, 1000);
+  }
+}
+
+// Feature-Locks prüfen
+async function checkFeatureLocks() {
+  try {
+    const data = await sbGet('sm_guild_chat',
+      `player_id=eq.${FEATURE_LOCK_KEY}&guild_id=eq.00000000-0000-0000-0000-000000000000&order=created_at.desc&limit=1`);
+    if (!data?.length) { window._featureLocks = {}; return; }
+    const locks = JSON.parse(data[0].message);
+    // Abgelaufene Locks rausfiltern
+    const now = Date.now();
+    Object.keys(locks).forEach(k => {
+      if (locks[k].until && locks[k].until > 0 && now > locks[k].until) {
+        delete locks[k];
+      }
+    });
+    window._featureLocks = locks;
+  } catch(e) { window._featureLocks = {}; }
+}
+
+function isFeatureLocked(featureId) {
+  if (_adminLoggedIn) return false; // Admin immer Zugriff
+  const lock = window._featureLocks?.[featureId];
+  if (!lock) return false;
+  if (lock.until && lock.until > 0 && Date.now() > lock.until) return false;
+  return lock;
+}
+
+function requireFeature(featureId, onLocked) {
+  const lock = isFeatureLocked(featureId);
+  if (lock) {
+    const until = lock.until ? new Date(lock.until).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}) : '—';
+    showErrToast(`🔒 ${lock.msg || 'Nicht verfügbar'} (bis ${until})`, '🔧');
+    if (onLocked) onLocked();
+    return false;
+  }
+  return true;
+}
+
+// ── ADMIN WARTUNGS-FUNKTIONEN ─────────────────────────────────
+
+async function _adminEnableMaintenance() {
+  if (!_adminLoggedIn) return;
+  const msg  = document.getElementById('adminMaintenanceMsg')?.value?.trim() || 'Wartungsarbeiten laufen.';
+  const mins = parseInt(document.getElementById('adminMaintenanceDuration')?.value) || 30;
+  const until = mins > 0 ? Date.now() + mins * 60000 : 0;
+
+  const payload = {
+    active: true,
+    msg,
+    until,
+    startedBy: getPlayerName() || 'Admin',
+    startedAt: Date.now()
+  };
+
+  try {
+    // Alte Wartungs-Einträge löschen
+    await sbDelete('sm_guild_chat',
+      `player_id=eq.${MAINTENANCE_KEY}&guild_id=eq.00000000-0000-0000-0000-000000000000`);
+
+    await sbPost('sm_guild_chat', {
+      id:          makeUUID(),
+      guild_id:    '00000000-0000-0000-0000-000000000000',
+      player_id:   MAINTENANCE_KEY,
+      player_name: 'SYSTEM',
+      role:        'admin',
+      message:     JSON.stringify(payload),
+      created_at:  new Date().toISOString()
+    });
+
+    const untilStr = until > 0 ? new Date(until).toLocaleString('de-DE') : 'unbegrenzt';
+    _adminLogAction(`🔧 Wartungsmodus AKTIVIERT — bis: ${untilStr}`);
+    _adminLoadMaintenanceStatus();
+  } catch(e) { _adminLog('❌ ' + e.message); }
+}
+
+async function _adminDisableMaintenance() {
+  if (!_adminLoggedIn) return;
+  try {
+    await sbDelete('sm_guild_chat',
+      `player_id=eq.${MAINTENANCE_KEY}&guild_id=eq.00000000-0000-0000-0000-000000000000`);
+    _adminLogAction('✅ Wartungsmodus BEENDET');
+    _adminLoadMaintenanceStatus();
+  } catch(e) { _adminLog('❌ ' + e.message); }
+}
+
+async function _adminLoadMaintenanceStatus() {
+  const el = document.getElementById('adminMaintenanceStatus');
+  if (!el) return;
+  try {
+    const data = await sbGet('sm_guild_chat',
+      `player_id=eq.${MAINTENANCE_KEY}&guild_id=eq.00000000-0000-0000-0000-000000000000&order=created_at.desc&limit=1`);
+
+    if (!data?.length) {
+      el.innerHTML = '<span style="color:var(--green2);">✅ Kein Wartungsmodus aktiv — Spiel läuft normal.</span>';
+      return;
+    }
+
+    const maint = JSON.parse(data[0].message);
+    if (!maint.active) {
+      el.innerHTML = '<span style="color:var(--green2);">✅ Wartungsmodus inaktiv.</span>';
+      return;
+    }
+
+    const startTime  = new Date(maint.startedAt).toLocaleString('de-DE');
+    const untilTime  = maint.until > 0 ? new Date(maint.until).toLocaleString('de-DE') : 'Unbegrenzt';
+    const remaining  = maint.until > 0 ? Math.max(0, Math.ceil((maint.until - Date.now()) / 60000)) : '∞';
+
+    el.innerHTML = `
+      <div style="color:var(--orange2);font-family:'Cinzel',serif;font-size:.7rem;margin-bottom:4px;">⚠️ WARTUNGSMODUS AKTIV</div>
+      <div style="font-size:.62rem;color:var(--text2);">📢 "${maint.msg}"</div>
+      <div style="font-size:.6rem;color:var(--text3);margin-top:4px;">
+        Gestartet: ${startTime} · Von: ${maint.startedBy || 'Admin'}<br>
+        Endet: ${untilTime} · Noch: ${remaining} Min
+      </div>`;
+  } catch(e) {
+    el.innerHTML = '<span style="color:var(--red2);">❌ Status nicht ladbar</span>';
+  }
+}
+
+async function _adminLockFeature() {
+  if (!_adminLoggedIn) return;
+  const feature = document.getElementById('adminFeatureSelect')?.value;
+  const msg     = document.getElementById('adminFeatureLockMsg')?.value?.trim() || 'Wird gewartet';
+  const mins    = parseInt(document.getElementById('adminFeatureLockDur')?.value) || 60;
+  const until   = mins > 0 ? Date.now() + mins * 60000 : 0;
+
+  try {
+    // Aktuelle Locks laden
+    let locks = {};
+    const data = await sbGet('sm_guild_chat',
+      `player_id=eq.${FEATURE_LOCK_KEY}&guild_id=eq.00000000-0000-0000-0000-000000000000&order=created_at.desc&limit=1`);
+    if (data?.length) { try { locks = JSON.parse(data[0].message); } catch(e) {} }
+
+    locks[feature] = { msg, until, lockedAt: Date.now(), by: getPlayerName()||'Admin' };
+
+    // Alten Eintrag löschen und neu schreiben
+    await sbDelete('sm_guild_chat',
+      `player_id=eq.${FEATURE_LOCK_KEY}&guild_id=eq.00000000-0000-0000-0000-000000000000`);
+    await sbPost('sm_guild_chat', {
+      id:          makeUUID(),
+      guild_id:    '00000000-0000-0000-0000-000000000000',
+      player_id:   FEATURE_LOCK_KEY,
+      player_name: 'SYSTEM',
+      role:        'admin',
+      message:     JSON.stringify(locks),
+      created_at:  new Date().toISOString()
+    });
+
+    window._featureLocks = locks;
+    _adminLogAction(`🔒 Feature gesperrt: ${feature} — "${msg}" bis ${until > 0 ? new Date(until).toLocaleTimeString('de-DE') : '∞'}`);
+    _adminRenderFeatureLocks();
+  } catch(e) { _adminLog('❌ ' + e.message); }
+}
+
+async function _adminUnlockFeature() {
+  if (!_adminLoggedIn) return;
+  const feature = document.getElementById('adminFeatureSelect')?.value;
+  try {
+    let locks = window._featureLocks || {};
+    delete locks[feature];
+
+    await sbDelete('sm_guild_chat',
+      `player_id=eq.${FEATURE_LOCK_KEY}&guild_id=eq.00000000-0000-0000-0000-000000000000`);
+
+    if (Object.keys(locks).length > 0) {
+      await sbPost('sm_guild_chat', {
+        id:          makeUUID(),
+        guild_id:    '00000000-0000-0000-0000-000000000000',
+        player_id:   FEATURE_LOCK_KEY,
+        player_name: 'SYSTEM',
+        role:        'admin',
+        message:     JSON.stringify(locks),
+        created_at:  new Date().toISOString()
+      });
+    }
+
+    window._featureLocks = locks;
+    _adminLogAction(`🔓 Feature entsperrt: ${feature}`);
+    _adminRenderFeatureLocks();
+  } catch(e) { _adminLog('❌ ' + e.message); }
+}
+
+function _adminRenderFeatureLocks() {
+  const el = document.getElementById('adminFeatureLocks');
+  if (!el) return;
+  const locks = window._featureLocks || {};
+  const FEAT_LABELS = {
+    shop:'🛒 Shop', achShop:'⭐ Achievement-Shop', pvp:'⚔️ PVP',
+    dungeon:'🏚️ Dungeon', guild:'🏰 Gilden', forge:'🔨 Schmiede',
+    chat:'💬 Globaler Chat', prestige:'✦ Prestige'
+  };
+
+  if (!Object.keys(locks).length) {
+    el.innerHTML = '<div class="u-xs-muted">Keine Features gesperrt.</div>';
+    return;
+  }
+
+  el.innerHTML = Object.entries(locks).map(([key, lock]) => {
+    const until = lock.until > 0
+      ? new Date(lock.until).toLocaleString('de-DE', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})
+      : '∞';
+    const expired = lock.until > 0 && Date.now() > lock.until;
+    return `<div style="display:flex;align-items:center;gap:8px;padding:6px 8px;background:rgba(255,80,80,.08);border:1px solid rgba(255,80,80,.25);border-radius:7px;font-size:.65rem;${expired?'opacity:.5':''}">
+      <span style="color:var(--red2);">🔒</span>
+      <span style="flex:1;color:var(--text);">${FEAT_LABELS[key]||key}</span>
+      <span style="color:var(--text3);">"${lock.msg}" · bis ${until}${expired?' (abgelaufen)':''}</span>
+    </div>`;
+  }).join('');
 }
 
 // ── OFFLINE-DETECTION ────────────────────────────────────
@@ -16072,6 +16411,10 @@ function _adminTab(name) {
   if (name === 'events') { try { _adminUpdateEventStatus(); _adminBuildEventCalendar(); } catch(e) {} }
   if (name === 'achievements') { try { _adminInitAchSelects(); } catch(e) {} }
   if (name === 'support') { try { _adminLoadTickets(); } catch(e) {} }
+  if (name === 'maintenance') {
+    try { _adminLoadMaintenanceStatus(); } catch(e) {}
+    try { _adminRenderFeatureLocks(); } catch(e) {}
+  }
 }
 
 // ── STATS ───────────────────────────────────────
@@ -17310,6 +17653,7 @@ async function _adminBulkHeal() {
         <button class="admin-tab" onclick="_adminTab('global')">⚡ Global</button>
         <button class="admin-tab" onclick="_adminTab('security')">🔒 Sicherheit</button>
         <button class="admin-tab" onclick="_adminTab('support')">🎫 Support</button>
+        <button class="admin-tab" onclick="_adminTab('maintenance')" style="border-color:rgba(255,120,0,.4);color:var(--orange2);">🔧 Wartung</button>
       </div>
 
       <!-- TAB: STATS -->
@@ -17729,6 +18073,85 @@ async function _adminBulkHeal() {
             <button class="admin-btn" onclick="document.getElementById('adminTicketReplySection').style.display='none'" style="padding:4px 10px;">✕</button>
           </div>
         </div>
+      </div>
+
+      <!-- TAB: WARTUNG -->
+      <div id="adminTab-maintenance" class="admin-tab-content">
+
+        <!-- Wartungsmodus -->
+        <div class="admin-section" style="border-color:rgba(255,120,0,.3);">
+          <div class="admin-section-title" style="color:var(--orange2);">🔧 WARTUNGSMODUS</div>
+          <div id="adminMaintenanceStatus" style="font-size:.68rem;margin-bottom:10px;padding:8px;background:rgba(0,0,0,.3);border-radius:7px;">
+            Lade Status...
+          </div>
+
+          <div style="margin-bottom:10px;">
+            <label style="font-size:.63rem;color:var(--text3);display:block;margin-bottom:4px;">NACHRICHT AN SPIELER</label>
+            <textarea id="adminMaintenanceMsg" class="admin-input" rows="3"
+              placeholder="z.B. Wir führen Serverupdates durch. Bitte habt etwas Geduld!"
+              style="width:100%;resize:vertical;font-family:monospace;">Wir führen Wartungsarbeiten durch. Das Spiel ist bald wieder verfügbar!</textarea>
+          </div>
+
+          <div class="admin-input-row" style="margin-bottom:8px;">
+            <span class="admin-input-label">Dauer:</span>
+            <select id="adminMaintenanceDuration" class="admin-input" style="flex:1;">
+              <option value="15">15 Minuten</option>
+              <option value="30" selected>30 Minuten</option>
+              <option value="60">1 Stunde</option>
+              <option value="120">2 Stunden</option>
+              <option value="240">4 Stunden</option>
+              <option value="0">Unbegrenzt</option>
+            </select>
+          </div>
+
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            <button class="admin-btn" onclick="_adminEnableMaintenance()" style="border-color:rgba(255,120,0,.6);color:var(--orange2);flex:1;">🔧 Wartung AKTIVIEREN</button>
+            <button class="admin-btn green" onclick="_adminDisableMaintenance()" style="flex:1;">✅ Wartung BEENDEN</button>
+          </div>
+          <p style="font-size:.6rem;color:var(--text3);margin-top:6px;">⚠️ Während der Wartung können nur Admins das Spiel spielen.</p>
+        </div>
+
+        <!-- Feature-Sperren -->
+        <div class="admin-section">
+          <div class="admin-section-title">🚫 FEATURES SPERREN / WARTUNG</div>
+          <p style="font-size:.62rem;color:var(--text3);margin-bottom:10px;">Einzelne Features deaktivieren mit optionalem Zeitstempel.</p>
+
+          <div id="adminFeatureLocks" style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px;"></div>
+
+          <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:10px;margin-top:8px;">
+            <div style="font-size:.63rem;color:var(--text3);margin-bottom:6px;">Feature sperren:</div>
+            <div class="admin-input-row">
+              <select id="adminFeatureSelect" class="admin-input" style="flex:1;">
+                <option value="shop">🛒 Shop</option>
+                <option value="achShop">⭐ Achievement-Shop</option>
+                <option value="pvp">⚔️ PVP</option>
+                <option value="dungeon">🏚️ Dungeon</option>
+                <option value="guild">🏰 Gilden</option>
+                <option value="forge">🔨 Schmiede</option>
+                <option value="chat">💬 Globaler Chat</option>
+                <option value="prestige">✦ Prestige</option>
+              </select>
+            </div>
+            <div class="admin-input-row" style="margin-top:4px;">
+              <span class="admin-input-label">Grund:</span>
+              <input id="adminFeatureLockMsg" class="admin-input" placeholder="z.B. Wird gerade gewartet" style="flex:1;">
+            </div>
+            <div class="admin-input-row" style="margin-top:4px;">
+              <span class="admin-input-label">Bis:</span>
+              <select id="adminFeatureLockDur" class="admin-input" style="flex:1;">
+                <option value="30">30 Minuten</option>
+                <option value="60" selected>1 Stunde</option>
+                <option value="120">2 Stunden</option>
+                <option value="0">Unbegrenzt</option>
+              </select>
+            </div>
+            <div style="display:flex;gap:4px;margin-top:8px;">
+              <button class="admin-btn" onclick="_adminLockFeature()" style="border-color:rgba(255,80,80,.5);color:#ff8888;flex:1;">🔒 Sperren</button>
+              <button class="admin-btn green" onclick="_adminUnlockFeature()" style="flex:1;">🔓 Entsperren</button>
+            </div>
+          </div>
+        </div>
+
       </div>
 
       <!-- Admin Log (immer sichtbar) -->
