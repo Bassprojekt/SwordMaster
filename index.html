@@ -14398,50 +14398,66 @@ async function sendGlobalChat() {
   const msg   = input?.value?.trim();
   if (!msg) return;
 
-  // Spieler muss eingeloggt sein (player_id darf nicht null sein)
-  const pid = getPlayerId();
-  if (!pid) {
-    showErrToast('Bitte zuerst einloggen um zu chatten', '🔒');
-    return;
-  }
-
   if (Date.now() - _lastGlobalChatSent < 3000) {
     showErrToast('Bitte 3 Sekunden warten', '⏳'); return;
   }
-  _lastGlobalChatSent = Date.now();
 
-  // Admin-Rolle automatisch setzen wenn Admin eingeloggt
-  const role = (typeof _adminLoggedIn !== 'undefined' && _adminLoggedIn) ? 'admin' : 'member';
+  // player_id: OAuth-UUID oder localStorage-UUID (beide gültig nach SQL-Fix)
+  const pid  = getPlayerId();
   const name = getPlayerName() || 'Held';
 
+  if (!pid) {
+    showErrToast('Kein Spieler-Account gefunden', '❌'); return;
+  }
+
+  _lastGlobalChatSent = Date.now();
+
+  // Sende-Button deaktivieren während Senden
+  const sendBtn = document.getElementById('gchatSendBtn');
+  if (sendBtn) sendBtn.disabled = true;
+
+  const role = (typeof _adminLoggedIn !== 'undefined' && _adminLoggedIn) ? 'admin' : 'member';
+
   try {
-    const ok = await sbPost('sm_guild_chat', {
-      id: makeUUID(),
-      guild_id: '00000000-0000-0000-0000-000000000000',
-      player_id: pid,
-      player_name: name,
-      message: msg.slice(0, 120),
-      role,
-      created_at: new Date().toISOString()
+    const r = await sbFetch(`${SUPA_URL}/rest/v1/sm_guild_chat`, {
+      method: 'POST',
+      headers: { ...SUPA_HDR, 'Prefer': 'return=minimal' },
+      body: JSON.stringify({
+        id: makeUUID(),
+        guild_id:    '00000000-0000-0000-0000-000000000000',
+        player_id:   pid,
+        player_name: name,
+        message:     msg.slice(0, 120),
+        role,
+        created_at:  new Date().toISOString()
+      })
     });
-    if (!ok) {
-      showErrToast('Nachricht konnte nicht gesendet werden', '❌');
-      return;
+
+    if (r.status >= 200 && r.status < 300) {
+      if (input) {
+        input.value = '';
+        const counter = document.getElementById('gchatCharCount');
+        if (counter) counter.textContent = '120';
+      }
+      await loadGlobalChat();
+      try {
+        if (!G.achProgress) G.achProgress = {};
+        G.achProgress.global_chat = (G.achProgress.global_chat || 0) + 1;
+        checkAchievements();
+      } catch(e) {}
+    } else {
+      // Zeige HTTP-Status für Debugging
+      const body = await r.text().catch(() => '');
+      const hint = r.status === 403 ? '(RLS-Policy blockiert — SQL-Fix ausführen!)' :
+                   r.status === 401 ? '(Nicht autorisiert)' :
+                   r.status === 429 ? '(Rate-Limit — 3s warten)' : '';
+      showErrToast(`Chat-Fehler ${r.status} ${hint}`, '❌');
+      console.warn('[Chat]', r.status, body.slice(0, 200));
     }
-    if (input) {
-      input.value = '';
-      const counter = document.getElementById('gchatCharCount');
-      if (counter) counter.textContent = '120';
-    }
-    await loadGlobalChat();
-    // Achievement tracken
-    try {
-      if (!G.achProgress) G.achProgress = {};
-      G.achProgress.global_chat = (G.achProgress.global_chat || 0) + 1;
-      checkAchievements();
-    } catch(e) {}
   } catch(e) {
-    showErrToast('Senden fehlgeschlagen: ' + e.message, '❌');
+    showErrToast('Verbindungsfehler: ' + e.message, '❌');
+  } finally {
+    if (sendBtn) sendBtn.disabled = false;
   }
 }
 
@@ -14715,7 +14731,7 @@ async function _supportLoadTickets() {
 }
 
 // ── SUPPORT TICKETS (Admin) ──────────────────────────────────
-let _adminTicketFilter = 'open';
+let _adminTicketFilter = 'all';
 let _adminSelectedTicket = null;
 
 async function _adminLoadTickets() {
@@ -14785,8 +14801,7 @@ async function _adminReplyTicket() {
   const status = document.getElementById('adminTicketStatus')?.value || 'in_progress';
   if (!reply) { _adminLog('❌ Antwort eingeben'); return; }
   try {
-    // Admin nutzt Service Role Key → direkte PATCH ohne RLS-Einschränkung
-    await sbFetch(`${SUPA_URL}/rest/v1/sm_support_tickets?id=eq.${_adminSelectedTicket.id}`, {
+    const r = await sbFetch(`${SUPA_URL}/rest/v1/sm_support_tickets?id=eq.${_adminSelectedTicket.id}`, {
       method: 'PATCH',
       headers: { ...SUPA_HDR, 'Prefer': 'return=minimal' },
       body: JSON.stringify({
@@ -14797,11 +14812,19 @@ async function _adminReplyTicket() {
         updated_at:  new Date().toISOString()
       })
     });
-    _adminLogAction(`✉️ Ticket beantwortet: "${_adminSelectedTicket.subject}" → Status: ${status}`);
-    document.getElementById('adminTicketReplySection').style.display = 'none';
-    _adminLoadTickets();
-    // Support-Badge beim Spieler anzeigen
-  } catch(e) { _adminLog('❌ Antwort: '+e.message); }
+    if (r.status >= 200 && r.status < 300) {
+      _adminLogAction(`✉️ Ticket beantwortet: "${_adminSelectedTicket.subject}" → ${status}`);
+      document.getElementById('adminTicketReplySection').style.display = 'none';
+      document.getElementById('adminTicketReply').value = '';
+      _adminSelectedTicket = null;
+      // Filter auf "alle" → Ticket bleibt sichtbar nach Status-Änderung
+      _adminTicketFilter = 'all';
+      _adminLoadTickets();
+    } else {
+      const body = await r.text().catch(() => '');
+      _adminLog(`❌ Update fehlgeschlagen (HTTP ${r.status}) — SQL-Fix ausführen! ${body.slice(0,80)}`);
+    }
+  } catch(e) { _adminLog('❌ ' + e.message); }
 }
 
 // _adminTab erweitern für Support-Tab
