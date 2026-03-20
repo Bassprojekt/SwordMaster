@@ -14398,8 +14398,8 @@ async function sendGlobalChat() {
   const msg   = input?.value?.trim();
   if (!msg) return;
 
-  if (Date.now() - _lastGlobalChatSent < 3000) {
-    showErrToast('Bitte 3 Sekunden warten', '⏳'); return;
+  if (Date.now() - _lastGlobalChatSent < 5000) {
+    showErrToast('Bitte 5 Sekunden warten', '⏳'); return;
   }
 
   // player_id: OAuth-UUID oder localStorage-UUID (beide gültig nach SQL-Fix)
@@ -14445,13 +14445,16 @@ async function sendGlobalChat() {
         G.achProgress.global_chat = (G.achProgress.global_chat || 0) + 1;
         checkAchievements();
       } catch(e) {}
+    } else if (r.status === 409) {
+      // 409 = Rate-Limit-Trigger im DB feuerte — einfach warten
+      showErrToast('Bitte kurz warten ⏳', '⏳');
+      // Cooldown im JS verlängern damit Trigger nicht nochmal feuert
+      _lastGlobalChatSent = Date.now();
     } else {
-      // Zeige HTTP-Status für Debugging
       const body = await r.text().catch(() => '');
-      const hint = r.status === 403 ? '(RLS-Policy blockiert — SQL-Fix ausführen!)' :
-                   r.status === 401 ? '(Nicht autorisiert)' :
-                   r.status === 429 ? '(Rate-Limit — 3s warten)' : '';
-      showErrToast(`Chat-Fehler ${r.status} ${hint}`, '❌');
+      const hint = r.status === 403 ? ' (SQL-Fix ausführen!)' :
+                   r.status === 401 ? ' (Nicht autorisiert)' : '';
+      showErrToast(`Fehler ${r.status}${hint}`, '❌');
       console.warn('[Chat]', r.status, body.slice(0, 200));
     }
   } catch(e) {
