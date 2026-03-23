@@ -17127,7 +17127,7 @@ async function _adminResetAll() {
   if (prompt('Tippe "RESET ALLE" zur Bestätigung:') !== 'RESET ALLE') { _adminLog('❌ Abgebrochen'); return; }
   try {
     _adminLog('⏳ Reset läuft...');
-    for (const t of ['sm_inventory','sm_upgrades','sm_skills','sm_pets','sm_guild_members','sm_guild_chat','sm_guilds','sm_leaderboard'])
+    for (const t of ['sm_inventory','sm_upgrades','sm_skills','sm_pets','sm_guild_members','sm_guild_chat','sm_guilds','sm_leaderboard','sm_private_messages','sm_support_tickets'])
       await sbFetch(`${SUPA_URL}/rest/v1/${t}`,{method:'DELETE',headers:{...SUPA_HDR,'Prefer':'return=minimal'}}).catch(()=>{});
     await sbFetch(`${SUPA_URL}/rest/v1/sm_players`,
       {method:'PATCH',headers:{...SUPA_HDR,'Prefer':'return=minimal'},body:JSON.stringify(_RESET_DATA)});
