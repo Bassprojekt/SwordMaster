@@ -16986,7 +16986,7 @@ async function _adminSendReward() {
 const _RESET_DATA = {
   hero_level:1,hero_xp:0,hero_hp:100,hero_max_hp:100,hero_mana:50,hero_max_mana:50,
   hero_base_atk:5,hero_base_def:2,hero_spd:1.0,hero_base_crit:5,hero_gold:0,
-  wave:1,total_kills:0,forge_count:0,dungeon_floor:1,dungeon_keys:3,dungeon_best_floor:0,
+  wave:1,total_kills:0,forge_count:0,era_index:0,dungeon_floor:1,dungeon_keys:3,dungeon_best_floor:0,
   pvp_points:0,pvp_wins:0,pvp_losses:0,pvp_streak:0,pvp_fought_today:'{}',
   guild_id:null,guild_role:'member',local_guild:null,research_active:null,research_end:0,
   research_done:'[]',quest_progress:'{}',quest_claimed:'[]',shop_purchases:'{}',shop_boosts:'{}',
@@ -17002,7 +17002,7 @@ async function _adminResetPlayer() {
   try {
     const id = _adminTargetPlayer.id;
     _adminLog(`⏳ Resette ${_adminTargetPlayer.name}...`);
-    for (const t of ['sm_inventory','sm_upgrades','sm_skills','sm_pets','sm_guild_members','sm_leaderboard'])
+    for (const t of ['sm_inventory','sm_upgrades','sm_skills','sm_pets','sm_guild_members','sm_leaderboard','sm_guild_chat','sm_private_messages','sm_support_tickets'])
       await sbDelete(t, `player_id=eq.${id}`).catch(e => _adminLog(`  ⚠️ ${t}: ${e.message}`));
     await sbFetch(`${SUPA_URL}/rest/v1/sm_players?id=eq.${id}`,
       {method:'PATCH',headers:{...SUPA_HDR,'Prefer':'return=minimal'},body:JSON.stringify(_RESET_DATA)});
@@ -17020,7 +17020,7 @@ async function _adminBanPlayer() {
   try {
     const pid = _adminTargetPlayer.id;
     const name = _adminTargetPlayer.name;
-    for (const t of ['sm_inventory','sm_upgrades','sm_skills','sm_pets','sm_guild_members','sm_leaderboard'])
+    for (const t of ['sm_inventory','sm_upgrades','sm_skills','sm_pets','sm_guild_members','sm_leaderboard','sm_guild_chat','sm_private_messages','sm_support_tickets'])
       await sbDelete(t,`player_id=eq.${pid}`).catch(()=>{});
     await sbDelete('sm_players',`id=eq.${pid}`);
     _adminDeletedLog.unshift(`${new Date().toLocaleString('de-DE')} · ${name} (${pid.slice(0,8)}...)`);
