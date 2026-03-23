@@ -15797,7 +15797,7 @@ async function _adminLockFeature() {
   if (!_adminLoggedIn) return;
   const feature = document.getElementById('adminFeatureSelect')?.value;
   const msg     = document.getElementById('adminFeatureLockMsg')?.value?.trim() || 'Wird gewartet';
-  const mins    = parseInt(document.getElementById('adminFeatureLockDur')?.value) || 60;
+  const mins    = parseInt(document.getElementById('adminFeatureLockDur')?.value ?? 60);
   const until   = mins > 0 ? Date.now() + mins * 60000 : 0;
 
   try {
