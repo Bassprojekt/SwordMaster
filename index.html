@@ -15437,8 +15437,8 @@ function renderWorldBossPanel() {
 // ── WARTUNGSMODUS SYSTEM (v2)
 // ════════════════════════════════════════════
 
-const MAINTENANCE_KEY  = '__maintenance__';
-const FEATURE_LOCK_KEY = '__feature_locks__';
+const MAINTENANCE_KEY  = '00000000-0000-0000-0000-000000000002';  // UUID statt String
+const FEATURE_LOCK_KEY = '00000000-0000-0000-0000-000000000003';  // UUID statt String
 let _maintenancePollTimer = null;
 let _maintenanceActive    = false;
 
@@ -17044,7 +17044,7 @@ async function _adminSendAnnouncement() {
     for (const g of (guilds||[])) {
       await sbPost('sm_guild_chat', {
         id: makeUUID(), guild_id: g.id,
-        player_id: 'system', player_name: '📢 ADMIN',
+        player_id: '00000000-0000-0000-0000-000000000001'  // UUID statt 'system', player_name: '📢 ADMIN',
         message: msg, role: 'admin',
         created_at: new Date().toISOString()
       }).catch(()=>{});
@@ -17054,7 +17054,7 @@ async function _adminSendAnnouncement() {
     await sbPost('sm_guild_chat', {
       id: makeUUID(),
       guild_id: '00000000-0000-0000-0000-000000000000',
-      player_id: 'system', player_name: '📢 ADMIN',
+      player_id: '00000000-0000-0000-0000-000000000001'  // UUID statt 'system', player_name: '📢 ADMIN',
       message: msg, role: 'admin',
       created_at: new Date().toISOString()
     }).catch(()=>{});
@@ -17072,7 +17072,7 @@ async function _adminSendChatMsg() {
     await sbPost('sm_guild_chat', {
       id: makeUUID(),
       guild_id: '00000000-0000-0000-0000-000000000000',
-      player_id: getPlayerId() || 'admin',
+      player_id: getPlayerId() || '00000000-0000-0000-0000-000000000001'  // UUID Fallback,
       player_name: getPlayerName() || 'Admin',
       message: msg.slice(0, 120),
       role: 'admin',
